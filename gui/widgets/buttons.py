@@ -8,6 +8,15 @@ class PrimaryButton(QPushButton):
     def __init__(self, text: str, parent=None):
         super().__init__(text, parent)
         self.setProperty("class", "PrimaryButton")
+        self._icon_size = QSize(20, 20)
+
+    def set_icon(self, icon: QIcon):
+        self.setIcon(icon)
+        self.setIconSize(self._icon_size)
+
+    def set_icon_size(self, size: QSize):
+        self._icon_size = size
+        self.setIconSize(size)
 
 
 class SecondaryButton(QPushButton):
@@ -15,6 +24,15 @@ class SecondaryButton(QPushButton):
     def __init__(self, text: str, parent=None):
         super().__init__(text, parent)
         self.setProperty("class", "SecondaryButton")
+        self._icon_size = QSize(20, 20)
+
+    def set_icon(self, icon: QIcon):
+        self.setIcon(icon)
+        self.setIconSize(self._icon_size)
+
+    def set_icon_size(self, size: QSize):
+        self._icon_size = size
+        self.setIconSize(size)
 
 
 class IconButton(QPushButton):

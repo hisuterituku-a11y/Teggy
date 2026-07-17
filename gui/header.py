@@ -19,16 +19,14 @@ class Header(QWidget):
 
         layout.addStretch()
 
-        self.theme_btn = IconButton("", "Сменить тему")
+        self.theme_btn = IconButton("assets/icons/palette.svg", "Сменить тему")
         self.theme_btn.setProperty("class", "HeaderButton")
         layout.addWidget(self.theme_btn)
 
-        self.settings_btn = IconButton("", "Настройки")
+        self.settings_btn = IconButton("assets/icons/settings.svg", "Настройки")
         self.settings_btn.setProperty("class", "HeaderButton")
         layout.addWidget(self.settings_btn)
 
-        self.help_btn = IconButton("", "Помощь")
+        self.help_btn = IconButton("assets/icons/help.svg", "Помощь")
         self.help_btn.setProperty("class", "HeaderButton")
         layout.addWidget(self.help_btn)
-
-        # Сигналы НЕ ПОДКЛЮЧЕНЫ — будут подключены позже

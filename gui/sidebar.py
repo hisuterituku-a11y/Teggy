@@ -14,26 +14,24 @@ class Sidebar(QWidget):
         layout.setContentsMargins(8, 12, 8, 12)
         layout.setSpacing(4)
 
-        self.home_btn = IconButton("", "Главная")
+        self.home_btn = IconButton("assets/icons/home.svg", "Главная")
         self.home_btn.setProperty("class", "SidebarButton")
         layout.addWidget(self.home_btn)
 
-        self.photos_btn = IconButton("", "Фото")
+        self.photos_btn = IconButton("assets/icons/images.svg", "Фото")
         self.photos_btn.setProperty("class", "SidebarButton")
         layout.addWidget(self.photos_btn)
 
-        self.metadata_btn = IconButton("", "Метаданные")
+        self.metadata_btn = IconButton("assets/icons/file-pen.svg", "Метаданные")
         self.metadata_btn.setProperty("class", "SidebarButton")
         layout.addWidget(self.metadata_btn)
 
-        self.batch_btn = IconButton("", "Пакетная обработка")
+        self.batch_btn = IconButton("assets/icons/layers.svg", "Пакетная обработка")
         self.batch_btn.setProperty("class", "SidebarButton")
         layout.addWidget(self.batch_btn)
 
         layout.addStretch()
 
-        self.settings_btn = IconButton("", "Настройки")
+        self.settings_btn = IconButton("assets/icons/settings.svg", "Настройки")
         self.settings_btn.setProperty("class", "SidebarButton")
         layout.addWidget(self.settings_btn)
-
-        # Сигналы НЕ ПОДКЛЮЧЕНЫ — будут подключены позже

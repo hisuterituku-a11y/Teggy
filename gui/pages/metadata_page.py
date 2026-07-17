@@ -1,13 +1,11 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QIcon
 from core.files.file_service import FileService, FileInfo
 from gui.widgets.cards import Card, CardHeader, CardBody
 from gui.widgets.inputs import TextField, TagEditor
 from gui.widgets.buttons import PrimaryButton, SecondaryButton
 from pathlib import Path
-import os
-
 
 
 class MetadataPage(QWidget):
@@ -36,6 +34,7 @@ class MetadataPage(QWidget):
         folder_row.addWidget(self.folder_field)
 
         self.browse_btn = SecondaryButton("Обзор")
+        self.browse_btn.setIcon(QIcon("assets/icons/folder-open.svg"))
         folder_row.addWidget(self.browse_btn)
 
         folder_card.add_layout(folder_row)
@@ -81,6 +80,7 @@ class MetadataPage(QWidget):
         right_layout.addWidget(meta_card)
 
         self.action_btn = PrimaryButton("Записать метаданные")
+        self.action_btn.setIcon(QIcon("assets/icons/save.svg"))
         right_layout.addWidget(self.action_btn)
 
         right_layout.addStretch()
@@ -91,7 +91,6 @@ class MetadataPage(QWidget):
         self.browse_btn.clicked.connect(self._browse_folder)
 
     def _browse_folder(self):
-        """Открывает диалог выбора папки."""
         from PySide6.QtWidgets import QFileDialog
         folder = QFileDialog.getExistingDirectory(self, "Выберите папку с фотографиями")
         if folder:
@@ -99,7 +98,6 @@ class MetadataPage(QWidget):
             self._load_files(folder)
 
     def _load_files(self, folder_path: str):
-        """Загружает список изображений из папки."""
         path = Path(folder_path)
         files = FileService.get_files(path)
         self.current_files = files
@@ -110,12 +108,10 @@ class MetadataPage(QWidget):
             item.setData(Qt.UserRole, file_info)
             self.file_list.addItem(item)
 
-        # Логируем
         self.log(f"Папка выбрана: {folder_path}")
         self.log(f"Найдено файлов: {len(files)}")
 
     def _on_selection_changed(self):
-        """Обрабатывает выбор файла в списке."""
         selected = self.file_list.selectedItems()
         if not selected:
             return
@@ -126,6 +122,7 @@ class MetadataPage(QWidget):
             self.file_selected.emit(file_info)
 
     def log(self, message: str):
-        """Отправляет сообщение в лог."""
-        # Сигнал будет подключён из MainWindow
-        self.parent().parent().bottom_log.log.info(message) if hasattr(self, 'parent') else None
+        if hasattr(self, 'parent') and hasattr(self.parent(), 'parent'):
+            bottom_log = self.parent().parent().bottom_log
+            if hasattr(bottom_log, 'log'):
+                bottom_log.log.info(message)
