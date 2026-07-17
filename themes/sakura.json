@@ -1,0 +1,15 @@
+{
+    "name": "Sakura",
+    "mode": "light",
+    "colors": {
+        "bg": "#FFF7FA",
+        "card": "#FFFFFF",
+        "text": "#3D2C3D",
+        "text_light": "#7A5A7A",
+        "accent": "#E87A90",
+        "accent_hover": "#F08AA0",
+        "button": "#E87A90",
+        "button_hover": "#F08AA0",
+        "border": "#F0D8E0"
+    }
+}

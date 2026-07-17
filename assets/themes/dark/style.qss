@@ -1,0 +1,77 @@
+QWidget {
+    background: @colors_bg;
+    color: @colors_text;
+}
+
+.Card {
+    background: @colors_card;
+    border-radius: @radius_md px;
+}
+
+.PrimaryButton {
+    background: @colors_accent;
+    color: @colors_text;
+    border: none;
+    border-radius: @radius_sm px;
+    padding: @spacing_sm px @spacing_md px;
+}
+
+.PrimaryButton:hover {
+    background: @colors_hover;
+}
+
+.SecondaryButton {
+    background: @colors_card;
+    color: @colors_text_secondary;
+    border: 1px solid @colors_border;
+    border-radius: @radius_sm px;
+    padding: @spacing_sm px @spacing_md px;
+}
+
+.TextField {
+    background: @colors_bg;
+    color: @colors_text;
+    border: 1px solid @colors_border;
+    border-radius: @radius_sm px;
+    padding: @spacing_sm px @spacing_md px;
+}
+
+.TextField:focus {
+    border-color: @colors_accent;
+}
+
+.TagEditor {
+    background: @colors_bg;
+    color: @colors_text;
+    border: 1px solid @colors_border;
+    border-radius: @radius_sm px;
+    padding: @spacing_sm px @spacing_md px;
+}
+
+.FileList {
+    background: @colors_bg;
+    color: @colors_text;
+    border: 1px solid @colors_border;
+    border-radius: @radius_sm px;
+}
+
+.ProgressWidget {
+    background: @colors_bg;
+    border: none;
+    border-radius: @radius_sm px;
+    height: 8px;
+}
+
+.ProgressWidget::chunk {
+    background: @colors_accent;
+    border-radius: @radius_sm px;
+}
+
+.LogWidget {
+    background: @colors_bg;
+    color: @colors_text_secondary;
+    border: 1px solid @colors_border;
+    border-radius: @radius_sm px;
+    font-family: "Consolas";
+    font-size: 11px;
+}
