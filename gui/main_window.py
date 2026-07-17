@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
 
         self.stack = QStackedWidget()
         self.metadata_page = MetadataPage()
+        self.metadata_page.log_message.connect(self.log_message)
         self.stack.addWidget(self.metadata_page)
         body_layout.addWidget(self.stack, stretch=1)
 
@@ -49,3 +50,7 @@ class MainWindow(QMainWindow):
 
         # Подключаем сигнал выбора файла из MetadataPage
         self.metadata_page.file_selected.connect(self.inspector.update_file_info)
+    def log_message(self, message: str):
+        """Отправляет сообщение в BottomLog."""
+        if hasattr(self, 'bottom_log') and hasattr(self.bottom_log, 'log'):
+            self.bottom_log.log.info(message)

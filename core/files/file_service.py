@@ -12,6 +12,14 @@ class FileInfo:
     size: int
     modified: datetime
 
+    @property
+    def size_kb(self) -> float:
+        return self.size / 1024
+
+    @property
+    def size_mb(self) -> float:
+        return self.size / (1024 * 1024)
+
     def size_str(self) -> str:
         """Возвращает размер в удобном формате."""
         if self.size < 1024:
