@@ -1,18 +1,22 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QListWidget, 
-    QListWidgetItem, QCheckBox
+    QListWidgetItem, QCheckBox, QLabel, QComboBox, QProgressBar
 )
+from PySide6.QtWidgets import QAbstractItemView
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIcon
 from pathlib import Path
 import shutil
+from datetime import datetime
 
 from core.files.file_service import FileService, FileInfo
 from core.metadata.metadata_service import MetadataService
 from gui.widgets.cards import Card, CardHeader, CardBody
 from gui.widgets.inputs import TextField, TagEditor
 from gui.widgets.buttons import PrimaryButton, SecondaryButton
-
+from core.template_manager import TemplateManager
+from core.exceptions import TemplateError
+from core.worker_thread import ProcessingThread
 
 class MetadataPage(QWidget):
     file_selected = Signal(FileInfo)
@@ -49,11 +53,29 @@ class MetadataPage(QWidget):
 
         # Список файлов
         self.file_list = QListWidget()
+        self.file_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.file_list.setProperty("class", "FileList")
         self.file_list.itemSelectionChanged.connect(self._on_selection_changed)
         left_layout.addWidget(self.file_list)
 
         main_layout.addWidget(left_panel, stretch=1)
+
+        # Строка состояния и кнопки выделения
+        selection_layout = QHBoxLayout()
+        
+        self.selection_label = QLabel("Файлов: 0, Выбрано: 0")
+        selection_layout.addWidget(self.selection_label)
+        selection_layout.addStretch()
+        
+        self.select_all_btn = SecondaryButton("Выделить всё")
+        self.select_all_btn.clicked.connect(self._select_all)
+        selection_layout.addWidget(self.select_all_btn)
+        
+        self.deselect_all_btn = SecondaryButton("Снять выделение")
+        self.deselect_all_btn.clicked.connect(self._deselect_all)
+        selection_layout.addWidget(self.deselect_all_btn)
+        
+        left_layout.addLayout(selection_layout)
 
         # Правая колонка
         right_panel = QWidget()
@@ -86,6 +108,19 @@ class MetadataPage(QWidget):
         self.copyright_field = TextField("Авторские права")
         body.add_widget(self.copyright_field)
 
+        # Блок шаблонов
+        template_layout = QHBoxLayout()
+        self.template_combo = QComboBox()
+        self.template_combo.setPlaceholderText("Выберите шаблон...")
+        self.template_combo.currentTextChanged.connect(self._apply_template)
+        template_layout.addWidget(self.template_combo)
+
+        self.save_template_btn = SecondaryButton("Сохранить как шаблон")
+        self.save_template_btn.clicked.connect(self._save_as_template)
+        template_layout.addWidget(self.save_template_btn)
+
+        right_layout.addLayout(template_layout)
+
         meta_card.add_widget(body)
         right_layout.addWidget(meta_card)
 
@@ -93,10 +128,21 @@ class MetadataPage(QWidget):
         self.delete_original_cb = QCheckBox("Удалить оригиналы")
         right_layout.addWidget(self.delete_original_cb)
 
+                # Прогресс-бар
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(False)
+        right_layout.addWidget(self.progress_bar)
+
         self.action_btn = PrimaryButton("Записать метаданные")
         self.action_btn.setIcon(QIcon("assets/icons/save.svg"))
-        self.action_btn.clicked.connect(self._process_files)
+        self.action_btn.clicked.connect(self._start_processing)
         right_layout.addWidget(self.action_btn)
+
+        self.cancel_btn = SecondaryButton("Отмена")
+        self.cancel_btn.setVisible(False)
+        self.cancel_btn.clicked.connect(self._cancel_processing)
+        right_layout.addWidget(self.cancel_btn)
 
         right_layout.addStretch()
 
@@ -105,12 +151,25 @@ class MetadataPage(QWidget):
         # Подключаем сигналы
         self.browse_btn.clicked.connect(self._browse_folder)
 
+
     def _browse_folder(self):
         from PySide6.QtWidgets import QFileDialog
-        folder = QFileDialog.getExistingDirectory(self, "Выберите папку с фотографиями")
+        from core.settings import Settings
+
+        # Начальная папка — последняя открытая
+        initial_dir = Settings.get_last_folder() or ""
+
+        folder = QFileDialog.getExistingDirectory(
+            self,
+            "Выберите папку с фотографиями",
+            initial_dir
+        )
+
         if folder:
             self.folder_field.setText(folder)
+            Settings.save_last_folder(folder) 
             self._load_files(folder)
+            self._refresh_templates()
 
     def _load_files(self, folder_path: str):
         path = Path(folder_path)
@@ -125,8 +184,39 @@ class MetadataPage(QWidget):
 
         self.log(f"Папка выбрана: {folder_path}")
         self.log(f"Найдено файлов: {len(files)}")
+        self._refresh_templates()
+
+        self._update_selection_label()
+    def load_files_from_paths(self, paths: list):
+        """Загружает список файлов по путям."""
+        self.current_files = []
+        self.file_list.clear()
+        
+        for path_str in paths:
+            path = Path(path_str)
+            stat = path.stat()
+            file_info = FileInfo(
+                name=path.name,
+                path=path,
+                size=stat.st_size,
+                modified=datetime.fromtimestamp(stat.st_mtime)
+            )
+            self.current_files.append(file_info)
+            
+            item = QListWidgetItem(file_info.name)
+            item.setData(Qt.UserRole, file_info)
+            self.file_list.addItem(item)
+        
+        # Выделяем все загруженные файлы
+        for i in range(self.file_list.count()):
+            self.file_list.item(i).setSelected(True)
+        
+        self._update_selection_label()
+        self.folder_field.setText(str(Path(paths[0]).parent))
+        self.log(f"Загружено файлов: {len(paths)}")
 
     def _on_selection_changed(self):
+        self._update_selection_label()  # <-- добавить
         selected = self.file_list.selectedItems()
         if not selected:
             return
@@ -200,3 +290,205 @@ class MetadataPage(QWidget):
     def log(self, message: str):
         """Отправляет сообщение в лог через сигнал."""
         self.log_message.emit(message)
+        # Принудительно обновляем интерфейс
+        from PySide6.QtWidgets import QApplication
+        QApplication.processEvents()
+
+    def _refresh_templates(self):
+        """Обновляет список шаблонов в выпадающем списке."""
+        templates = TemplateManager.list_templates()
+        self.template_combo.clear()
+        if templates:
+            self.template_combo.addItems(sorted(templates))
+        else:
+            self.template_combo.addItem("Нет шаблонов")
+
+    def _apply_template(self):
+        """Применяет выбранный шаблон к полям."""
+        template_name = self.template_combo.currentText()
+        if not template_name or template_name == "Нет шаблонов":
+            self.log("Нет шаблонов для применения")
+            return
+
+        try:
+            data = TemplateManager.load(template_name)
+            self.title_field.setText(data.get('title', ''))
+            self.subject_field.setText(data.get('subject', ''))
+            self.author_field.setText(data.get('artist', ''))
+            self.keywords_field.setPlainText('\n'.join(data.get('keywords', [])) if isinstance(data.get('keywords'), list) else data.get('keywords', ''))
+            self.comment_field.setText(data.get('comment', ''))
+            self.copyright_field.setText(data.get('copyright', ''))
+            self.log(f"Шаблон '{template_name}' применён")
+        except TemplateError as e:
+            self.log(f"Ошибка загрузки шаблона: {e}")
+
+    def _save_as_template(self):
+        """Сохраняет текущие поля как шаблон."""
+        from PySide6.QtWidgets import QInputDialog
+
+        name, ok = QInputDialog.getText(self, "Сохранить шаблон", "Введите имя шаблона:")
+        if not ok or not name.strip():
+            return
+
+        name = name.strip()
+        keywords_text = self.keywords_field.toPlainText().strip()
+        keywords = [k.strip() for k in keywords_text.split('\n') if k.strip()]
+
+        data = {
+            'name': name,
+            'title': self.title_field.text(),
+            'subject': self.subject_field.text(),
+            'artist': self.author_field.text(),
+            'keywords': keywords,
+            'comment': self.comment_field.text(),
+            'copyright': self.copyright_field.text(),
+        }
+
+        try:
+            TemplateManager.save(name, data)
+            self.log(f"Шаблон '{name}' сохранён")
+            self._refresh_templates()
+
+            # Выбираем сохранённый шаблон в списке
+            index = self.template_combo.findText(name)
+            if index >= 0:
+                self.template_combo.setCurrentIndex(index)
+        except TemplateError as e:
+            self.log(f"Ошибка сохранения шаблона: {e}")
+
+        # Подключаем сигналы
+        self.browse_btn.clicked.connect(self._browse_folder)
+
+        # Загружаем последнюю папку
+        from core.settings import Settings
+        last_folder = Settings.get_last_folder()
+        if last_folder and Path(last_folder).exists():
+            self.folder_field.setText(last_folder)
+            self._load_files(last_folder)
+            self._refresh_templates()
+
+    def _start_processing(self):
+        """Запускает обработку в отдельном потоке."""
+        # Получаем выбранные файлы
+        selected_items = self.file_list.selectedItems()
+        if not selected_items:
+            self.log("Нет выбранных файлов")
+            return
+
+        # Собираем FileInfo из выбранных элементов
+        selected_files = []
+        for item in selected_items:
+            file_info = item.data(Qt.UserRole)
+            if file_info:
+                selected_files.append(file_info.path)
+
+        if not selected_files:
+            self.log("Нет файлов для обработки")
+            return
+
+        # Собираем метаданные
+        keywords_text = self.keywords_field.toPlainText().strip()
+        keywords = [k.strip() for k in keywords_text.split('\n') if k.strip()]
+
+        metadata = {
+            'title': self.title_field.text(),
+            'subject': self.subject_field.text(),
+            'artist': self.author_field.text(),
+            'keywords': keywords,
+            'comment': self.comment_field.text(),
+            'copyright': self.copyright_field.text(),
+        }
+
+        has_data = any(v for v in metadata.values() if v)
+        if not has_data:
+            self.log("Заполните хотя бы одно поле метаданных")
+            return
+
+        # Сохраняем выбранные файлы для использования в потоке
+        self._selected_files = selected_files
+
+        # Отключаем кнопки
+        self.action_btn.setEnabled(False)
+        self.browse_btn.setEnabled(False)
+        self.cancel_btn.setVisible(True)
+
+        # Показываем прогресс-бар
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setValue(0)
+
+        # Создаём и запускаем поток
+        self.thread = ProcessingThread()
+        self.thread.setup(
+            folder_path=self.folder_field.text(),
+            file_list=selected_files,
+            metadata=metadata,
+            tags=keywords,
+            delete_original=self.delete_original_cb.isChecked(),
+            quality=95
+        )
+
+        # Подключаем сигналы
+        self.thread.progress.connect(self._on_progress)
+        self.thread.log.connect(self.log)
+        self.thread.finished.connect(self._on_finished)
+        self.thread.error.connect(self._on_error)
+
+        self.thread.start()
+        self.log(f"⏳ Начинаем обработку {len(selected_files)} выбранных файлов...")
+
+    def _on_progress(self, current: int, total: int):
+        """Обновляет прогресс-бар."""
+        self.progress_bar.setMaximum(total)
+        self.progress_bar.setValue(current)
+
+    def _on_finished(self, stats: dict):
+        """Обрабатывает завершение обработки."""
+        if stats.get('cancelled'):
+            self.log("⏹️ Обработка отменена")
+        else:
+            self.log(f"✅ Готово. Обработано {stats.get('processed', 0)} из {stats.get('total', 0)} файлов")
+        self._reset_ui()
+
+    def _on_error(self, message: str):
+        """Обрабатывает ошибку в потоке."""
+        self.log(f"❌ Ошибка: {message}")
+        self._reset_ui()
+
+    def _cancel_processing(self):
+        """Отменяет обработку."""
+        if hasattr(self, 'thread') and self.thread.isRunning():
+            self.thread.cancel()
+            self.log("⏹️ Отмена обработки...")
+
+    def _reset_ui(self):
+        """Восстанавливает интерфейс после обработки."""
+        self.action_btn.setEnabled(True)
+        self.browse_btn.setEnabled(True)
+        self.cancel_btn.setVisible(False)
+        self.progress_bar.setVisible(False)
+        self.thread = None
+
+    def _update_selection_label(self):
+        """Обновляет строку состояния с количеством файлов."""
+        total = self.file_list.count()
+        selected = len(self.file_list.selectedItems())
+        self.selection_label.setText(f"Файлов: {total}, Выбрано: {selected}")
+
+    def _select_all(self):
+        """Выделяет все файлы в списке."""
+        self.file_list.selectAll()
+        self._update_selection_label()
+
+    def _deselect_all(self):
+        """Снимает выделение со всех файлов."""
+        self.file_list.clearSelection()
+        self._update_selection_label()
+
+    def _select_files_by_names(self, names: list):
+        """Выделяет файлы по списку имён."""
+        self.file_list.clearSelection()
+        for i in range(self.file_list.count()):
+            item = self.file_list.item(i)
+            if item.text() in names:
+                item.setSelected(True)
+        self._update_selection_label()

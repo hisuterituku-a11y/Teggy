@@ -139,7 +139,7 @@ class MetadataWriter:
 
             # Конвертируем в bytes и сохраняем
             exif_bytes = piexif.dump(exif_dict)
-            img.save(filepath, format='JPEG', exif=exif_bytes, quality='95')
+            img.save(filepath, format='JPEG', exif=exif_bytes, quality=95)
 
             return True
 

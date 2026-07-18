@@ -13,6 +13,10 @@ class FileInfo:
     modified: datetime
 
     @property
+    def extension(self) -> str:
+        return self.path.suffix.lower()
+
+    @property
     def size_kb(self) -> float:
         return self.size / 1024
 
@@ -57,14 +61,7 @@ class FileService:
                     size=stat.st_size,
                     modified=datetime.fromtimestamp(stat.st_mtime)
                 ))
-            for file_path in folder_path.glob(f"*{ext.upper()}"):
-                stat = file_path.stat()
-                files.append(FileInfo(
-                    name=file_path.name,
-                    path=file_path,
-                    size=stat.st_size,
-                    modified=datetime.fromtimestamp(stat.st_mtime)
-                ))
+           
 
         # Сортируем по имени
         files.sort(key=lambda f: f.name.lower())

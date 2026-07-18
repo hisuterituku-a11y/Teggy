@@ -302,3 +302,109 @@ class ProcessingWorker:
                 "converted": False,
                 "error": str(e)
             }
+    def process_file_list(
+        self,
+        file_list: List[Path],
+        output_dir: Optional[str] = None
+    ) -> Dict[str, any]:
+        """
+        Обрабатывает список файлов.
+        
+        Args:
+            file_list: список путей к файлам
+            output_dir: папка для сохранения результатов
+            
+        Returns:
+            словарь со статистикой
+        """
+        if not file_list:
+            self._log("❌ Нет файлов для обработки")
+            return {
+                "total": 0,
+                "processed": 0,
+                "converted": 0,
+                "failed": 0,
+                "errors": []
+            }
+
+        # Определяем папку для результатов
+        if output_dir is None:
+            # Берём родительскую папку первого файла
+            output_dir = str(file_list[0].parent / "Teggy")
+
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        tags = self.tags
+        if not tags:
+            self._log("⚠️ Теги не заданы, обработка пропущена")
+            return {
+                "total": len(file_list),
+                "processed": 0,
+                "converted": 0,
+                "failed": 0,
+                "errors": ["Теги не заданы"]
+            }
+
+        self._log(f"📸 Найдено файлов: {len(file_list)}")
+        self._log(f"🏷️ Тегов: {len(tags)}")
+
+        stats = {
+            "total": len(file_list),
+            "processed": 0,
+            "converted": 0,
+            "failed": 0,
+            "errors": []
+        }
+
+        for idx, img_path in enumerate(file_list, 1):
+            self._log(f"\n→ [{idx}/{stats['total']}] {img_path.name}")
+
+            try:
+                current_file = img_path
+                if ImageConverter.needs_conversion(img_path):
+                    self._log(f"   🔄 Конвертация: {img_path.name}")
+                    try:
+                        current_file = ImageConverter.convert(
+                            img_path,
+                            output_path,
+                            quality=self.quality,
+                            delete_original=self.delete_original
+                        )
+                        stats["converted"] += 1
+                        self._log(f"   ✅ Сохранён: {current_file.name}")
+                    except ConversionError as e:
+                        self._log(f"   ❌ Ошибка конвертации: {e}")
+                        stats["failed"] += 1
+                        stats["errors"].append(str(e))
+                        continue
+
+                tag = tags[(idx - 1) % len(tags)]
+
+                self._log(f"   🏷️ Тег: {tag}")
+                try:
+                    self.metadata_writer.set_metadata(keywords=tag)
+                    self.metadata_writer.write(current_file)
+                    stats["processed"] += 1
+                    self._log(f"   ✅ Метаданные записаны")
+                except MetadataError as e:
+                    self._log(f"   ❌ Ошибка записи: {e}")
+                    stats["failed"] += 1
+                    stats["errors"].append(str(e))
+
+            except Exception as e:
+                self._log(f"   ❌ Критическая ошибка: {e}")
+                stats["failed"] += 1
+                stats["errors"].append(str(e))
+
+            self._progress(idx, stats["total"])
+
+        self._log("\n" + "=" * 55)
+        self._log("✅ ОБРАБОТКА ЗАВЕРШЕНА")
+        self._log("=" * 55)
+        self._log(f"📸 Всего: {stats['total']}")
+        self._log(f"🔄 Сконвертировано: {stats['converted']}")
+        self._log(f"🏷️ Протегировано: {stats['processed']}")
+        self._log(f"❌ Ошибок: {stats['failed']}")
+
+        return stats    

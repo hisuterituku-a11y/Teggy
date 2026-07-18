@@ -23,15 +23,7 @@ class MetadataService:
     
     @staticmethod
     def read_metadata(file_path: str) -> Dict[str, Any]:
-        """
-        Читает метаданные из JPG-файла.
-        
-        Args:
-            file_path: Путь к файлу
-            
-        Returns:
-            Dict: Словарь с метаданными
-        """
+        """Читает метаданные из JPG-файла."""
         if not MetadataService.can_read(file_path):
             return {}
         
@@ -59,15 +51,24 @@ class MetadataService:
                 
                 # XP Title (Windows)
                 if piexif.ImageIFD.XPTitle in zeroth:
-                    result['title'] = zeroth[piexif.ImageIFD.XPTitle].decode('utf-16le', errors='ignore').strip('\x00')
+                    xp_title = zeroth[piexif.ImageIFD.XPTitle]
+                    if isinstance(xp_title, tuple):
+                        xp_title = bytes(xp_title)
+                    result['title'] = xp_title.decode('utf-16le', errors='ignore').strip('\x00')
                 
                 # XP Subject (Windows)
                 if piexif.ImageIFD.XPSubject in zeroth:
-                    result['subject'] = zeroth[piexif.ImageIFD.XPSubject].decode('utf-16le', errors='ignore').strip('\x00')
+                    xp_subject = zeroth[piexif.ImageIFD.XPSubject]
+                    if isinstance(xp_subject, tuple):
+                        xp_subject = bytes(xp_subject)
+                    result['subject'] = xp_subject.decode('utf-16le', errors='ignore').strip('\x00')
                 
                 # XP Keywords (Windows)
                 if piexif.ImageIFD.XPKeywords in zeroth:
-                    keywords = zeroth[piexif.ImageIFD.XPKeywords].decode('utf-16le', errors='ignore').strip('\x00')
+                    xp_keywords = zeroth[piexif.ImageIFD.XPKeywords]
+                    if isinstance(xp_keywords, tuple):
+                        xp_keywords = bytes(xp_keywords)
+                    keywords = xp_keywords.decode('utf-16le', errors='ignore').strip('\x00')
                     if ';' in keywords:
                         result['keywords'] = [k.strip() for k in keywords.split(';') if k.strip()]
                     elif ',' in keywords:
@@ -77,34 +78,40 @@ class MetadataService:
                 
                 # XP Comment (Windows)
                 if piexif.ImageIFD.XPComment in zeroth:
-                    result['comment'] = zeroth[piexif.ImageIFD.XPComment].decode('utf-16le', errors='ignore').strip('\x00')
+                    xp_comment = zeroth[piexif.ImageIFD.XPComment]
+                    if isinstance(xp_comment, tuple):
+                        xp_comment = bytes(xp_comment)
+                    result['comment'] = xp_comment.decode('utf-16le', errors='ignore').strip('\x00')
                 
-                # ImageDescription (стандартное поле Description)
+                # ImageDescription
                 if piexif.ImageIFD.ImageDescription in zeroth:
                     result['description'] = zeroth[piexif.ImageIFD.ImageDescription].decode('utf-8', errors='ignore')
             
-            # Читаем Exif IFD
-            if 'Exif' in exif_dict:
-                exif = exif_dict['Exif']
-                
-                # UserComment
-                if piexif.ExifIFD.UserComment in exif:
-                    comment = exif[piexif.ExifIFD.UserComment]
-                    if isinstance(comment, bytes):
-                        try:
-                            result['comment'] = comment.decode('utf-8', errors='ignore')
-                        except:
-                            result['comment'] = comment.decode('ascii', errors='ignore')
-                
-                # Rating (Windows)
-                if piexif.ExifIFD.Rating in exif:
-                    rating_value = exif[piexif.ExifIFD.Rating]
-                    rating_map = {1: 1, 25: 2, 50: 3, 75: 4, 99: 5}
-                    result['rating'] = rating_map.get(rating_value, 0)
+                    # Читаем Exif IFD
+                if 'Exif' in exif_dict:
+                    exif = exif_dict['Exif']
+                    
+                    # UserComment
+                    if piexif.ExifIFD.UserComment in exif:
+                        comment = exif[piexif.ExifIFD.UserComment]
+                        if isinstance(comment, bytes):
+                            try:
+                                result['comment'] = comment.decode('utf-8', errors='ignore')
+                            except:
+                                result['comment'] = comment.decode('ascii', errors='ignore')
+                    
+                    # Rating (Windows) — используем числовой тег
+                    rating_tag = 18246
+                    if rating_tag in exif:
+                        rating_value = exif[rating_tag]
+                        rating_map = {1: 1, 25: 2, 50: 3, 75: 4, 99: 5}
+                        result['rating'] = rating_map.get(rating_value, 0)
             
             return result
             
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return {}
     
     @staticmethod
