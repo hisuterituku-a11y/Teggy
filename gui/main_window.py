@@ -7,15 +7,25 @@ from gui.bottom_log import BottomLog
 from gui.pages.metadata_page import MetadataPage
 from gui.pages.templates_page import TemplatesPage
 from gui.dragdrop import DragDropManager
+from core.settings import Settings
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, theme_manager=None):
         super().__init__()
+        self.theme_manager = theme_manager
         self.setWindowTitle("Teggy")
         self.setGeometry(100, 100, 1280, 820)
         self.setProperty("class", "MainWindow")
         self.setAcceptDrops(True)
+                # Загружаем геометрию окна
+        geometry = Settings.get_window_geometry()
+        self.setGeometry(
+            geometry.get("x", 100),
+            geometry.get("y", 100),
+            geometry.get("width", 1280),
+            geometry.get("height", 820)
+        )
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -24,8 +34,9 @@ class MainWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Header
-        self.header = Header()
+        # Header с передачей ThemeManager
+        self.header = Header(theme_manager=self.theme_manager)
+        self.header.theme_requested.connect(self._apply_theme)
         main_layout.addWidget(self.header)
 
         # Body: Sidebar + Pages + Inspector
@@ -42,6 +53,7 @@ class MainWindow(QMainWindow):
         self.metadata_page = MetadataPage()
         self.metadata_page.log_message.connect(self.log_message)
         self.stack.addWidget(self.metadata_page)
+        
         # Drag & Drop менеджер
         self.dragdrop = DragDropManager()
         self.dragdrop.folder_dropped.connect(self._on_folder_dropped)
@@ -51,7 +63,7 @@ class MainWindow(QMainWindow):
         app.installEventFilter(self.dragdrop)
         body_layout.addWidget(self.stack, stretch=1)
 
-    # Страница шаблонов
+        # Страница шаблонов
         self.templates_page = TemplatesPage()
         self.templates_page.log_message.connect(self.log_message)
         self.stack.addWidget(self.templates_page)
@@ -61,12 +73,23 @@ class MainWindow(QMainWindow):
 
         main_layout.addWidget(body, stretch=1)
 
-    # Bottom Log
+        # Bottom Log
         self.bottom_log = BottomLog()
         main_layout.addWidget(self.bottom_log)
 
-    # Подключаем сигнал выбора файла из MetadataPage
+        # Подключаем сигнал выбора файла из MetadataPage
         self.metadata_page.file_selected.connect(self.inspector.update_file_info)
+
+    def _apply_theme(self, theme_name: str):
+        """Применяет тему и сохраняет в настройках."""
+        if not self.theme_manager:
+            return
+        
+        theme = self.theme_manager.load(theme_name)
+        QApplication.instance().setStyleSheet(theme.qss)
+        Settings.save_theme(theme_name)
+        self.log_message(f"🎨 Тема изменена: {theme_name.capitalize()}")
+
     def log_message(self, message: str):
         """Отправляет сообщение в BottomLog."""
         if hasattr(self, 'bottom_log') and hasattr(self.bottom_log, 'log'):
@@ -90,7 +113,6 @@ class MainWindow(QMainWindow):
         if not paths:
             return
         
-        # Проверяем, что все файлы — изображения
         image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff'}
         image_paths = [p for p in paths if Path(p).suffix.lower() in image_extensions]
         
@@ -98,7 +120,6 @@ class MainWindow(QMainWindow):
             self.log_message("⚠️ Перетащены не изображения")
             return
         
-        # Загружаем только перетащенные файлы
         self.metadata_page.load_files_from_paths(image_paths)
         self.metadata_page._refresh_templates()
         
@@ -107,7 +128,6 @@ class MainWindow(QMainWindow):
         self.log_message(f"📄 Загружено файлов: {len(image_paths)}")
 
     def dragEnterEvent(self, event):
-        """Проверяет, можно ли принять перетаскиваемые данные."""
         if event.mimeData().hasUrls():
             urls = event.mimeData().urls()
             if urls and urls[0].isLocalFile():
@@ -118,28 +138,22 @@ class MainWindow(QMainWindow):
         event.ignore()
 
     def dropEvent(self, event):
-        """Обрабатывает перетаскивание папки или файлов."""
         urls = event.mimeData().urls()
-        print(f"DEBUG: urls = {urls}")
         if not urls:
             event.ignore()
             return
 
-        # Проверяем, что перетаскиваются локальные файлы
         local_paths = []
         for url in urls:
             if url.isLocalFile():
                 local_paths.append(url.toLocalFile())
-        print(f"DEBUG: local_paths = {local_paths}")
 
         if not local_paths:
             event.ignore()
             return
 
-        # Проверяем, все ли пути — файлы из одной папки
         first_path = Path(local_paths[0])
         
-        # Если перетащили папку
         if len(local_paths) == 1 and first_path.is_dir():
             path = str(first_path)
             self.metadata_page.folder_field.setText(path)
@@ -149,23 +163,36 @@ class MainWindow(QMainWindow):
             event.acceptProposedAction()
             return
         
-        # Если перетащили файлы
-        # Проверяем, что все файлы лежат в одной папке
         parent_dir = first_path.parent
         all_same_folder = all(Path(p).parent == parent_dir for p in local_paths)
         
         if all_same_folder:
-            # Открываем папку
             self.metadata_page.folder_field.setText(str(parent_dir))
             self.metadata_page._load_files(str(parent_dir))
             self.metadata_page._refresh_templates()
-            
-            # Выделяем перетащенные файлы
             self.metadata_page._select_files_by_names([Path(p).name for p in local_paths])
-            
             self.log_message(f"📁 Открыта папка: {parent_dir}")
             self.log_message(f"📄 Выделено файлов: {len(local_paths)}")
             event.acceptProposedAction()
         else:
             self.log_message("⚠️ Перетаскивайте файлы только из одной папки")
             event.ignore()
+    def closeEvent(self, event):
+        """Сохраняет настройки при закрытии окна."""
+        # Сохраняем геометрию
+        geo = self.geometry()
+        Settings.save_window_geometry(geo.x(), geo.y(), geo.width(), geo.height())
+        
+        # Сохраняем состояние чекбокса
+        if hasattr(self.metadata_page, 'delete_original_cb'):
+            Settings.save_delete_original(
+                self.metadata_page.delete_original_cb.isChecked()
+            )
+        
+        # Сохраняем последний шаблон
+        if hasattr(self.metadata_page, 'template_combo'):
+            current_template = self.metadata_page.template_combo.currentText()
+            if current_template and current_template != "Нет шаблонов":
+                Settings.save_last_template(current_template)
+        
+        event.accept()

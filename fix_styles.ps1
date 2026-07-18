@@ -1,9 +1,10 @@
-/* Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ СЃС‚РёР»СЊ РґР»СЏ РІСЃРµС… РєРЅРѕРїРѕРє */
+$style = @'
+/* Глобальный стиль для всех кнопок */
 QPushButton {
     border-radius: 8px;
 }
 
-/* Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ СЃС‚РёР»СЊ РґР»СЏ РІСЃРµС… РїРѕР»РµР№ РІРІРѕРґР° */
+/* Глобальный стиль для всех полей ввода */
 QLineEdit, QTextEdit {
     border-radius: 8px;
     padding: 6px 10px;
@@ -238,3 +239,15 @@ QProgressBar::chunk {
     background: @colors_bg;
     border-top: 1px solid @colors_border;
 }
+'@
+
+# Применяем ко всем темам
+Get-ChildItem -Path assets\themes -Directory | ForEach-Object {
+    $filePath = Join-Path $_.FullName "style.qss"
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($filePath, $style, $utf8NoBom)
+    Write-Host "✅ Обновлён: $filePath" -ForegroundColor Green
+}
+
+Write-Host "`n✅ Все темы обновлены!" -ForegroundColor Green
+Write-Host "Запусти: python main.py" -ForegroundColor Yellow

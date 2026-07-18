@@ -1,16 +1,20 @@
 ﻿{
-  "name": "Dark",
+  "name": "Corporate",
   "colors": {
-    "bg": "#1E1F22",
-    "card": "#2B2D31",
-    "text": "#FFFFFF",
-    "text_secondary": "#B8BCC8",
-    "accent": "#00A884",
-    "border": "#3A3D44",
-    "hover": "#3A3D44",
+    "bg": "#2E303C",
+    "card": "#3A3D4A",
+    "surface": "#464959",
+    "text": "#FDFEFF",
+    "text_secondary": "#B0B3C0",
+    "accent": "#F73A00",
+    "accent_hover": "#FF5A2A",
+    "accent_pressed": "#D92E00",
+    "border": "#4E5262",
+    "hover": "#3E4150",
     "success": "#2ECC71",
-    "warning": "#F39C12",
-    "error": "#E74C3C"
+    "warning": "#F4B400",
+    "error": "#E74C3C",
+    "selection": "#F73A0033"
   },
   "spacing": {
     "xs": 4,

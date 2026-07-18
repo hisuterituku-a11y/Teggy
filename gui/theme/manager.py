@@ -45,3 +45,8 @@ class ThemeManager:
 
         self._cache[name] = theme
         return theme
+    def list_themes(self) -> List[str]:
+        """Возвращает список доступных тем."""
+        if not self.themes_dir.exists():
+            return []
+        return [d.name for d in self.themes_dir.iterdir() if d.is_dir() and (d / "theme.json").exists()]
