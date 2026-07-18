@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QPushButton
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtCore import Qt 
+from core.paths import resource_path
 
 class PrimaryButton(QPushButton):
     """Главная кнопка действия."""
@@ -39,7 +39,7 @@ class IconButton(QPushButton):
     """Кнопка с SVG-иконкой."""
     def __init__(self, icon_path: str, tooltip: str = "", parent=None):
         super().__init__(parent)
-        self.setIcon(QIcon(icon_path))
+        self.setIcon(QIcon(str(resource_path(icon_path))))
         self.setIconSize(QSize(24, 24))
         self.setToolTip(tooltip)
         self.setProperty("class", "IconButton")

@@ -95,13 +95,14 @@ class MetadataWriter:
             # Открываем изображение
             img = Image.open(filepath)
 
-            # Получаем текущий EXIF и очищаем его
-            exif_data = img.info.get('exif')
-            cleaned_exif = ExifCleaner.clean(exif_data)
-
-            # Загружаем очищенный EXIF в словарь
-            exif_dict = piexif.load(cleaned_exif)
-
+            exif_dict = {
+                "0th": {},
+                "Exif": {},
+                "GPS": {},
+                "Interop": {},
+                "1st": {},
+                "thumbnail": None,
+            }
             # === ЗАПОЛНЯЕМ 0th IFD ===
             if '0th' not in exif_dict:
                 exif_dict['0th'] = {}
@@ -123,8 +124,7 @@ class MetadataWriter:
                 exif_dict['0th'][piexif.ImageIFD.Artist] = self.artist.encode('utf-8')
             if self.copyright:
                 exif_dict['0th'][piexif.ImageIFD.Copyright] = self.copyright.encode('utf-8')
-            if self.subject:
-                exif_dict['0th'][piexif.ImageIFD.ImageDescription] = self.subject.encode('utf-8')
+            
 
             # === ЗАПОЛНЯЕМ Exif IFD ===
             if 'Exif' not in exif_dict:

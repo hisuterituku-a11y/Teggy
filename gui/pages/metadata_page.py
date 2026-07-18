@@ -1,3 +1,4 @@
+﻿from core.paths import resource_path
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QListWidget, 
     QListWidgetItem, QCheckBox, QLabel, QComboBox, QProgressBar, 
@@ -11,6 +12,7 @@ from datetime import datetime
 
 from core.files.file_service import FileService, FileInfo
 from core.metadata.metadata_service import MetadataService
+import piexif
 from gui.widgets.cards import Card, CardHeader, CardBody
 from gui.widgets.inputs import TextField, TagEditor
 from gui.widgets.buttons import PrimaryButton, SecondaryButton
@@ -49,7 +51,7 @@ class MetadataPage(QWidget):
         folder_row.addWidget(self.folder_field)
 
         self.browse_btn = SecondaryButton("Обзор")
-        self.browse_btn.setIcon(QIcon("assets/icons/folder-open.svg"))
+        self.browse_btn.setIcon(QIcon(str(resource_path("assets/icons/folder-open.svg"))))
         folder_row.addWidget(self.browse_btn)
 
         folder_card.add_layout(folder_row)
@@ -155,7 +157,7 @@ class MetadataPage(QWidget):
         right_layout.addWidget(self.progress_bar)
 
         self.action_btn = PrimaryButton("Записать метаданные")
-        self.action_btn.setIcon(QIcon("assets/icons/save.svg"))
+        self.action_btn.setIcon(QIcon(str(resource_path("assets/icons/save.svg"))))
         self.action_btn.clicked.connect(self._start_processing)
         right_layout.addWidget(self.action_btn)
 
@@ -358,7 +360,9 @@ class MetadataPage(QWidget):
         self.thread.log.connect(self.log)
         self.thread.finished.connect(self._on_finished)
         self.thread.error.connect(self._on_error)
-
+        print("=== METADATA DEBUG ===")
+        print(f"Title: {self.title_field.text()}")
+        print(f"Subject: {self.subject_field.text()}")
         self.thread.start()
         self.log(f"⏳ Начинаем обработку {len(selected_files)} выбранных файлов...")
 

@@ -151,6 +151,9 @@ class MetadataService:
             img = Image.open(file_path)
             exif_dict = {'0th': {}, 'Exif': {}}
 
+            # Очищаем ImageDescription, чтобы Windows не путал
+            exif_dict['0th'][piexif.ImageIFD.ImageDescription] = b''
+
             # Название
             if 'title' in metadata and metadata['title']:
                 exif_dict['0th'][piexif.ImageIFD.XPTitle] = metadata['title'].encode('utf-16le')
@@ -158,7 +161,6 @@ class MetadataService:
             # Тема
             if 'subject' in metadata and metadata['subject']:
                 exif_dict['0th'][piexif.ImageIFD.XPSubject] = metadata['subject'].encode('utf-16le')
-                exif_dict['0th'][piexif.ImageIFD.ImageDescription] = metadata['subject'].encode('utf-8')
 
             # Автор
             if 'artist' in metadata and metadata['artist']:
@@ -189,7 +191,12 @@ class MetadataService:
             from datetime import datetime
             now = datetime.now().strftime("%Y:%m:%d %H:%M:%S")
             exif_dict['0th'][piexif.ImageIFD.DateTime] = now.encode('utf-8')
-
+            print("=== WRITE METADATA DEBUG ===")
+            print(f"Title: {metadata.get('title')}")
+            print(f"Subject: {metadata.get('subject')}")
+            print(f"XPTitle: {exif_dict['0th'].get(piexif.ImageIFD.XPTitle)}")
+            print(f"XPSubject: {exif_dict['0th'].get(piexif.ImageIFD.XPSubject)}")
+            print(f"ImageDescription: {exif_dict['0th'].get(piexif.ImageIFD.ImageDescription)}")
             exif_bytes = piexif.dump(exif_dict)
             img.save(file_path, exif=exif_bytes, format='JPEG', quality=95)
             return True

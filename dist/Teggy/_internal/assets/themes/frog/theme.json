@@ -1,0 +1,41 @@
+﻿{
+    "name":  "Frog",
+    "colors":  {
+                   "bg":  "#F0FDF4",
+                   "card":  "#FFFFFF",
+                   "text":  "#14532D",
+                   "text_secondary":  "#65A30D",
+                   "accent":  "#65A30D",
+                   "accent_hover":  "#7BCA2A",
+                   "accent_pressed":  "#4F8A0A",
+                   "border":  "#BBF7D0",
+                   "hover":  "#DCFCE7",
+                   "success":  "#10B981",
+                   "warning":  "#F59E0B",
+                   "error":  "#EF4444",
+                   "selection":  "#65A30D33"
+               },
+    "spacing":  {
+                    "xs":  4,
+                    "sm":  8,
+                    "md":  16,
+                    "lg":  24,
+                    "xl":  32
+                },
+    "radius":  {
+                   "sm":  6,
+                   "md":  10,
+                   "lg":  16
+               },
+    "typography":  {
+                       "family":  "Inter",
+                       "size":  13,
+                       "size_small":  11,
+                       "size_large":  16
+                   },
+    "animation":  {
+                      "fast":  150,
+                      "normal":  200,
+                      "slow":  300
+                  }
+}

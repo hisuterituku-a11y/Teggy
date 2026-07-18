@@ -10,7 +10,11 @@ if __name__ == "__main__":
     app.setStyle("Fusion")
     
     # Создаём менеджер тем один раз
-    theme_manager = ThemeManager(Path("assets/themes"))
+    from core.paths import resource_path
+
+    theme_manager = ThemeManager(
+        resource_path("assets", "themes")
+    )
     
     # Загружаем последнюю тему из настроек
     from core.settings import Settings

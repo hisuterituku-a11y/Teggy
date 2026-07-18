@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QIcon
-
+from core.paths import resource_path
 from core.template_manager import TemplateManager
 from core.exceptions import TemplateError
 from gui.widgets.cards import Card, CardHeader, CardBody
@@ -95,7 +95,7 @@ class TemplatesPage(QWidget):
 
         # Кнопки действий
         self.save_btn = PrimaryButton("Сохранить шаблон")
-        self.save_btn.setIcon(QIcon("assets/icons/save.svg"))
+        self.save_btn.setIcon(QIcon(str(resource_path("assets/icons/save.svg"))))
         self.save_btn.clicked.connect(self._save_template)
         right_layout.addWidget(self.save_btn)
 

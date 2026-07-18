@@ -341,6 +341,7 @@
   ('core.metadata.metadata_service',
    'X:\\Teggy\\core\\metadata\\metadata_service.py',
    'PYMODULE'),
+  ('core.paths', 'X:\\Teggy\\core\\paths.py', 'PYMODULE'),
   ('core.settings', 'X:\\Teggy\\core\\settings.py', 'PYMODULE'),
   ('core.tag_generator', 'X:\\Teggy\\core\\tag_generator.py', 'PYMODULE'),
   ('core.template_manager', 'X:\\Teggy\\core\\template_manager.py', 'PYMODULE'),

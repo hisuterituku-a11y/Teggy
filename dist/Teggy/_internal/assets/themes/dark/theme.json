@@ -1,0 +1,39 @@
+﻿{
+    "name":  "Dark",
+    "colors":  {
+                   "bg":  "#1E1F22",
+                   "card":  "#2B2D31",
+                   "text":  "#FFFFFF",
+                   "text_secondary":  "#B8BCC8",
+                   "accent":  "#00A884",
+                   "border":  "#3A3D44",
+                   "hover":  "#3A3D44",
+                   "success":  "#2ECC71",
+                   "warning":  "#F39C12",
+                   "selection":  "#00A88433",
+                   "error":  "#E74C3C"
+               },
+    "spacing":  {
+                    "xs":  4,
+                    "sm":  8,
+                    "md":  16,
+                    "lg":  24,
+                    "xl":  32
+                },
+    "radius":  {
+                   "sm":  6,
+                   "md":  10,
+                   "lg":  16
+               },
+    "typography":  {
+                       "family":  "Inter",
+                       "size":  13,
+                       "size_small":  11,
+                       "size_large":  16
+                   },
+    "animation":  {
+                      "fast":  150,
+                      "normal":  200,
+                      "slow":  300
+                  }
+}
