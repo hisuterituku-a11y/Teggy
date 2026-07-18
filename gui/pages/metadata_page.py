@@ -1,9 +1,10 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QListWidget, 
-    QListWidgetItem, QCheckBox, QLabel, QComboBox, QProgressBar, QAbstractItemView
+    QListWidgetItem, QCheckBox, QLabel, QComboBox, QProgressBar, 
+    QAbstractItemView, QStyledItemDelegate, QStyle
 )
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QColor
 from pathlib import Path
 import shutil
 from datetime import datetime
@@ -17,11 +18,13 @@ from core.template_manager import TemplateManager
 from core.exceptions import TemplateError
 from core.worker_thread import ProcessingThread
 from core.settings import Settings
+from core.tag_generator import TagGenerator
 
 
 class MetadataPage(QWidget):
     file_selected = Signal(FileInfo)
     log_message = Signal(str)
+    templates_updated = Signal() 
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -54,10 +57,16 @@ class MetadataPage(QWidget):
 
         # Список файлов
         self.file_list = QListWidget()
+        from PySide6.QtGui import QPalette, QColor
+
+       
+        
         self.file_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.file_list.setProperty("class", "FileList")
         self.file_list.itemSelectionChanged.connect(self._on_selection_changed)
         left_layout.addWidget(self.file_list)
+        
+        
 
         # Строка состояния и кнопки выделения
         selection_layout = QHBoxLayout()
@@ -85,31 +94,7 @@ class MetadataPage(QWidget):
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(12)
 
-        meta_card = Card()
-        header = CardHeader()
-        header.set_title("Метаданные")
-        meta_card.add_widget(header)
-
-        body = CardBody()
-        self.title_field = TextField("Название")
-        body.add_widget(self.title_field)
-
-        self.subject_field = TextField("Тема")
-        body.add_widget(self.subject_field)
-
-        self.author_field = TextField("Автор")
-        body.add_widget(self.author_field)
-
-        self.keywords_field = TagEditor()
-        body.add_widget(self.keywords_field)
-
-        self.comment_field = TextField("Комментарий")
-        body.add_widget(self.comment_field)
-
-        self.copyright_field = TextField("Авторские права")
-        body.add_widget(self.copyright_field)
-
-        # Блок шаблонов
+        # Блок шаблонов (над карточкой)
         template_layout = QHBoxLayout()
         self.template_combo = QComboBox()
         self.template_combo.setPlaceholderText("Выберите шаблон...")
@@ -122,8 +107,42 @@ class MetadataPage(QWidget):
 
         right_layout.addLayout(template_layout)
 
+        # Карточка "Метаданные"
+        meta_card = Card()
+        header = CardHeader()
+        header.set_title("Метаданные")
+        meta_card.add_widget(header)
+
+        body = CardBody()
+        self.title_field = TextField("Название")
+        body.add_widget(self.title_field)
+
+        self.subject_field = TextField("Тема")
+        body.add_widget(self.subject_field)
+
+        self.comment_field = TextField("Комментарий")
+        body.add_widget(self.comment_field)
+
+        self.author_field = TextField("Автор")
+        body.add_widget(self.author_field)
+
+        self.copyright_field = TextField("Авторские права")
+        body.add_widget(self.copyright_field)
+
         meta_card.add_widget(body)
         right_layout.addWidget(meta_card)
+
+        # Блок тегов (внутри карточки, но вне body)
+        self.keywords_field = TagEditor()
+        self.keywords_field.setPlaceholderText("Введите теги (по одному на строке)")
+        self.keywords_field.textChanged.connect(self._update_generate_button)
+        meta_card.add_widget(self.keywords_field)
+
+        self.generate_tags_btn = SecondaryButton("Сделать теги")
+        self.generate_tags_btn.setEnabled(False)
+        self.generate_tags_btn.clicked.connect(self._generate_tags)
+        self.generate_tags_btn.setFixedHeight(40)
+        meta_card.add_widget(self.generate_tags_btn)
 
         # Чекбокс удаления оригиналов
         self.delete_original_cb = QCheckBox("Удалить оригиналы")
@@ -197,6 +216,7 @@ class MetadataPage(QWidget):
     def _on_selection_changed(self):
         self._update_selection_label()
         selected = self.file_list.selectedItems()
+       
         if not selected:
             return
 
@@ -212,17 +232,15 @@ class MetadataPage(QWidget):
         QApplication.processEvents()
 
     def _refresh_templates(self):
-        
         """Обновляет список шаблонов в выпадающем списке."""
         templates = TemplateManager.list_templates()
-        
         self.template_combo.clear()
         if templates:
             self.template_combo.addItems(sorted(templates))
         else:
             self.template_combo.addItem("Нет шаблонов")
         
-        # Восстанавливаем последний выбранный шаблон (если он есть в списке)
+        # Восстанавливаем последний выбранный шаблон
         if hasattr(self, '_last_template') and self._last_template:
             index = self.template_combo.findText(self._last_template)
             if index >= 0:
@@ -251,6 +269,7 @@ class MetadataPage(QWidget):
             self.log(f"Ошибка загрузки шаблона: {e}")
 
     def _save_as_template(self):
+        self.templates_updated.emit()
         """Сохраняет текущие поля как шаблон."""
         from PySide6.QtWidgets import QInputDialog
 
@@ -418,3 +437,31 @@ class MetadataPage(QWidget):
         self._update_selection_label()
         self.folder_field.setText(str(Path(paths[0]).parent))
         self.log(f"Загружено файлов: {len(paths)}")
+    def _update_generate_button(self):
+        """Обновляет состояние кнопки 'Сделать теги'."""
+        self.generate_tags_btn.setEnabled(
+            bool(self.keywords_field.toPlainText().strip())
+        )
+
+    def _generate_tags(self):
+        """Генерирует теги в формате 'русский;translit'."""
+        text = self.keywords_field.toPlainText().strip()
+        if not text:
+            self.log_message.emit("Нет текста для генерации тегов")
+            return
+        
+        lines = [line.strip() for line in text.split('\n') if line.strip()]
+        if not lines:
+            self.log_message.emit("Нет строк для генерации")
+            return
+        
+        from core.tag_generator import TagGenerator
+        tags = TagGenerator.generate_seo_tags(lines)
+        
+        # Сохраняем позицию курсора
+        cursor = self.keywords_field.textCursor()
+        self.keywords_field.setPlainText('\n'.join(tags))
+        self.keywords_field.setTextCursor(cursor)
+        
+        self.log_message.emit(f"Сгенерировано тегов: {len(tags)}")
+

@@ -161,6 +161,7 @@ class TemplatesPage(QWidget):
         except TemplateError as e:
             self.log(f"Ошибка сохранения: {e}")
 
+
     def _create_template(self):
         """Создаёт новый шаблон (очищает поля)."""
         self.template_name_field.clear()

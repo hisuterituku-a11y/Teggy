@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QIcon
-
+from PySide6.QtCore import Qt 
 
 class PrimaryButton(QPushButton):
     """Главная кнопка действия."""
@@ -43,3 +43,4 @@ class IconButton(QPushButton):
         self.setIconSize(QSize(24, 24))
         self.setToolTip(tooltip)
         self.setProperty("class", "IconButton")
+        self.setFocusPolicy(Qt.NoFocus)

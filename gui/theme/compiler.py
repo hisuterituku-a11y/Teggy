@@ -18,6 +18,8 @@ class QSSCompiler:
         # Собираем все переменные в один словарь
         variables = cls._flatten_variables(theme_data)
 
+       
+
         # Заменяем @variable на значение (рекурсивно, до 10 проходов)
         qss = qss_raw
         for _ in range(10):

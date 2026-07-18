@@ -53,6 +53,11 @@ class Header(QWidget):
         
         for theme_name in sorted(themes):
             action = self.theme_menu.addAction(theme_name.capitalize())
+            
             action.triggered.connect(
-                lambda checked, name=theme_name: self.theme_requested.emit(name)
+                lambda checked, name=theme_name: self._emit_theme(name)
             )
+
+    def _emit_theme(self, theme_name: str):
+        """Отправляет сигнал с именем темы."""
+        self.theme_requested.emit(theme_name)

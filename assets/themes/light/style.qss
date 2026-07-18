@@ -1,33 +1,112 @@
-/* Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ СЃС‚РёР»СЊ РґР»СЏ РІСЃРµС… РєРЅРѕРїРѕРє */
-QPushButton {
-    border-radius: 8px;
-}
-
-/* Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ СЃС‚РёР»СЊ РґР»СЏ РІСЃРµС… РїРѕР»РµР№ РІРІРѕРґР° */
-QLineEdit, QTextEdit {
-    border-radius: 8px;
-    padding: 6px 10px;
-    background: @colors_bg;
-    color: @colors_text;
-    border: 1px solid @colors_border;
-}
-
-QLineEdit:focus, QTextEdit:focus {
-    border-color: @colors_accent;
-}
-
-QLineEdit:disabled, QTextEdit:disabled {
-    color: @colors_text_secondary;
-}
-
+/* Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ СЃС‚РёР»СЊ */
 QWidget {
     background: @colors_bg;
     color: @colors_text;
 }
 
-.Card {
+
+/* Скроллбары */
+QScrollBar:vertical {
+    background: @colors_bg;
+    width: 10px;
+    border-radius: 5px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: @colors_border;
+    border-radius: 5px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: @colors_accent;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+    background: transparent;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: transparent;
+}
+
+QScrollBar:horizontal {
+    background: @colors_bg;
+    height: 10px;
+    border-radius: 5px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: @colors_border;
+    border-radius: 5px;
+    min-width: 20px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: @colors_accent;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0px;
+    background: transparent;
+}
+
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background: transparent;
+}
+
+/* РљР°СЂС‚РѕС‡РєРё */
+QFrame[class="Card"] {
     background: @colors_card;
-    border-radius: @radius_md px;
+    border-radius: 10px;
+}
+
+QFrame[class="CardHeader"] {
+    background: @colors_card;
+    color: @colors_text;
+    font-weight: bold;
+    border-bottom: 1px solid @colors_border;
+    padding: @spacing_sm px @spacing_md px;
+    border-radius: 10px 10px 0 0;
+}
+
+QFrame[class="CardHeader"]:hover,
+QFrame[class="CardHeader"]:focus,
+QFrame[class="CardHeader"]:selected,
+QFrame[class="CardHeader"]:pressed {
+    background: @colors_card;
+    border: none;
+    outline: none;
+}
+
+QFrame[class="CardBody"] {
+    background: transparent;
+    padding: @spacing_md px;
+    border-radius: 0 0 10px 10px;
+}
+
+QLabel[class="CardHeaderLabel"] {
+    background: transparent;
+    color: @colors_text;
+}
+
+QLabel[class="CardHeaderLabel"]:hover,
+QLabel[class="CardHeaderLabel"]:focus,
+QLabel[class="CardHeaderLabel"]:selected {
+    background: transparent;
+    color: @colors_text;
+}
+
+/* РљРЅРѕРїРєРё */
+QPushButton {
+    border-radius: 8px;
 }
 
 QPushButton[class="PrimaryButton"] {
@@ -90,6 +169,23 @@ QPushButton[class="IconButton"]:pressed {
     background: @colors_border;
 }
 
+/* РџРѕР»СЏ РІРІРѕРґР° */
+QLineEdit, QTextEdit {
+    border-radius: 8px;
+    padding: 6px 10px;
+    background: @colors_bg;
+    color: @colors_text;
+    border: 1px solid @colors_border;
+}
+
+QLineEdit:focus, QTextEdit:focus {
+    border-color: @colors_accent;
+}
+
+QLineEdit:disabled, QTextEdit:disabled {
+    color: @colors_text_secondary;
+}
+
 .TextField {
     background: @colors_bg;
     color: @colors_text;
@@ -118,26 +214,135 @@ QPushButton[class="IconButton"]:pressed {
     border-color: @colors_accent;
 }
 
-.FileList {
+/* ComboBox */
+QComboBox {
     background: @colors_bg;
     color: @colors_text;
     border: 1px solid @colors_border;
     border-radius: 8px;
+    padding: 6px 10px;
+    min-height: 20px;
 }
 
-.FileList::item {
-    padding: @spacing_sm px @spacing_md px;
+QComboBox:hover {
+    border-color: @colors_accent;
 }
 
-.FileList::item:selected {
-    background: @colors_accent;
+QComboBox:focus {
+    border-color: @colors_accent;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+
+QComboBox::down-arrow {
+    image: url(assets/icons/chevron-down.svg);
+    width: 12px;
+    height: 12px;
+}
+
+QComboBox:on {
+    border-color: @colors_accent;
+}
+
+QComboBox:disabled {
+    color: @colors_text_secondary;
+    border-color: @colors_border;
+}
+
+QComboBox QAbstractItemView {
+    background: @colors_card;
     color: @colors_text;
+    border: 1px solid @colors_border;
+    border-radius: 8px;
+    padding: 4px;
 }
 
-.FileList::item:hover:!selected {
+QComboBox QAbstractItemView::item {
+    padding: 6px 10px;
+    border-radius: 4px;
+}
+
+QComboBox QAbstractItemView::item:hover {
     background: @colors_hover;
 }
 
+QComboBox QAbstractItemView::item:selected {
+    background: @colors_selection;
+    color: @colors_text;
+    border-left: 3px solid @colors_accent;
+}
+
+/* РЎРїРёСЃРѕРє С„Р°Р№Р»РѕРІ */
+QListWidget[class="FileList"] {
+    background: @colors_bg;
+    color: @colors_text;
+    border: 1px solid @colors_border;
+    border-radius: 8px;
+    outline: none;
+    show-decoration-selected: 0;
+    selection-background-color: transparent;
+    selection-color: @colors_text;
+}
+
+QListWidget[class="FileList"]::item {
+    padding: @spacing_sm px @spacing_md px;
+    border-left: 3px solid transparent;
+    background: transparent;
+}
+
+QListWidget[class="FileList"]::item:hover {
+    background: @colors_hover;
+}
+
+QListWidget[class="FileList"]::item:selected {
+    background: transparent;
+    border-left: 3px solid @colors_accent;
+    color: @colors_text;
+}
+
+QListWidget[class="FileList"]::item:selected:hover {
+    background: transparent;
+}
+
+/* Р§РµРєР±РѕРєСЃ */
+QCheckBox {
+    color: @colors_text;
+    spacing: 8px;
+}
+
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid @colors_border;
+    background: @colors_bg;
+}
+
+QCheckBox::indicator:hover {
+    border-color: @colors_accent;
+}
+
+QCheckBox::indicator:checked {
+    background: @colors_accent;
+    border-color: @colors_accent;
+}
+
+QCheckBox::indicator:checked:hover {
+    background: @colors_accent_hover;
+}
+
+QCheckBox::indicator:disabled {
+    opacity: 0.5;
+}
+
+QCheckBox:disabled {
+    color: @colors_text_secondary;
+}
+
+/* РџСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂ */
 QProgressBar {
     background: @colors_surface;
     border: none;
@@ -150,6 +355,7 @@ QProgressBar::chunk {
     border-radius: 8px;
 }
 
+/* Р›РѕРі */
 .LogWidget {
     background: @colors_bg;
     color: @colors_text_secondary;
@@ -159,6 +365,7 @@ QProgressBar::chunk {
     font-size: 11px;
 }
 
+/* Header */
 .Header {
     background: @colors_card;
     border-bottom: 1px solid @colors_border;
@@ -181,6 +388,7 @@ QProgressBar::chunk {
     background: @colors_hover;
 }
 
+/* Sidebar */
 .Sidebar {
     background: @colors_card;
     border-right: 1px solid @colors_border;
@@ -201,6 +409,7 @@ QProgressBar::chunk {
     background: @colors_accent;
 }
 
+/* Inspector */
 .Inspector {
     background: @colors_card;
     border-left: 1px solid @colors_border;
@@ -234,6 +443,7 @@ QProgressBar::chunk {
     font-style: italic;
 }
 
+/* BottomLog */
 .BottomLog {
     background: @colors_bg;
     border-top: 1px solid @colors_border;

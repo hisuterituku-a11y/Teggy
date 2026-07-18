@@ -7,6 +7,7 @@ from gui.theme.manager import ThemeManager
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyle("Fusion")
     
     # Создаём менеджер тем один раз
     theme_manager = ThemeManager(Path("assets/themes"))
@@ -17,6 +18,8 @@ if __name__ == "__main__":
     theme = theme_manager.load(last_theme)
     app.setStyleSheet(theme.qss)
     
+    
     window = MainWindow(theme_manager)
     window.show()
     sys.exit(app.exec())
+   

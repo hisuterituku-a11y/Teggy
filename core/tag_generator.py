@@ -137,3 +137,30 @@ class TagGenerator:
 
         # Иначе — генерируем теги из услуг
         return TagGenerator.generate_tags(lines)
+    @staticmethod
+    def generate_seo_tags(lines: List[str]) -> List[str]:
+        """
+        Преобразует список строк в SEO-теги.
+        
+        Если строка уже содержит ';', она не изменяется.
+        Иначе добавляется транслит через ';'.
+        
+        Args:
+            lines: Список строк (услуги или уже готовые теги)
+            
+        Returns:
+            List[str]: Список тегов в формате "оригинал;транслит"
+        """
+        result = []
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            if ';' in line:
+                result.append(line)
+            else:
+                translit = TagGenerator.translit(line)
+                result.append(f"{line};{translit}")
+        
+        return result
