@@ -31,6 +31,7 @@
                    "success":  "#10B981",
                    "hover":  "#E5E7EB",
                    "card":  "#FFFFFF",
+                   "icon": "#222222",
                    "warning":  "#F59E0B",
                    "bg":  "#F5F5F5"
                }

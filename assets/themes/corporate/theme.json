@@ -14,7 +14,8 @@
                    "success":  "#2ECC71",
                    "warning":  "#F4B400",
                    "error":  "#E74C3C",
-                   "selection":  "#F73A0033"
+                   "selection":  "#F73A0033",
+                   "icon": "#FDFEFF"
                },
     "spacing":  {
                     "xs":  4,

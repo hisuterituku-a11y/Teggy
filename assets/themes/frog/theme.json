@@ -13,7 +13,8 @@
                    "success":  "#10B981",
                    "warning":  "#F59E0B",
                    "error":  "#EF4444",
-                   "selection":  "#65A30D33"
+                   "selection":  "#65A30D33",
+                   "icon": "#14532D"
                },
     "spacing":  {
                     "xs":  4,

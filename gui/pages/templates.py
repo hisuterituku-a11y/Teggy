@@ -5,6 +5,7 @@
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from pathlib import Path
+from gui.theme.manager import ThemeManager
 
 from gui.widgets import ClippableEntry, ClippableTextbox
 from core.template_manager import TemplateManager
@@ -81,8 +82,8 @@ class TemplatesPage(ctk.CTkFrame):
             btn_row,
             text="🗑 Удалить",
             width=80,
-            fg_color="red",
-            hover_color="darkred",
+            fg_color=colors["error"],
+            hover_color=colors["error"],
             command=self._delete_template
         ).pack(side="left", padx=2)
 

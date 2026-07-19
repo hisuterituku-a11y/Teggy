@@ -99,12 +99,24 @@ class MainWindow(QMainWindow):
             return
 
         theme = self.theme_manager.load(theme_name)
+
         app = QApplication.instance()
         app.setStyleSheet("")
         app.processEvents()
         app.setStyleSheet(theme.qss)
 
         Settings.save_theme(theme_name)
+
+        # Перекрашиваем SVG-иконки
+        from gui.widgets.buttons import IconButton
+
+        icon_color = theme.colors.get(
+            "icon",
+            theme.colors.get("text", "#FFFFFF")
+        )
+
+        for button in self.findChildren(IconButton):
+            button.set_color(icon_color)
 
     def log_message(self, message: str):
         """Отправляет сообщение в BottomLog."""

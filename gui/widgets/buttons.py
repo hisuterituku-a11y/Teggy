@@ -2,6 +2,8 @@ from PySide6.QtWidgets import QPushButton
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from core.paths import resource_path
+from core.svg_loader import load_svg_icon
+
 
 class PrimaryButton(QPushButton):
     """Главная кнопка действия."""
@@ -36,11 +38,24 @@ class SecondaryButton(QPushButton):
 
 
 class IconButton(QPushButton):
-    """Кнопка с SVG-иконкой."""
-    def __init__(self, icon_path: str, tooltip: str = "", parent=None):
+
+    def __init__(self, icon_path: str, tooltip="", parent=None):
         super().__init__(parent)
-        self.setIcon(QIcon(str(resource_path(icon_path))))
-        self.setIconSize(QSize(24, 24))
-        self.setToolTip(tooltip)
-        self.setProperty("class", "IconButton")
-        self.setFocusPolicy(Qt.NoFocus)
+
+        self._icon_path = icon_path
+        self._color = "#FFFFFF"
+
+        self.reload_icon()
+
+    def set_color(self, color: str):
+        if self._color != color:
+            self._color = color
+            self.reload_icon()
+
+    def reload_icon(self):
+        self.setIcon(
+            load_svg_icon(
+                resource_path(self._icon_path),
+                self._color
+            )
+        )
