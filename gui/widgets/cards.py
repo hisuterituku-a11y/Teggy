@@ -50,7 +50,7 @@ class CardHeader(QFrame):
         self._layout.insertWidget(self._layout.count() - 1, widget)
 
     def mousePressEvent(self, event):
-        print("=== CardHeader clicked ===")
+        
         print(f"Focus widget: {self.window().focusWidget()}")
         super().mousePressEvent(event)
 

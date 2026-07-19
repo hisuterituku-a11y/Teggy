@@ -19,9 +19,7 @@ class YandexDownloaderPage(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        print(
-            f"MAIN THREAD | Python={threading.get_ident()} | Qt={id(QThread.currentThread())}"
-        )
+        
         self.setProperty("class", "YandexDownloaderPage")
         self.service = PhotoImportService()
         self.current_task_id = None
@@ -121,7 +119,7 @@ class YandexDownloaderPage(QWidget):
             self._update_progress,
             Qt.QueuedConnection
         )
-        print("CONNECTED progress_updated -> _update_progress")
+       
 
     def _browse_folder(self):
         from PySide6.QtWidgets import QFileDialog
@@ -140,7 +138,7 @@ class YandexDownloaderPage(QWidget):
             self.log_message.emit("Выберите существующую папку для сохранения")
             return
 
-        max_photos = self.max_spin.value()
+        
         skip_existing = self.skip_existing_cb.isChecked()
 
         self.start_btn.setEnabled(False)
@@ -153,7 +151,6 @@ class YandexDownloaderPage(QWidget):
                 url=url,
                 save_dir=save_dir,
                 source_type=SourceType.YANDEX,
-                max_photos=max_photos,
                 skip_existing=skip_existing,
                 on_progress=self._on_progress,
                 on_log=self.log_message.emit
@@ -163,14 +160,9 @@ class YandexDownloaderPage(QWidget):
             self._reset_ui()
 
     def _on_progress(self, progress: ImportProgress):
-        print(
-            f"EMIT THREAD | Python={threading.get_ident()} | Qt={id(QThread.currentThread())}"
-        )
-        print("ENTER _on_progress")
-        print("BEFORE emit")
-
+        
         self.progress_updated.emit(progress)
-        print("AFTER emit")
+       
         self.progress_bar.setValue(int(progress.percent))
         self.status_label.setText(
             f"Скачано: {progress.downloaded}/{progress.total} | "
@@ -186,10 +178,7 @@ class YandexDownloaderPage(QWidget):
         self.status_label.setText("Готов к работе")
 
     def _update_progress(self, progress: ImportProgress):
-        print("ENTER _update_progress")
-        print(
-            f"UPDATE THREAD | Python={threading.get_ident()} | Qt={id(QThread.currentThread())}"
-        )
+        
         self.progress_bar.setValue(int(progress.percent))
         self.status_label.setText(
             f"Скачано: {progress.downloaded}/{progress.total} | "

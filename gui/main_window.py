@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
             self.bottom_log.log.info(message)
 
     def _switch_page(self, page: str):
-        print(f"Switch to: {page}")  # временно для проверки
+        
         if page == 'metadata':
             self.stack.setCurrentWidget(self.metadata_page)
         elif page == 'templates':

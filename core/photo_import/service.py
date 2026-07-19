@@ -101,7 +101,7 @@ class PhotoImportService:
             self._notify_progress(task, "Парсинг страницы...")
 
             parser = self._get_parser(task.source_url, task.source_type)
-            photos = parser.parse(task.source_url, max_photos=callbacks.get('max_photos', 100))
+            photos = parser.parse(task.source_url)
             parser.close()
 
             if not photos:
@@ -158,7 +158,6 @@ class PhotoImportService:
         url: str,
         save_dir: Path,
         source_type: SourceType = SourceType.AUTO,
-        max_photos: int = 100,
         rename_files: bool = True,
         skip_existing: bool = True,
         on_progress: Optional[Callable[[ImportProgress], None]] = None,
@@ -183,7 +182,6 @@ class PhotoImportService:
             'on_progress': on_progress,
             'on_log': on_log,
             'skip_existing': skip_existing,
-            'max_photos': max_photos,
             'rename_files': rename_files,
         }
 

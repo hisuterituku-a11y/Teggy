@@ -360,7 +360,7 @@ class MetadataPage(QWidget):
         self.thread.log.connect(self.log)
         self.thread.finished.connect(self._on_finished)
         self.thread.error.connect(self._on_error)
-        print("=== METADATA DEBUG ===")
+        
         print(f"Title: {self.title_field.text()}")
         print(f"Subject: {self.subject_field.text()}")
         self.thread.start()

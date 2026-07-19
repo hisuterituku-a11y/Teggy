@@ -104,29 +104,25 @@ class Downloader:
         on_progress: Optional[Callable[[int, int, str], None]] = None,
         skip_existing: bool = True,
     ) -> List[PhotoInfo]:
-        print("=== DOWNLOADER: ENTER ===")
-        print(f"Photos count: {len(photos)}")
-        print(f"Save dir: {save_dir}")
-        print(f"skip_existing: {skip_existing}")
-        print(f"on_progress: {on_progress}")
+        
 
         self._is_cancelled = False
         total = len(photos)
         completed = 0
 
         if not photos:
-            print("=== DOWNLOADER: NO PHOTOS ===")
+            
             return []
 
         try:
             save_dir.mkdir(parents=True, exist_ok=True)
-            print(f"=== DOWNLOADER: DIR CREATED ===")
+            
         except Exception as e:
-            print(f"=== DOWNLOADER: DIR ERROR ===")
+           
             print(e)
             return []
 
-        print("=== DOWNLOADER: BEFORE THREADPOOL ===")
+        
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             futures = {
                 executor.submit(

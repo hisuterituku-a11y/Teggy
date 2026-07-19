@@ -27,10 +27,7 @@ class ImportWorker(QObject):
 
             # 1. Парсим фотографии
             parser = YandexParser()
-            photos = parser.parse(
-                self.task.source_url,
-                max_photos=self.callbacks.get('max_photos', 100)
-            )
+            photos = parser.parse(self.task.source_url)
             parser.close()
 
             if not photos:
@@ -50,9 +47,7 @@ class ImportWorker(QObject):
             def on_download_progress(downloaded, total, filename):
                 self.task.downloaded = downloaded
                 self._notify_progress(f"Скачано {downloaded}/{total}", filename)
-                print("=== WORKER: CALLING DOWNLOADER ===")
-                print(f"Photos count: {len(photos)}")
-                print(f"Save dir: {self.task.save_dir}")
+                
 
             results = self._downloader.download(
                 photos=photos,
@@ -60,7 +55,7 @@ class ImportWorker(QObject):
                 on_progress=on_download_progress,
                 skip_existing=self.callbacks.get('skip_existing', True)
             )
-            print("=== WORKER: RESULTS STATUSES ===")
+          
             for p in results[:5]:
                 print(f"{p.filename}: {p.status}")
             # 3. Обновляем статистику

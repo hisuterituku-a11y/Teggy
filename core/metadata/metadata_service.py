@@ -191,7 +191,7 @@ class MetadataService:
             from datetime import datetime
             now = datetime.now().strftime("%Y:%m:%d %H:%M:%S")
             exif_dict['0th'][piexif.ImageIFD.DateTime] = now.encode('utf-8')
-            print("=== WRITE METADATA DEBUG ===")
+            
             print(f"Title: {metadata.get('title')}")
             print(f"Subject: {metadata.get('subject')}")
             print(f"XPTitle: {exif_dict['0th'].get(piexif.ImageIFD.XPTitle)}")

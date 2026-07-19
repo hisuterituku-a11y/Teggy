@@ -46,7 +46,7 @@ class YandexParser(BaseParser):
         super().__init__(timeout)
         self._source_type = SourceType.YANDEX
 
-    def parse(self, url: str, max_photos: int = 100) -> List[PhotoInfo]:
+    def parse(self, url: str) -> List[PhotoInfo]:
         from playwright.sync_api import sync_playwright
         import time
 
@@ -179,10 +179,6 @@ class YandexParser(BaseParser):
 
                     current_count = len(photo_urls)
                     self._log(f"[{i+1}/500] Найдено фотографий: {current_count}")
-
-                    if current_count >= max_photos:
-                        self._log(f"Достигнут лимит: {max_photos}, останавливаемся")
-                        break
 
                     if current_count == previous_count:
                         stable_count += 1
