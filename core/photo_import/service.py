@@ -101,7 +101,7 @@ class PhotoImportService:
 
             # 1. Парсим фотографии
             parser = self._get_parser(task.source_url, task.source_type)
-            photos = parser.parse(task.source_url)
+            photos = parser.parse(task.source_url, max_photos=callbacks.get('max_photos', 100))
             parser.close()
 
             if not photos:
@@ -117,7 +117,7 @@ class PhotoImportService:
             self._notify_progress(task, f"Скачивание {len(photos)} файлов...")
 
             # 2. Скачиваем фотографии
-            def on_download_progress(downloaded: int, total: int, filename: str):
+            def on_download_progress(downloaded, total, filename):
                 task.downloaded = downloaded
                 self._notify_progress(task, f"Скачано {downloaded}/{total}", filename)
 

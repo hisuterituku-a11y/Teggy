@@ -10,7 +10,7 @@ class BaseParser(ABC):
     """Базовый парсер для всех источников."""
 
     def __init__(self, headless: bool = True, timeout: int = 30000):
-        self.headless = headless
+        
         self.timeout = timeout
         self._is_cancelled = False
         self._source_type: Optional[SourceType] = None
@@ -40,21 +40,13 @@ class BaseParser(ABC):
 # В core/photo_import/providers.py
 
 class YandexParser(BaseParser):
-    """Парсер Яндекс Карт на основе рабочего скрипта."""
+    """Парсер Яндекс Карт."""
 
-    def __init__(self, headless: bool = True, timeout: int = 30000):
-        super().__init__(headless, timeout)
+    def __init__(self, timeout: int = 30000):
+        super().__init__(timeout)
         self._source_type = SourceType.YANDEX
-        self._browser = None
-        self._page = None
-        self._playwright = None
 
     def parse(self, url: str, max_photos: int = 100) -> List[PhotoInfo]:
-        """
-        Парсит фотографии из Яндекс Карт.
-
-        Использует проверенную логику из рабочего скрипта.
-        """
         from playwright.sync_api import sync_playwright
         import time
 
@@ -62,7 +54,6 @@ class YandexParser(BaseParser):
         self._is_cancelled = False
 
         def extract(obj):
-            """Рекурсивно обходит JSON и ищет ссылки на avatars.mds.yandex.net."""
             if self._is_cancelled:
                 return
             if isinstance(obj, dict):
@@ -77,7 +68,6 @@ class YandexParser(BaseParser):
                     photo_urls.add(clean_url)
 
         def handle_response(response):
-            """Обрабатывает ответы страницы."""
             if self._is_cancelled:
                 return
             try:
@@ -101,47 +91,85 @@ class YandexParser(BaseParser):
             with sync_playwright() as p:
                 self._playwright = p
                 self._browser = p.chromium.launch(
-                    headless=self.headless,
+                    headless=False,
                     args=['--disable-blink-features=AutomationControlled']
                 )
                 self._page = self._browser.new_page()
-
-                # Ловим все ответы
                 self._page.on("response", handle_response)
 
-                self._log("Открываем карточку...")
-                self._page.goto(url, wait_until='domcontentloaded')
-                self._page.wait_for_timeout(5000)
+                self._log(f"Открываем страницу: {url}")
 
-                # Открываем раздел Фото
-                try:
-                    self._log("Открываем раздел Фото...")
-                    self._page.get_by_text("Фото").click()
+                if "/gallery/" in url or "photos[business]" in url:
+                    self._page.goto(url, wait_until='domcontentloaded')
                     self._page.wait_for_timeout(3000)
-                except:
-                    self._log("Не удалось открыть вкладку Фото.")
+                else:
+                    self._page.goto(url, wait_until='domcontentloaded')
+                    self._page.wait_for_timeout(5000)
 
-                # Открываем первое фото
+                    try:
+                        self._log("Ищем раздел 'Фото'...")
+                        try:
+                            foto_btn = self._page.get_by_text("Фото", exact=True).first
+                            if foto_btn.count():
+                                foto_btn.click()
+                                self._log("Нажали 'Фото' по тексту")
+                                self._page.wait_for_timeout(3000)
+                        except:
+                            pass
+
+                        if not foto_btn or not foto_btn.count():
+                            try:
+                                foto_btn = self._page.locator(
+                                    '.tabs-menu__item, [class*="tab"], button:has-text("Фото"), a:has-text("Фото")'
+                                ).first
+                                if foto_btn.count():
+                                    foto_btn.click()
+                                    self._log("Нажали 'Фото' по селектору")
+                                    self._page.wait_for_timeout(3000)
+                            except:
+                                pass
+
+                        if not foto_btn or not foto_btn.count():
+                            try:
+                                gallery_link = self._page.locator('a[href*="/gallery/"]').first
+                                if gallery_link.count():
+                                    self._page.goto(gallery_link.get_attribute('href'))
+                                    self._log("Перешли по ссылке /gallery/")
+                                    self._page.wait_for_timeout(3000)
+                            except:
+                                pass
+
+                    except Exception as e:
+                        self._log(f"Не удалось открыть раздел Фото: {e}")
+
+                    if "/gallery/" not in self._page.url:
+                        self._log("Пробуем добавить /gallery/ вручную...")
+                        base_url = url.split('?')[0]
+                        if base_url.endswith('/'):
+                            gallery_url = base_url + 'gallery/'
+                        else:
+                            gallery_url = base_url + '/gallery/'
+                        self._page.goto(gallery_url, wait_until='domcontentloaded')
+                        self._page.wait_for_timeout(3000)
+
                 try:
+                    self._log("Открываем первое фото...")
                     self._page.locator("img").nth(0).click()
                     self._page.wait_for_timeout(2000)
                 except:
-                    pass
+                    self._log("Не удалось открыть первое фото, пробуем дальше")
 
-                self._log("Начинаем прокрутку...")
+                self._log("Начинаем сбор фотографий...")
 
                 previous_count = 0
                 stable_count = 0
 
-                # До 500 итераций (как в рабочем скрипте)
                 for i in range(500):
                     if self._is_cancelled:
                         break
 
-                    # Листаем вниз
                     self._page.mouse.wheel(0, 5000)
 
-                    # Переключаем фото
                     try:
                         self._page.keyboard.press("ArrowRight")
                     except:
@@ -150,10 +178,12 @@ class YandexParser(BaseParser):
                     time.sleep(0.5)
 
                     current_count = len(photo_urls)
-
                     self._log(f"[{i+1}/500] Найдено фотографий: {current_count}")
 
-                    # Если число фотографий перестало расти
+                    if current_count >= max_photos:
+                        self._log(f"Достигнут лимит: {max_photos}, останавливаемся")
+                        break
+
                     if current_count == previous_count:
                         stable_count += 1
                     else:
@@ -161,14 +191,8 @@ class YandexParser(BaseParser):
 
                     previous_count = current_count
 
-                    # Если 30 итераций подряд ничего нового
                     if stable_count >= 30:
                         self._log("Новых фотографий давно нет. Останавливаемся.")
-                        break
-
-                    # Если достигли лимита
-                    if len(photo_urls) >= max_photos:
-                        self._log(f"Достигнут лимит: {max_photos}")
                         break
 
                 self._log(f"Всего найдено: {len(photo_urls)}")
@@ -181,7 +205,6 @@ class YandexParser(BaseParser):
         finally:
             self._close_browser()
 
-        # Возвращаем список PhotoInfo
         return [
             PhotoInfo(
                 url=url,
@@ -193,11 +216,9 @@ class YandexParser(BaseParser):
         ]
 
     def _log(self, message: str) -> None:
-        """Внутреннее логирование."""
         print(f"[YandexParser] {message}")
 
     def _close_browser(self) -> None:
-        """Закрывает браузер."""
         if self._page:
             try:
                 self._page.close()
