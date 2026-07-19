@@ -48,7 +48,7 @@ class Downloader:
 
         # Пропускаем, если уже есть
         if skip_existing and save_path.exists():
-            photo.status = ImportStatus.SKIPPED
+            photo.status = ImportStatus.SKIP
             photo.local_path = save_path
             photo.size = save_path.stat().st_size
             return photo
@@ -104,24 +104,29 @@ class Downloader:
         on_progress: Optional[Callable[[int, int, str], None]] = None,
         skip_existing: bool = True,
     ) -> List[PhotoInfo]:
-        """
-        Скачивает фотографии.
+        print("=== DOWNLOADER: ENTER ===")
+        print(f"Photos count: {len(photos)}")
+        print(f"Save dir: {save_dir}")
+        print(f"skip_existing: {skip_existing}")
+        print(f"on_progress: {on_progress}")
 
-        Args:
-            photos: Список PhotoInfo с URL
-            save_dir: Папка для сохранения
-            on_progress: Callback(скачано, всего, имя_файла)
-            skip_existing: Пропускать существующие файлы
-
-        Returns:
-            List[PhotoInfo]: Обновлённый список с результатами
-        """
         self._is_cancelled = False
         total = len(photos)
         completed = 0
 
-        save_dir.mkdir(parents=True, exist_ok=True)
+        if not photos:
+            print("=== DOWNLOADER: NO PHOTOS ===")
+            return []
 
+        try:
+            save_dir.mkdir(parents=True, exist_ok=True)
+            print(f"=== DOWNLOADER: DIR CREATED ===")
+        except Exception as e:
+            print(f"=== DOWNLOADER: DIR ERROR ===")
+            print(e)
+            return []
+
+        print("=== DOWNLOADER: BEFORE THREADPOOL ===")
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             futures = {
                 executor.submit(

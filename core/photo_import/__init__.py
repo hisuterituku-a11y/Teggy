@@ -5,6 +5,7 @@ from core.photo_import.models import (
     NetworkError, CancelledError, SourceNotSupportedError
 )
 from core.photo_import.service import PhotoImportService
+from .service import PhotoImportService
 from core.photo_import.providers import YandexParser, GoogleParser, TwoGISParser
 
 __all__ = [

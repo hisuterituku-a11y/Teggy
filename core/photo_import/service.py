@@ -3,11 +3,11 @@
 
 GUI работает только с этим классом.
 """
-
+from threading import Event
 from pathlib import Path
 from typing import Optional, Callable, List
 import uuid
-from threading import Thread, Event
+from PySide6.QtCore import QThread, QObject
 from datetime import datetime
 
 from core.photo_import.models import (
@@ -32,11 +32,12 @@ class PhotoImportService:
 
     def __init__(self):
         self._current_task: Optional[ImportTask] = None
-        self._stop_event = Event()
-        self._thread: Optional[Thread] = None
+        self._thread: Optional[QThread] = None
+        self._worker: Optional[ImportWorker] = None
         self._downloader = Downloader(max_workers=5, retries=3)
         self._on_progress: Optional[Callable] = None
         self._on_log: Optional[Callable] = None
+        self._stop_event = False
 
     def _get_parser(self, url: str, source_type: SourceType):
         """Возвращает парсер для указанного источника или автоопределяет."""
@@ -86,7 +87,7 @@ class PhotoImportService:
 
     def _check_cancelled(self) -> None:
         """Проверяет, не отменён ли импорт."""
-        if self._stop_event.is_set():
+        if self._stop_event:
             raise CancelledError("Импорт отменён пользователем")
 
     def _run_import(self, task: ImportTask, callbacks: dict) -> None:
@@ -99,7 +100,6 @@ class PhotoImportService:
             task.status = ImportStatus.PARSING
             self._notify_progress(task, "Парсинг страницы...")
 
-            # 1. Парсим фотографии
             parser = self._get_parser(task.source_url, task.source_type)
             photos = parser.parse(task.source_url, max_photos=callbacks.get('max_photos', 100))
             parser.close()
@@ -116,7 +116,6 @@ class PhotoImportService:
             task.status = ImportStatus.DOWNLOADING
             self._notify_progress(task, f"Скачивание {len(photos)} файлов...")
 
-            # 2. Скачиваем фотографии
             def on_download_progress(downloaded, total, filename):
                 task.downloaded = downloaded
                 self._notify_progress(task, f"Скачано {downloaded}/{total}", filename)
@@ -128,13 +127,12 @@ class PhotoImportService:
                 skip_existing=callbacks.get('skip_existing', True)
             )
 
-            # 3. Обновляем статистику
             task.photos = results
             task.downloaded = sum(1 for p in results if p.status == ImportStatus.SUCCESS)
             task.failed = sum(1 for p in results if p.status == ImportStatus.FAILED)
-            task.skipped = sum(1 for p in results if p.status == ImportStatus.SKIPPED)
+            task.skipped = sum(1 for p in results if p.status == ImportStatus.SKIP)
 
-            if self._stop_event.is_set():
+            if self._stop_event:
                 task.status = ImportStatus.CANCELLED
                 self._log("Импорт отменён")
                 self._notify_progress(task, "Импорт отменён")
@@ -166,17 +164,10 @@ class PhotoImportService:
         on_progress: Optional[Callable[[ImportProgress], None]] = None,
         on_log: Optional[Callable[[str], None]] = None,
     ) -> str:
-        """
-        Запускает импорт фотографий.
-
-        Returns:
-            str: ID задачи
-        """
-        # Проверяем, не запущен ли уже импорт
-        if self._thread and self._thread.is_alive():
+        if self._thread and self._thread.isRunning():
             raise RuntimeError("Импорт уже запущен")
 
-        self._stop_event.clear()
+        self._stop_event = False
 
         task_id = f"import_{uuid.uuid4().hex[:8]}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         task = ImportTask(
@@ -196,14 +187,29 @@ class PhotoImportService:
             'rename_files': rename_files,
         }
 
-        self._thread = Thread(target=self._run_import, args=(task, callbacks), daemon=True)
+        from PySide6.QtCore import QThread
+        from core.photo_import.worker import ImportWorker
+
+        self._thread = QThread()
+        self._worker = ImportWorker(task, callbacks)
+        self._worker.moveToThread(self._thread)
+
+        self._worker.progress.connect(on_progress or self._default_progress)
+        self._worker.log.connect(on_log or self._default_log)
+        self._worker.finished.connect(self._on_worker_finished)
+        self._worker.error.connect(self._on_worker_error)
+
+        # Очистка после завершения потока
+        self._thread.finished.connect(self._cleanup_thread)
+
+        self._thread.started.connect(self._worker.run)
         self._thread.start()
 
         return task_id
 
     def stop_import(self) -> None:
         """Останавливает текущий импорт."""
-        self._stop_event.set()
+        self._stop_event = True
         if self._downloader:
             self._downloader.cancel()
 
@@ -212,3 +218,27 @@ class PhotoImportService:
         if self._current_task and self._current_task.id == task_id:
             return self._current_task
         return None
+
+    def _on_worker_finished(self):
+        """Обработчик завершения работы воркера."""
+        if self._thread and self._thread.isRunning():
+            # Не вызываем wait() здесь — это приведёт к deadlock
+            self._thread.quit()
+            # После quit поток завершится сам, и вызовется thread.finished
+            # Подключаем очистку к thread.finished
+            if not hasattr(self, '_thread_cleanup_connected'):
+                self._thread.finished.connect(self._cleanup_thread)
+                self._thread_cleanup_connected = True
+
+    def _on_worker_error(self, error_message: str):
+        """Обработчик ошибки в воркере."""
+        print(f"Worker error: {error_message}")
+        self._on_worker_finished()
+
+    def _cleanup_thread(self):
+        """Очистка после завершения потока."""
+        if self._thread:
+            self._thread.deleteLater()
+            self._thread = None
+        self._worker = None
+        self._thread_cleanup_connected = False

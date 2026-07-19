@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Qt, Signal
 from gui.widgets.buttons import IconButton
+from core.paths import resource_path
 
 
 class Sidebar(QWidget):
@@ -33,6 +34,11 @@ class Sidebar(QWidget):
         self.templates_btn.setProperty("class", "SidebarButton")
         self.templates_btn.clicked.connect(lambda: self.page_changed.emit('templates'))
         layout.addWidget(self.templates_btn)
+
+        self.yandex_btn = IconButton(str(resource_path("assets/icons/download.svg")), "Импорт")
+        self.yandex_btn.setProperty("class", "SidebarButton")
+        self.yandex_btn.clicked.connect(lambda: self.page_changed.emit('yandex'))
+        layout.addWidget(self.yandex_btn)
 
         self.batch_btn = IconButton("assets/icons/layers.svg", "Пакетная обработка")
         self.batch_btn.setProperty("class", "SidebarButton")

@@ -65,6 +65,12 @@ class MainWindow(QMainWindow):
 
         body_layout.addWidget(self.stack, stretch=1)
 
+        from gui.pages.yandex_downloader_page import YandexDownloaderPage
+
+        self.yandex_page = YandexDownloaderPage()
+        self.yandex_page.log_message.connect(self.log_message)
+        self.stack.addWidget(self.yandex_page)
+
         # Drag & Drop менеджер
         self.dragdrop = DragDropManager()
         self.dragdrop.folder_dropped.connect(self._on_folder_dropped)
@@ -106,11 +112,14 @@ class MainWindow(QMainWindow):
             self.bottom_log.log.info(message)
 
     def _switch_page(self, page: str):
+        print(f"Switch to: {page}")  # временно для проверки
         if page == 'metadata':
             self.stack.setCurrentWidget(self.metadata_page)
         elif page == 'templates':
-            self.templates_page._refresh_list() 
+            self.templates_page._refresh_list()
             self.stack.setCurrentWidget(self.templates_page)
+        elif page == 'yandex':
+            self.stack.setCurrentWidget(self.yandex_page)
 
     def _on_folder_dropped(self, path: str):
         self.metadata_page.folder_field.setText(path)

@@ -21,6 +21,7 @@ class ImportStatus(Enum):
     SUCCESS = "success"
     FAILED = "failed"
     CANCELLED = "cancelled"
+    SKIP = "skip"
 
 
 @dataclass
