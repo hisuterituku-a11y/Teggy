@@ -1,0 +1,44 @@
+QFrame[class="MetadataBrowser"], QFrame[class="MetadataEditor"] {
+    background: transparent;
+}
+
+QFrame[class="MetadataPreview"] {
+    background: #151922;
+    border: 1px solid #292f3d;
+    border-radius: 14px;
+}
+
+QLabel[class="ImagePreview"] {
+    background: #0f1218;
+    border: 1px solid #292f3d;
+    border-radius: 12px;
+    color: #788195;
+    padding: 12px;
+}
+
+QLabel[class="SectionTitle"] {
+    color: #f3f5f8;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+QLabel[class="MutedLabel"] {
+    color: #8992a5;
+}
+
+QFrame[class="MetadataBrowser"] QLineEdit,
+QFrame[class="MetadataBrowser"] QComboBox {
+    min-height: 36px;
+}
+
+QListWidget[class="FileList"]::item {
+    min-height: 62px;
+    margin: 2px 0;
+    padding: 5px;
+    border-radius: 9px;
+}
+
+QListWidget[class="FileList"]::item:selected {
+    background: rgba(99, 102, 241, 0.28);
+    border: 1px solid rgba(129, 140, 248, 0.65);
+}
