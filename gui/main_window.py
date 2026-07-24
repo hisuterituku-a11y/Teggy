@@ -100,6 +100,14 @@ class MainWindow(QMainWindow):
 
         self.metadata_page.file_selected.connect(self.inspector.update_file_info)
         self.metadata_page.templates_updated.connect(self.templates_page._refresh_list)
+        self.templates_page.template_context_changed.connect(
+            self.inspector.update_template_info
+        )
+        self.yandex_page.progress_message.connect(self._update_import_inspector)
+        self.yandex_page.import_finished.connect(self._finish_import_inspector)
+        self.yandex_page.url_input.textChanged.connect(self._refresh_import_inspector)
+        self.yandex_page.folder_input.textChanged.connect(self._refresh_import_inspector)
+        self.yandex_page.skip_existing_cb.toggled.connect(self._refresh_import_inspector)
 
         self.dragdrop = DragDropManager()
         self.dragdrop.folder_dropped.connect(self._on_folder_dropped)
@@ -170,7 +178,33 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentWidget(widget)
         active_page = requested_page if requested_page in self.sidebar._buttons else page
         self.sidebar.set_active_page(active_page)
-        self.inspector.setVisible(page == "metadata")
+        self.inspector.setVisible(page != "home")
+
+        if page == "metadata":
+            self.inspector.set_context("metadata")
+        elif page == "templates":
+            self.inspector.update_template_info(self.templates_page._collect_editor_data())
+        elif page == "yandex":
+            self._refresh_import_inspector()
+
+    def _refresh_import_inspector(self, *_args, status: str | None = None) -> None:
+        self.inspector.update_import_info(
+            {
+                "running": self.yandex_page.import_running,
+                "status": status or self.yandex_page.status_label.text(),
+                "folder": self.yandex_page.folder_input.text(),
+                "url": self.yandex_page.url_input.text(),
+                "skip_existing": self.yandex_page.skip_existing_cb.isChecked(),
+            }
+        )
+
+    def _update_import_inspector(self, status: str) -> None:
+        self._refresh_import_inspector(status=status)
+
+    def _finish_import_inspector(self, success: bool) -> None:
+        self._refresh_import_inspector(
+            status="Импорт завершён" if success else "Импорт завершился с ошибкой"
+        )
 
     def _choose_folder(self) -> None:
         start_dir = Settings.get_last_folder() or str(Path.home())
@@ -184,12 +218,7 @@ class MainWindow(QMainWindow):
 
     def _create_template(self) -> None:
         self._switch_page("templates")
-        for method_name in ("_create_template", "create_template", "_add_template"):
-            method = getattr(self.templates_page, method_name, None)
-            if callable(method):
-                method()
-                return
-        self.log_message("Открыт раздел шаблонов")
+        self.templates_page._create_template()
 
     def _open_metadata_workspace(self) -> None:
         self._switch_page("metadata")
