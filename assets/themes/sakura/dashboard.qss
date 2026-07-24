@@ -1,0 +1,16 @@
+QWidget[class="HomePage"], QScrollArea[class="HomeScroll"], QWidget[class="HomeContent"] { background: @colors_bg; }
+QFrame[class="DashboardCard"], QFrame[class="StatCard"] { background: @colors_card; border: 1px solid @colors_border; border-radius: @radius_lg px; }
+QLabel[class="DashboardEyebrow"] { color: @colors_accent; font-size: 11px; font-weight: 800; }
+QLabel[class="DashboardTitle"] { color: @colors_text; font-size: 28px; font-weight: 800; }
+QLabel[class="DashboardSubtitle"], QLabel[class="ProjectPath"], QLabel[class="StatCaption"] { color: @colors_text_secondary; }
+QLabel[class="DashboardSectionTitle"] { color: @colors_text; font-size: 17px; font-weight: 700; }
+QLabel[class="ProjectName"] { color: @colors_text; font-size: 20px; font-weight: 700; }
+QLabel[class="ProjectMeta"] { color: @colors_text_secondary; font-weight: 600; }
+QLabel[class="StatValue"] { color: @colors_text; font-size: 24px; font-weight: 800; }
+QPushButton[class="DashboardPrimaryButton"] { background: @colors_accent; color: @colors_bg; border: none; border-radius: @radius_md px; padding: 0 20px; font-weight: 800; }
+QPushButton[class="DashboardPrimaryButton"]:hover { background: @colors_accent_hover; }
+QPushButton[class="DashboardPrimaryButton"]:pressed { background: @colors_accent_pressed; }
+QPushButton[class="DashboardPrimaryButton"]:disabled { background: @colors_border; color: @colors_text_secondary; }
+QPushButton[class="QuickAction"] { background: transparent; color: @colors_text; border: 1px solid @colors_border; border-radius: @radius_md px; padding: 0 16px; text-align: left; font-weight: 600; }
+QPushButton[class="QuickAction"]:hover { background: @colors_hover; border-color: @colors_accent; }
+QPushButton[class="QuickAction"]:pressed { background: @colors_selection; }
