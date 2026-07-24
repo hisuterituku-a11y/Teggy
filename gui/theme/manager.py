@@ -1,9 +1,10 @@
 from pathlib import Path
-from typing import Dict, Optional
-from gui.theme.models import Theme
-from gui.theme.loader import ThemeLoader
-from gui.theme.validator import ThemeValidator, ThemeValidationError
+from typing import Dict, List
+
 from gui.theme.compiler import QSSCompiler
+from gui.theme.loader import ThemeLoader
+from gui.theme.models import Theme
+from gui.theme.validator import ThemeValidator
 
 
 class ThemeManager:
@@ -14,22 +15,15 @@ class ThemeManager:
         self._cache: Dict[str, Theme] = {}
 
     def load(self, name: str) -> Theme:
-        """Загружает тему (с кэшированием)."""
+        """Загружает тему с кэшированием."""
         if name in self._cache:
             return self._cache[name]
 
         theme_path = self.themes_dir / name
-
-        # 1. Загружаем JSON
         data = ThemeLoader.load(theme_path)
-
-        # 2. Валидируем
         ThemeValidator.validate(data)
-
-        # 3. Компилируем QSS
         qss = QSSCompiler.compile(theme_path, data)
 
-        # 4. Создаём Theme
         theme = Theme(
             name=name,
             path=theme_path,
@@ -40,14 +34,20 @@ class ThemeManager:
             animation=data.get("animation", {}),
             icons=data.get("icons", {}),
             patterns=data.get("patterns", {}),
-            qss=qss
+            qss=qss,
         )
-
         self._cache[name] = theme
         return theme
+
+    def clear_cache(self) -> None:
+        self._cache.clear()
+
     def list_themes(self) -> List[str]:
         """Возвращает список доступных тем."""
         if not self.themes_dir.exists():
             return []
-        return [d.name for d in self.themes_dir.iterdir() if d.is_dir() and (d / "theme.json").exists()]
-    
+        return [
+            directory.name
+            for directory in self.themes_dir.iterdir()
+            if directory.is_dir() and (directory / "theme.json").exists()
+        ]
