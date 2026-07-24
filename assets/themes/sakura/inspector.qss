@@ -1,0 +1,64 @@
+QWidget[class="Inspector"] {
+    background: @colors_card;
+    border-left: 1px solid @colors_border;
+}
+
+QLabel[class="InspectorEyebrow"] {
+    color: @colors_accent;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+QLabel[class="InspectorTitle"] {
+    color: @colors_text;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+QLabel[class="InspectorSubtitle"] {
+    color: @colors_text;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+QLabel[class="InspectorMuted"],
+QLabel[class="InspectorKey"],
+QLabel[class="InspectorPlaceholder"] {
+    color: @colors_text_secondary;
+}
+
+QLabel[class="InspectorPlaceholder"] {
+    border: 1px dashed @colors_border;
+    border-radius: @radius_md px;
+    padding: 24px 12px;
+}
+
+QFrame[class="InspectorSeparator"] {
+    color: @colors_border;
+    background: @colors_border;
+    max-height: 1px;
+}
+
+QFrame[class="InspectorCard"] {
+    background: @colors_bg;
+    border: 1px solid @colors_border;
+    border-radius: @radius_md px;
+}
+
+QLabel[class="InspectorKey"] {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+QLabel[class="InspectorValue"] {
+    color: @colors_text;
+    font-size: 12px;
+}
+
+QLabel[class="InspectorTags"] {
+    color: @colors_accent;
+    background: @colors_selection;
+    border: 1px solid @colors_border;
+    border-radius: @radius_md px;
+    padding: 10px;
+}
