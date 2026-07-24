@@ -1,4 +1,11 @@
+from __future__ import annotations
+
 from pathlib import Path
+
+from core.yandex.diagnostics import (
+    format_exception_report,
+    save_diagnostic_report,
+)
 
 from PySide6.QtCore import QThread, Signal
 
@@ -6,7 +13,6 @@ from core.yandex.yandex_router import YandexRouter
 
 
 class YandexWorker(QThread):
-
     log = Signal(str)
     progress = Signal(str)
     finished = Signal(bool)
@@ -18,16 +24,16 @@ class YandexWorker(QThread):
         on_log=None,
         on_progress=None,
         on_finished=None,
-        skip_existing=True
+        skip_existing: bool = True,
     ):
         super().__init__()
 
         self.url = url
         self.save_dir = Path(save_dir)
-
         self.skip_existing = skip_existing
-        
-        self._cancel = False
+
+        self._cancel_requested = False
+        self._router: YandexRouter | None = None
 
         if on_log:
             self.log.connect(on_log)
@@ -38,44 +44,72 @@ class YandexWorker(QThread):
         if on_finished:
             self.finished.connect(on_finished)
 
-    # ===========================================
-    # RUN
-    # ===========================================
-
-    def run(self):
+    def run(self) -> None:
+        success = False
 
         try:
-
             router = YandexRouter()
+            self._router = router
 
-            # переопределяем вывод логов
             router.log = self._log
+            router.progress = self._progress
 
-            router.run(
+            if self._cancel_requested:
+                router.cancel()
+
+            success = router.run(
                 self.url,
-                save_dir=self.save_dir
+                save_dir=self.save_dir,
+                skip_existing=self.skip_existing,
             )
 
-            self.finished.emit(True)
+        except Exception as exc:
+            report = format_exception_report(
+                stage="YandexWorker",
+                exc=exc,
+                url=self.url,
+            )
 
-        except Exception as e:
+            for line in report.splitlines():
+                self._log(line)
 
-            self._log(f"Ошибка: {e}")
+            try:
+                diagnostic_dir = save_diagnostic_report(
+                    save_dir=self.save_dir,
+                    stage="YandexWorker",
+                    exc=exc,
+                    url=self.url,
+                    log_lines=report.splitlines(),
+                )
+                self._log(
+                    f"[ERROR] Диагностика сохранена: {diagnostic_dir}"
+                )
+            except Exception as diagnostic_exc:
+                self._log(
+                    "[ERROR] Не удалось сохранить диагностику: "
+                    f"{diagnostic_exc}"
+                )
 
-            self.finished.emit(False)
+            success = False
 
-    # ===========================================
-    # LOG
-    # ===========================================
+        finally:
+            self._router = None
+            self.finished.emit(success)
 
-    def _log(self, text):
+    def _log(self, text: str) -> None:
+        self.log.emit(str(text))
 
-        self.log.emit(text)
+    def _progress(self, text: str) -> None:
+        self.progress.emit(str(text))
 
-    # ===========================================
-    # CANCEL
-    # ===========================================
+    def cancel(self) -> None:
+        self._cancel_requested = True
 
-    def cancel(self):
+        self._log("Запрошена отмена операции...")
 
-        self._cancel = True
+        router = self._router
+
+        if router is not None:
+            router.cancel()
+
+        self.requestInterruption()

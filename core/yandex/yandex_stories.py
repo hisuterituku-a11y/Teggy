@@ -1,270 +1,606 @@
-"""
-Изменения относительно прошлой версии:
+from __future__ import annotations
 
-1. УБРАНО: cards.count() как источник истины / стоп-условие. Живой тест
-   показал, что счётчик вообще не двигался при прокрутке (лента обложек
-   виртуализирована через CSS transform, а не native scroll — обычный
-   page.mouse.wheel() по ней не сработал, курсор не наведён на элемент),
-   плюс, похоже, это счётчик ГРУПП историй, а не отдельных слайдов.
-   Из-за этого сбор останавливался почти сразу на 10-15 вместо ожидаемых
-   80-100. cards.count() оставлен только как диагностическая подсказка
-   в логе, никогда не используется для решения "хватит/не хватит".
-
-2. ДОБАВЛЕНО: дедупликация по хешу фото, а не по полному URL. Яндекс
-   отдаёт один и тот же слайд в двух вариантах (/orig и /1080x1920) —
-   раньше оба считались как 2 разных найденных фото. Теперь ключом
-   является часть URL до суффикса размера, а из двух вариантов
-   сохраняется /orig (оригинальное качество).
-
-3. Тайм-аут и порог тишины больше НЕ завязаны на предполагаемое целевое
-   число (оно теперь не используется вообще) — единый щедрый лимит по
-   времени + патиентное молчание с несколькими попытками nudge, без
-   привязки к ненадёжному счётчику.
-"""
-
-from pathlib import Path
-from typing import List, Callable
+import re
 import time
-import requests
+from pathlib import Path
+from typing import Callable
 
-from playwright.sync_api import sync_playwright
+import requests
+from playwright.sync_api import Browser, Page, sync_playwright
+
+
+LogCallback = Callable[[str], None]
 
 
 class YandexStoriesDownloader:
+    """Сборщик изображений из Stories организации Яндекс Карт."""
 
-    def __init__(self, headless: bool = True, timeout: int = 30):
+    def __init__(
+        self,
+        headless: bool = True,
+        timeout: int = 30,
+    ):
         self.headless = headless
         self.timeout = timeout
+
         self._cancelled = False
+        self._browser: Browser | None = None
 
-    def _log(self, text, callback=None):
-        print("[Stories]", text)
-        if callback:
-            callback(text)
-
-    # ==================================================
-    # Ключ дедупликации: URL без суффикса размера (/orig, /1080x1920, ...)
-    # ==================================================
+    def _log(
+        self,
+        text: str,
+        on_log: LogCallback | None = None,
+    ) -> None:
+        if on_log:
+            on_log(text)
+        else:
+            print(f"[Stories] {text}")
 
     @staticmethod
     def _story_key(url: str) -> str:
-        if url.endswith("/orig"):
-            return url[: -len("/orig")]
-        # /1080x1920, /720x1280 и т.п. — обрезаем последний сегмент пути
-        parts = url.rsplit("/", 1)
-        if len(parts) == 2 and "x" in parts[1] and parts[1][0].isdigit():
+        clean_url = url.split("?", 1)[0]
+
+        if clean_url.endswith("/orig"):
+            return clean_url[:-len("/orig")]
+
+        parts = clean_url.rsplit("/", 1)
+
+        if (
+            len(parts) == 2
+            and re.fullmatch(r"\d+x\d+", parts[1])
+        ):
             return parts[0]
-        return url
 
-    # ==================================================
-    # Попытка "подтолкнуть" воспроизведение при застревании
-    # ==================================================
+        return clean_url
 
-    def _nudge(self, page, on_log=None) -> None:
+    @staticmethod
+    def _is_story_image(url: str) -> bool:
+        clean_url = url.split("?", 1)[0]
+
+        if "get-maps_stories" not in clean_url:
+            return False
+
+        last_segment = clean_url.rsplit("/", 1)[-1]
+
+        return (
+            last_segment == "orig"
+            or bool(re.fullmatch(r"\d+x\d+", last_segment))
+        )
+
+    @staticmethod
+    def _carousel_state(page: Page) -> tuple[str, ...]:
+        """Возвращает состояние видимых обложек Stories слева направо."""
+        try:
+            items = page.evaluate(
+                """
+                () => {
+                    const carousel = document.querySelector(
+                        ".business-stories-view__carousel"
+                    );
+
+                    if (!carousel) return [];
+
+                    const cr = carousel.getBoundingClientRect();
+
+                    return [...document.querySelectorAll(".story-cover-preview")]
+                        .map((el) => {
+                            const r = el.getBoundingClientRect();
+
+                            const visible = (
+                                r.width > 0 &&
+                                r.height > 0 &&
+                                r.right > cr.left &&
+                                r.left < cr.right
+                            );
+
+                            if (!visible) return null;
+
+                            const inner = el.querySelector(
+                                ".story-cover-preview__inner"
+                            );
+
+                            const background = inner
+                                ? getComputedStyle(inner).backgroundImage
+                                : "";
+
+                            const img = el.querySelector("img");
+                            const src = img
+                                ? (
+                                    img.currentSrc ||
+                                    img.src ||
+                                    img.getAttribute("src") ||
+                                    ""
+                                )
+                                : "";
+
+                            return {
+                                x: r.x,
+                                key: background || src || el.outerHTML.slice(0, 500)
+                            };
+                        })
+                        .filter(Boolean)
+                        .sort((a, b) => a.x - b.x)
+                        .map((item) => item.key);
+                }
+                """
+            )
+
+            return tuple(str(item) for item in items)
+
+        except Exception:
+            return ()
+
+    @staticmethod
+    def _carousel_arrow(
+        page: Page,
+        direction: str,
+    ):
+        side = "_next" if direction == "next" else "_prev"
+
+        return page.locator(
+            ".business-stories-view__carousel "
+            f".carousel__arrow-wrapper.{side} "
+            ".carousel__arrow"
+        ).first
+
+    def _click_carousel_arrow(
+        self,
+        page: Page,
+        direction: str,
+    ) -> bool:
+        """Нажимает точную стрелку ленты и ждёт изменения обложек."""
+        try:
+            arrow = self._carousel_arrow(page, direction)
+
+            if arrow.count() == 0 or not arrow.is_visible():
+                return False
+
+            before = self._carousel_state(page)
+
+            arrow.click(
+                force=True,
+                timeout=3000,
+            )
+
+            for _ in range(20):
+                page.wait_for_timeout(100)
+                after = self._carousel_state(page)
+
+                if after and after != before:
+                    return True
+
+            return False
+
+        except Exception:
+            return False
+
+    def _preload_story_covers(
+        self,
+        page: Page,
+        on_log: LogCallback | None = None,
+        max_steps: int = 50,
+    ) -> None:
+        """Пролистывает ленту обложек до конца и возвращает в начало."""
+        self._log(
+            "Пролистываем ленту обложек до конца",
+            on_log,
+        )
+
+        right_steps = 0
+
+        while (
+            not self._cancelled
+            and right_steps < max_steps
+            and self._click_carousel_arrow(page, "next")
+        ):
+            right_steps += 1
+
+            self._log(
+                f"Лента вправо: шаг {right_steps}",
+                on_log,
+            )
+
+            page.wait_for_timeout(250)
+
+        self._log(
+            "Возвращаем ленту в начало",
+            on_log,
+        )
+
+        left_steps = 0
+
+        while (
+            not self._cancelled
+            and left_steps < max_steps
+            and self._click_carousel_arrow(page, "prev")
+        ):
+            left_steps += 1
+            page.wait_for_timeout(250)
+
+    def _nudge(
+        self,
+        page: Page,
+        on_log: LogCallback | None = None,
+    ) -> bool:
         try:
             page.keyboard.press("ArrowRight")
-            self._log("Nudge: ArrowRight", on_log)
-            return
+
+            self._log(
+                "Переключаем Stories клавишей вправо",
+                on_log,
+            )
+            return True
+
         except Exception:
             pass
 
-        try:
-            next_btn = page.locator(".story-screen-view__next").first
-            if next_btn.count():
-                next_btn.click(force=True, timeout=1000)
-                self._log("Nudge: click(force=True) по next", on_log)
-        except Exception as e:
-            self._log(f"Nudge не удался: {e}", on_log)
+        selectors = (
+            ".story-screen-view__next",
+            "[aria-label='Следующая история']",
+            "[aria-label='Next story']",
+        )
 
-    # ==================================================
-    # COLLECT
-    # ==================================================
+        for selector in selectors:
+            try:
+                button = page.locator(selector).first
+
+                if button.count() > 0:
+                    button.click(
+                        force=True,
+                        timeout=1500,
+                    )
+
+                    self._log(
+                        "Переключаем Stories кнопкой Далее",
+                        on_log,
+                    )
+                    return True
+
+            except Exception:
+                continue
+
+        self._log(
+            "Не удалось переключить Stories",
+            on_log,
+        )
+        return False
 
     def collect(
         self,
         url: str,
-        on_log: Callable = None,
-        max_wait_seconds: float = 480.0,   # 8 минут — щедрый предохранитель
-        stall_threshold: int = 10,         # секунд тишины до nudge
+        on_log: LogCallback | None = None,
+        max_wait_seconds: float = 480.0,
+        stall_threshold: float = 10.0,
         max_nudges: int = 12,
-        # секунд тишины ПОСЛЕ последнего nudge без роста — считаем концом
-        final_stall_after_nudge: int = 15,
-    ) -> List[str]:
+        final_stall_after_nudge: float = 15.0,
+    ) -> list[str]:
+        self._cancelled = False
 
-        # ключ (без суффикса размера) -> лучший найденный URL для него
-        story_registry: dict = {}
-        # сохраняем порядок первого обнаружения — для стабильной нумерации
-        story_order: List[str] = []
+        story_registry: dict[str, str] = {}
+        story_order: list[str] = []
 
-        def add_url(img_url: str) -> None:
-            key = self._story_key(img_url)
+        browser: Browser | None = None
 
-            is_new_key = key not in story_registry
+        def add_url(image_url: str) -> None:
+            if not self._is_story_image(image_url):
+                return
 
-            # /orig всегда предпочтительнее /1080x1920 и т.п.
+            clean_url = image_url.split("?", 1)[0]
+            key = self._story_key(clean_url)
+
             current = story_registry.get(key)
-            if current is None or (img_url.endswith("/orig") and not current.endswith("/orig")):
-                story_registry[key] = img_url
 
-            if is_new_key:
+            if current is None:
                 story_order.append(key)
-                self._log(f"Найдена оригинальная story: {len(story_registry)}", on_log)
+                story_registry[key] = clean_url
 
-        with sync_playwright() as p:
+                self._log(
+                    f"Stories найдено: {len(story_order)}",
+                    on_log,
+                )
+                return
 
-            self._log("Открываем Яндекс Карты", on_log)
+            if (
+                clean_url.endswith("/orig")
+                and not current.endswith("/orig")
+            ):
+                story_registry[key] = clean_url
 
-            browser = p.chromium.launch(headless=self.headless)
+        try:
+            with sync_playwright() as playwright:
+                self._log(
+                    "Открываем Яндекс Карты для сбора Stories",
+                    on_log,
+                )
 
-            context = browser.new_context(
-                viewport={"width": 1400, "height": 900},
-                user_agent="Mozilla/5.0 Windows NT 10.0 Chrome/120",
-            )
+                browser = playwright.chromium.launch(
+                    headless=self.headless,
+                )
+                self._browser = browser
 
-            page = context.new_page()
+                context = browser.new_context(
+                    viewport={
+                        "width": 1400,
+                        "height": 900,
+                    },
+                    user_agent=(
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 "
+                        "(KHTML, like Gecko) "
+                        "Chrome/120 Safari/537.36"
+                    ),
+                )
 
-            def response_handler(response):
+                page = context.new_page()
+
+                def response_handler(response) -> None:
+                    if self._cancelled:
+                        return
+
+                    try:
+                        add_url(response.url)
+                    except Exception:
+                        return
+
+                page.on("response", response_handler)
+
+                page.goto(
+                    url,
+                    wait_until="domcontentloaded",
+                    timeout=self.timeout * 1000,
+                )
+
+                page.wait_for_timeout(5000)
+
                 if self._cancelled:
-                    return
+                    self._log(
+                        "Сбор Stories отменён",
+                        on_log,
+                    )
+                    return []
+
+                self._preload_story_covers(
+                    page,
+                    on_log,
+                )
+
+                if self._cancelled:
+                    self._log(
+                        "Сбор Stories отменён",
+                        on_log,
+                    )
+                    return []
+
+                cards = page.locator(
+                    ".story-cover-preview",
+                )
+                cards_count = cards.count()
+
+                self._log(
+                    f"Карточек Stories в DOM: {cards_count}",
+                    on_log,
+                )
+
+                if cards_count == 0:
+                    self._log(
+                        "Stories у организации не найдены",
+                        on_log,
+                    )
+                    return []
+
                 try:
-                    response_url = response.url
-                    if "get-maps_stories" not in response_url:
-                        return
-                    if not ("/orig" in response_url or "1080x" in response_url):
-                        return
-                    add_url(response_url)
-                except Exception:
-                    pass
+                    cards.first.click(
+                        force=True,
+                        timeout=5000,
+                    )
 
-            page.on("response", response_handler)
-
-            page.goto(url, wait_until="domcontentloaded", timeout=self.timeout * 1000)
-            page.wait_for_timeout(5000)
-            self._log("Страница открыта", on_log)
-
-            cards = page.locator(".story-cover-preview")
-            cards_count = cards.count()
-            # ИЗМЕНЕНО: это ТОЛЬКО диагностика, больше нигде не используется
-            self._log(
-                f"Карточек Stories в DOM (справочно, НЕ используется "
-                f"как цель — этот счётчик оказался ненадёжным): {cards_count}",
-                on_log,
-            )
-
-            if cards_count == 0:
-                browser.close()
-                return []
-
-            try:
-                cards.first.click(force=True)
-                self._log("Stories viewer открыт", on_log)
-            except Exception as e:
-                self._log(f"Ошибка открытия viewer: {e}", on_log)
-                browser.close()
-                return []
-
-            self._log("Ждём загрузку оригиналов...", on_log)
-
-            phase_started = time.time()
-            last_count = -1
-            stable_seconds = 0
-            nudges_done = 0
-            seconds_since_last_nudge = 0
-            nudge_active = False
-
-            while True:
-                if self._cancelled:
-                    break
-
-                elapsed = time.time() - phase_started
-                if elapsed > max_wait_seconds:
                     self._log(
-                        f"Достигнут общий тайм-аут ({max_wait_seconds:.0f}с), "
-                        f"собрано {len(story_registry)}",
+                        "Просмотрщик Stories открыт",
                         on_log,
                     )
-                    break
 
-                page.wait_for_timeout(1000)
-                current = len(story_registry)
-
-                if current == last_count:
-                    stable_seconds += 1
-                    if nudge_active:
-                        seconds_since_last_nudge += 1
-                else:
-                    stable_seconds = 0
-                    seconds_since_last_nudge = 0
-                    nudge_active = False
-                last_count = current
-
-                self._log(f"Получено оригиналов: {current}", on_log)
-
-                # реальный конец: тишина уже ПОСЛЕ nudge-попытки, и
-                # достаточно долго после неё
-                if nudge_active and seconds_since_last_nudge >= final_stall_after_nudge:
+                except Exception as exc:
                     self._log(
-                        f"Тишина {final_stall_after_nudge}с после последнего nudge — "
-                        f"считаем, что Stories закончились ({current})",
+                        f"Не удалось открыть Stories: {exc}",
                         on_log,
                     )
-                    break
+                    return []
 
-                # застряли, ещё не пробовали толкнуть — пробуем
-                if stable_seconds >= stall_threshold and not nudge_active:
-                    if nudges_done < max_nudges:
-                        self._nudge(page, on_log)
-                        nudges_done += 1
-                        nudge_active = True
-                        seconds_since_last_nudge = 0
-                    else:
+                started_at = time.monotonic()
+                last_growth_at = started_at
+                last_count = 0
+
+                nudges_done = 0
+                last_nudge_at: float | None = None
+
+                while not self._cancelled:
+                    now = time.monotonic()
+
+                    if now - started_at >= max_wait_seconds:
                         self._log(
-                            f"Исчерпан лимит nudge ({max_nudges}), "
-                            f"собрано {current}",
+                            (
+                                "Достигнут общий тайм-аут Stories: "
+                                f"{max_wait_seconds:.0f} секунд"
+                            ),
                             on_log,
                         )
                         break
 
-            self._log("Загрузка Stories завершена", on_log)
+                    page.wait_for_timeout(1000)
 
-            try:
-                page.keyboard.press("Escape")
-            except Exception:
-                pass
+                    current_count = len(story_order)
 
-            browser.close()
+                    if current_count > last_count:
+                        last_count = current_count
+                        last_growth_at = time.monotonic()
+                        last_nudge_at = None
 
-        result = [story_registry[key] for key in story_order]
+                    silent_for = (
+                        time.monotonic()
+                        - last_growth_at
+                    )
 
-        self._log(f"Stories найдено (уникальных): {len(result)}", on_log)
+                    if silent_for < stall_threshold:
+                        continue
+
+                    can_nudge = (
+                        nudges_done < max_nudges
+                        and (
+                            last_nudge_at is None
+                            or (
+                                time.monotonic()
+                                - last_nudge_at
+                                >= stall_threshold
+                            )
+                        )
+                    )
+
+                    if can_nudge:
+                        self._nudge(
+                            page,
+                            on_log,
+                        )
+
+                        nudges_done += 1
+                        last_nudge_at = time.monotonic()
+                        continue
+
+                    if last_nudge_at is None:
+                        self._log(
+                            "Stories больше не переключаются",
+                            on_log,
+                        )
+                        break
+
+                    after_last_nudge = (
+                        time.monotonic()
+                        - last_nudge_at
+                    )
+
+                    if (
+                        after_last_nudge
+                        >= final_stall_after_nudge
+                    ):
+                        self._log(
+                            (
+                                "Новых Stories больше не появляется — "
+                                "сбор завершён"
+                            ),
+                            on_log,
+                        )
+                        break
+
+                if self._cancelled:
+                    self._log(
+                        "Сбор Stories отменён",
+                        on_log,
+                    )
+
+        finally:
+            self._browser = None
+
+            if browser is not None:
+                try:
+                    browser.close()
+                except Exception:
+                    pass
+
+        result = [
+            story_registry[key]
+            for key in story_order
+            if key in story_registry
+        ]
+
+        self._log(
+            f"Stories найдено всего: {len(result)}",
+            on_log,
+        )
+
         return result
 
-    # ==================================================
-    # DOWNLOAD — без изменений
-    # ==================================================
-
-    def download(self, urls: List[str], folder: Path):
+    def download(
+        self,
+        urls: list[str],
+        folder: Path | str,
+        on_log: LogCallback | None = None,
+        skip_existing: bool = True,
+    ) -> int:
         folder = Path(folder)
-        folder.mkdir(parents=True, exist_ok=True)
+        folder.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        session = requests.Session()
+        total = len(urls)
+
         saved = 0
+        skipped = 0
 
         for index, url in enumerate(urls, start=1):
             if self._cancelled:
+                self._log(
+                    "Скачивание Stories отменено",
+                    on_log,
+                )
                 break
+
+            path = folder / f"story_{index:03}.jpg"
+
+            if (
+                skip_existing
+                and path.exists()
+                and path.stat().st_size > 0
+            ):
+                skipped += 1
+
+                self._log(
+                    f"Stories {index}/{total}: уже существует",
+                    on_log,
+                )
+                continue
+
             try:
-                response = requests.get(
-                    url, timeout=30, headers={"User-Agent": "Mozilla/5.0"}
+                response = session.get(
+                    url,
+                    timeout=30,
+                    headers={
+                        "User-Agent": "Mozilla/5.0",
+                    },
                 )
                 response.raise_for_status()
-                path = folder / f"story_{index:03}.jpg"
-                with open(path, "wb") as f:
-                    f.write(response.content)
+
+                path.write_bytes(response.content)
                 saved += 1
-                print("[Stories] saved", path.name)
-            except Exception as e:
-                print("[Stories] ошибка:", e)
+
+                self._log(
+                    f"Stories скачано: {index}/{total}",
+                    on_log,
+                )
+
+            except Exception as exc:
+                self._log(
+                    f"Ошибка скачивания Stories {index}: {exc}",
+                    on_log,
+                )
+
+        self._log(
+            (
+                f"Stories сохранено: {saved}; "
+                f"пропущено существующих: {skipped}"
+            ),
+            on_log,
+        )
 
         return saved
 
-    def cancel(self):
+    def cancel(self) -> None:
         self._cancelled = True
+
+        browser = self._browser
+
+        if browser is not None:
+            try:
+                browser.close()
+            except Exception:
+                pass

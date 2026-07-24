@@ -1,398 +1,355 @@
-import time
-import random
-import requests
-import json
-from pathlib import Path
+from __future__ import annotations
 
-from playwright.sync_api import sync_playwright
+import json
+import random
+from pathlib import Path
+from typing import Callable
+
+import requests
+from playwright.sync_api import Browser, sync_playwright
+
+
+LogCallback = Callable[[str], None]
 
 
 class YandexReviewDownloader:
+    """Сборщик фотографий из отзывов организации Яндекс Карт."""
 
-    def __init__(self, headless=False):
+    def __init__(self, headless: bool = False, timeout: int = 60):
         self.headless = headless
-        self.photos = set()
+        self.timeout = timeout
 
+        self._cancelled = False
+        self._browser: Browser | None = None
 
-    def log(self, text):
-        print(f"[YandexReviews] {text}")
+    def _log(
+        self,
+        text: str,
+        on_log: LogCallback | None = None,
+    ) -> None:
+        if on_log:
+            on_log(text)
+        else:
+            print(f"[YandexReviews] {text}")
 
+    @staticmethod
+    def _normalize_reviews_url(url: str) -> str:
+        clean_url = url.strip()
 
-    def collect(self, url: str):
+        if not clean_url:
+            raise ValueError("Не указана ссылка на организацию")
 
-        self.photos.clear()
+        if "?" in clean_url:
+            base, params = clean_url.split("?", 1)
+            query = f"?{params}"
+        else:
+            base = clean_url
+            query = ""
 
+        base = (
+            base
+            .split("/gallery", 1)[0]
+            .split("/reviews", 1)[0]
+            .rstrip("/")
+        )
 
-        with sync_playwright() as p:
+        return f"{base}/reviews/{query}"
 
-            self.log("Запуск браузера")
+    @staticmethod
+    def _normalize_photo_url(url: str) -> str | None:
+        if "avatars.mds.yandex.net" not in url:
+            return None
 
+        clean_url = url.split("?", 1)[0]
 
-            browser = p.chromium.launch(
-                headless=self.headless,
-                args=[
-                    "--disable-blink-features=AutomationControlled",
-                    "--start-maximized",
-                ]
-            )
+        blocked_fragments = (
+            "get-vh",
+            "get-maps_stories",
+            "get-yapic",
+            "get-direct",
+            "get-bunker",
+            "get-tycoon",
+        )
 
+        if any(fragment in clean_url for fragment in blocked_fragments):
+            return None
 
-            context = browser.new_context(
-                viewport={
-                    "width": 1920,
-                    "height": 1080
-                },
-                user_agent=(
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 "
-                    "(KHTML, like Gecko) "
-                    "Chrome/120 Safari/537.36"
+        size_suffixes = (
+            "/S",
+            "/M",
+            "/L",
+            "/XL",
+            "/XXL",
+            "/XXXL",
+        )
+
+        for suffix in size_suffixes:
+            if clean_url.endswith(suffix):
+                return clean_url[:-len(suffix)] + "/XXXL"
+
+        return clean_url
+
+    def collect(
+        self,
+        url: str,
+        on_log: LogCallback | None = None,
+    ) -> list[str]:
+        self._cancelled = False
+
+        photos: list[str] = []
+        photo_keys: set[str] = set()
+        browser: Browser | None = None
+
+        reviews_url = self._normalize_reviews_url(url)
+
+        try:
+            with sync_playwright() as playwright:
+                self._log("Запуск браузера", on_log)
+
+                browser = playwright.chromium.launch(
+                    headless=self.headless,
+                    args=[
+                        "--disable-blink-features=AutomationControlled",
+                        "--start-maximized",
+                    ],
                 )
-            )
+                self._browser = browser
 
+                context = browser.new_context(
+                    viewport={
+                        "width": 1920,
+                        "height": 1080,
+                    },
+                    user_agent=(
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 "
+                        "(KHTML, like Gecko) "
+                        "Chrome/120 Safari/537.36"
+                    ),
+                )
 
-            page = context.new_page()
+                page = context.new_page()
 
-
-
-            def handle_response(response):
-
-                try:
-
-                    url = response.url
-
-
-                    if (
-                        "avatars.mds.yandex.net"
-                        not in url
-                    ):
+                def handle_response(response) -> None:
+                    if self._cancelled:
                         return
 
+                    try:
+                        photo_url = self._normalize_photo_url(response.url)
 
-                    url = url.split("?")[0]
-                    # просим максимальное качество Яндекса
-                    sizes = [
-                        "/S",
-                        "/M",
-                        "/L",
-                        "/XL",
-                        "/XXL",
-                        "/XXXL"
-                    ]
+                        if not photo_url:
+                            return
 
-                    for size in sizes:
-                        if url.endswith(size):
-                            url = url[:-len(size)] + "/XXXL"
-                            break
+                        if photo_url in photo_keys:
+                            return
 
+                        photo_keys.add(photo_url)
+                        photos.append(photo_url)
 
-                    # только фото отзывов
-                    bad = [
-                        "get-vh",
-                        "get-maps_stories",
-                        "get-yapic",
-                        "get-direct",
-                        "get-bunker",
-                        "get-tycoon",
-                    ]
-
-
-                    if any(
-                        x in url
-                        for x in bad
-                    ):
-                        return
-
-
-
-                    if url not in self.photos:
-
-                        self.photos.add(url)
-
-                        self.log(
-                            f"Фото найдено: {len(self.photos)}"
+                        self._log(
+                            f"Фото из отзывов найдено: {len(photos)}",
+                            on_log,
                         )
 
+                    except Exception:
+                        return
 
-                except Exception:
-                    pass
+                page.on("response", handle_response)
 
-
-
-            page.on(
-                "response",
-                handle_response
-            )
-
-
-
-            # нормализуем ссылку отзывов
-
-            base = url.split("?")[0].rstrip("/")
-
-            params = ""
-
-            if "?" in url:
-                params = "?" + url.split("?", 1)[1]
-
-
-            if base.endswith("/reviews"):
-
-                reviews_url = (
-                    base
-                    +
-                    "/"
-                    +
-                    params
+                self._log(
+                    f"Открываем отзывы: {reviews_url}",
+                    on_log,
                 )
 
-            else:
-
-                reviews_url = (
-                    base
-                    +
-                    "/reviews/"
-                    +
-                    params
+                page.goto(
+                    reviews_url,
+                    wait_until="domcontentloaded",
+                    timeout=self.timeout * 1000,
                 )
 
+                page.wait_for_timeout(5000)
 
-            self.log(
-                f"Открываем отзывы: {reviews_url}"
-            )
+                if self._cancelled:
+                    self._log("Сбор фото отзывов отменён", on_log)
+                    return photos
 
-
-
-            page.goto(
-                reviews_url,
-                wait_until="domcontentloaded",
-                timeout=60000
-            )
-
-
-
-            page.wait_for_timeout(
-                5000
-            )
-
-
-
-            self.log(
-                "Начинаем плавную прокрутку отзывов"
-            )
-
-
-
-            no_new_counter = 0
-
-
-
-            
-
-            for step in range(300):
-
-                before = len(self.photos)
-
-                scroll = random.randint(
-                    700,
-                    1200
+                self._log(
+                    "Начинаем прокрутку отзывов",
+                    on_log,
                 )
 
-                page.mouse.wheel(
-                    0,
-                    scroll
-                )
+                no_new_counter = 0
 
-                page.wait_for_timeout(
-                    random.randint(
-                        300,
-                        700
-                    )
-                )
+                for step in range(300):
+                    if self._cancelled:
+                        self._log(
+                            "Сбор фото отзывов отменён",
+                            on_log,
+                        )
+                        break
 
-                after = len(self.photos)
+                    before = len(photos)
 
-
-                if after == before:
-                    no_new_counter += 1
-                else:
-                    no_new_counter = 0
-
-
-                self.log(
-                    f"Шаг {step+1}/300 | "
-                    f"Фото отзывов: {after}"
-                )
-
-
-                # стоп после 20 пустых шагов
-                if no_new_counter >= 10:
-
-                    self.log(
-                        "Проверка финальной догрузки..."
+                    page.mouse.wheel(
+                        0,
+                        random.randint(700, 1200),
                     )
 
                     page.wait_for_timeout(
-                        5000
+                        random.randint(300, 700),
                     )
 
-                    if len(self.photos) == after:
+                    after = len(photos)
+
+                    if after == before:
+                        no_new_counter += 1
+                    else:
+                        no_new_counter = 0
+
+                    self._log(
+                        (
+                            f"Отзывы: шаг {step + 1}/300, "
+                            f"фото: {after}"
+                        ),
+                        on_log,
+                    )
+
+                    if no_new_counter < 10:
+                        continue
+
+                    self._log(
+                        "Проверяем финальную догрузку отзывов",
+                        on_log,
+                    )
+
+                    page.wait_for_timeout(5000)
+
+                    if len(photos) == after:
                         break
 
                     no_new_counter = 0
 
+        finally:
+            self._browser = None
 
+            if browser is not None:
+                try:
+                    browser.close()
+                except Exception:
+                    pass
 
+        self._log(
+            f"Сбор фото отзывов завершён: {len(photos)}",
+            on_log,
+        )
 
-            self.log(
-                f"Сбор отзывов завершён: {len(self.photos)} фото"
-            )
-
-
-            browser.close()
-
-
-
-        return list(self.photos)
-
-
+        return photos
 
     def save_json(
-            self,
-            urls,
-            filename="reviews_urls.json"
-    ):
+        self,
+        urls: list[str],
+        filename: Path | str = "reviews_urls.json",
+        on_log: LogCallback | None = None,
+    ) -> None:
+        filename = Path(filename)
 
-        Path(filename).write_text(
+        filename.write_text(
             json.dumps(
                 urls,
                 ensure_ascii=False,
-                indent=4
+                indent=4,
             ),
-            encoding="utf-8"
+            encoding="utf-8",
         )
 
-
-        self.log(
-            f"Ссылки сохранены: {filename}"
+        self._log(
+            f"Ссылки сохранены: {filename}",
+            on_log,
         )
-
-
 
     def download(
-            self,
-            urls,
-            folder="reviews_photos"
-    ):
-
-
+        self,
+        urls: list[str],
+        folder: Path | str = "reviews_photos",
+        on_log: LogCallback | None = None,
+        skip_existing: bool = True,
+    ) -> int:
         folder = Path(folder)
-
         folder.mkdir(
-            exist_ok=True
+            parents=True,
+            exist_ok=True,
         )
 
-
-
         session = requests.Session()
-
-
-
         total = len(urls)
 
+        saved = 0
+        skipped = 0
 
+        for index, url in enumerate(urls, start=1):
+            if self._cancelled:
+                self._log(
+                    "Скачивание фото отзывов отменено",
+                    on_log,
+                )
+                break
 
-        for i, url in enumerate(urls, 1):
+            filename = folder / f"{index:03}.jpg"
+
+            if (
+                skip_existing
+                and filename.exists()
+                and filename.stat().st_size > 0
+            ):
+                skipped += 1
+
+                self._log(
+                    f"Фото отзывов {index}/{total}: уже существует",
+                    on_log,
+                )
+                continue
 
             try:
-
-
-                filename = (
-                    folder
-                    /
-                    f"{i:03}.jpg"
-                )
-
-
-
-                r = session.get(
+                response = session.get(
                     url,
                     headers={
-                        "User-Agent":
-                        "Mozilla/5.0"
+                        "User-Agent": "Mozilla/5.0",
                     },
-                    timeout=30
+                    timeout=30,
+                )
+                response.raise_for_status()
+
+                filename.write_bytes(response.content)
+                saved += 1
+
+                self._log(
+                    f"Фото отзывов скачано: {index}/{total}",
+                    on_log,
                 )
 
-
-                r.raise_for_status()
-
-
-
-                filename.write_bytes(
-                    r.content
+            except Exception as exc:
+                self._log(
+                    f"Ошибка скачивания фото отзывов {index}: {exc}",
+                    on_log,
                 )
 
+        self._log(
+            (
+                f"Фото отзывов сохранено: {saved}; "
+                f"пропущено существующих: {skipped}"
+            ),
+            on_log,
+        )
 
+        return saved
 
-                self.log(
-                    f"Скачано {i}/{total}"
-                )
+    def cancel(self) -> None:
+        self._cancelled = True
 
+        browser = self._browser
 
-
-            except Exception as e:
-
-                self.log(
-                    f"Ошибка скачивания {i}: {e}"
-                )
-
-
-
-
-if __name__ == "__main__":
-
-
-    url = input(
-        "\nСсылка Яндекс организации:\n> "
-    ).strip()
-
-
-
-    downloader = YandexReviewDownloader(
-        headless=False
-    )
-
-
-
-    photos = downloader.collect(
-        url
-    )
-
-
-
-    print()
-
-    print(
-        f"Найдено фото отзывов: {len(photos)}"
-    )
-
-
-
-    downloader.save_json(
-        photos
-    )
-
-
-
-    downloader.download(
-        photos
-    )
-
-
-
-    print()
-
-    print(
-        "Готово!"
-    )
+        if browser is not None:
+            try:
+                browser.close()
+            except Exception:
+                pass
