@@ -4,6 +4,7 @@ from pathlib import Path
 
 from PySide6.QtWidgets import (
     QApplication,
+    QFileDialog,
     QHBoxLayout,
     QMainWindow,
     QStackedWidget,
@@ -64,6 +65,8 @@ class MainWindow(QMainWindow):
 
         self.home_page = HomePage()
         self.home_page.page_requested.connect(self._switch_page)
+        self.home_page.open_folder_requested.connect(self._choose_folder)
+        self.home_page.create_template_requested.connect(self._create_template)
         self.stack.addWidget(self.home_page)
 
         self.metadata_page = MetadataPage()
@@ -84,14 +87,10 @@ class MainWindow(QMainWindow):
             "templates": self.templates_page,
             "yandex": self.yandex_page,
         }
-        self._page_aliases = {
-            "photos": "metadata",
-            "batch": "metadata",
-        }
+        self._page_aliases = {"photos": "metadata", "batch": "metadata"}
 
         self.inspector = Inspector()
         body_layout.addWidget(self.inspector)
-
         main_layout.addWidget(body, stretch=1)
 
         self.bottom_log = BottomLog()
@@ -113,12 +112,10 @@ class MainWindow(QMainWindow):
     def _apply_theme(self, theme_name: str) -> None:
         if not self.theme_manager:
             return
-
         theme = self.theme_manager.load(theme_name)
         app = QApplication.instance()
         if app is None:
             return
-
         app.setStyleSheet("")
         app.processEvents()
         app.setStyleSheet(theme.qss)
@@ -137,7 +134,6 @@ class MainWindow(QMainWindow):
     def _switch_page(self, page: str) -> None:
         requested_page = page
         page = self._page_aliases.get(page, page)
-
         if page == "settings":
             self.log_message("Раздел настроек будет подключён следующим этапом")
             return
@@ -147,49 +143,55 @@ class MainWindow(QMainWindow):
             self.log_message(f"Неизвестный раздел: {requested_page}")
             return
 
-        if page == "templates":
+        if page == "home":
+            self.home_page.refresh()
+        elif page == "templates":
             self.templates_page._refresh_list()
 
         self.stack.setCurrentWidget(widget)
         self.sidebar.set_active_page(requested_page if requested_page in self.sidebar._buttons else page)
         self.inspector.setVisible(page == "metadata")
 
+    def _choose_folder(self) -> None:
+        start_dir = Settings.get_last_folder() or str(Path.home())
+        folder = QFileDialog.getExistingDirectory(self, "Открыть папку с фотографиями", start_dir)
+        if folder:
+            self._on_folder_dropped(folder)
+
+    def _create_template(self) -> None:
+        self._switch_page("templates")
+        for method_name in ("_create_template", "create_template", "_add_template"):
+            method = getattr(self.templates_page, method_name, None)
+            if callable(method):
+                method()
+                return
+        self.log_message("Открыт раздел шаблонов")
+
     def _open_metadata_workspace(self) -> None:
         self._switch_page("metadata")
 
     def _on_folder_dropped(self, path: str) -> None:
+        Settings.save_last_folder(path)
         self._open_metadata_workspace()
         self.metadata_page.folder_field.setText(path)
         self.metadata_page._load_files(path)
         self.metadata_page._refresh_templates()
-        self.log_message(f"Папка открыта через Drag&Drop: {path}")
+        self.log_message(f"Папка открыта: {path}")
 
     def _on_files_dropped(self, paths: list[str]) -> None:
         if not paths:
             return
-
-        image_extensions = {
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".webp",
-            ".bmp",
-            ".tif",
-            ".tiff",
-        }
-        image_paths = [
-            path for path in paths if Path(path).suffix.lower() in image_extensions
-        ]
-
+        image_extensions = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
+        image_paths = [path for path in paths if Path(path).suffix.lower() in image_extensions]
         if not image_paths:
             self.log_message("Перетащены не изображения")
             return
 
+        parent_dir = Path(image_paths[0]).parent
+        Settings.save_last_folder(str(parent_dir))
         self._open_metadata_workspace()
         self.metadata_page.load_files_from_paths(image_paths)
         self.metadata_page._refresh_templates()
-
-        parent_dir = Path(image_paths[0]).parent
         self.log_message(f"Загружено из папки: {parent_dir}")
         self.log_message(f"Загружено файлов: {len(image_paths)}")
 
@@ -204,13 +206,11 @@ class MainWindow(QMainWindow):
     def dropEvent(self, event) -> None:
         urls = event.mimeData().urls()
         local_paths = [url.toLocalFile() for url in urls if url.isLocalFile()]
-
         if not local_paths:
             event.ignore()
             return
 
         first_path = Path(local_paths[0])
-
         if len(local_paths) == 1 and first_path.is_dir():
             self._on_folder_dropped(str(first_path))
             event.acceptProposedAction()
@@ -222,6 +222,7 @@ class MainWindow(QMainWindow):
             event.ignore()
             return
 
+        Settings.save_last_folder(str(parent_dir))
         self._open_metadata_workspace()
         self.metadata_page.folder_field.setText(str(parent_dir))
         self.metadata_page._load_files(str(parent_dir))
@@ -234,13 +235,10 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event) -> None:
         geo = self.geometry()
         Settings.save_window_geometry(geo.x(), geo.y(), geo.width(), geo.height())
-
         if hasattr(self.metadata_page, "delete_original_cb"):
             Settings.save_delete_original(self.metadata_page.delete_original_cb.isChecked())
-
         if hasattr(self.metadata_page, "template_combo"):
             current_template = self.metadata_page.template_combo.currentText()
             if current_template and current_template != "Нет шаблонов":
                 Settings.save_last_template(current_template)
-
         event.accept()
