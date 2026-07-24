@@ -1,39 +1,36 @@
 from pathlib import Path
 
-from yandex_downloader import YandexPhotoDownloader
-from yandex_reviews import YandexReviewDownloader
-from photo_compare import PhotoComparator
+from core.yandex.photo_compare import PhotoComparator
+from core.yandex.yandex_downloader import YandexPhotoDownloader
+from core.yandex.yandex_reviews import YandexReviewDownloader
 from core.yandex.yandex_stories import YandexStoriesDownloader
 
-class YandexRouter:
 
-    def log(self, text):
+class YandexRouter:
+    def log(self, text: str) -> None:
         print(f"[YandexRouter] {text}")
 
-    def run(self, url, save_dir):
-
+    def run(self, url: str, save_dir: Path | str) -> None:
         save_dir = Path(save_dir)
 
-        # создаём рабочие папки
+        # Создаём рабочие папки
         org_folder = save_dir / "Фото организации"
         reviews_folder = save_dir / "Фото отзывы"
-        story_downloader = YandexStoriesDownloader()
-
-        stories = story_downloader.collect(url)
-
-        story_downloader.download(
-            stories,
-            save_dir / "Сторис"
-        )
+        stories_folder = save_dir / "Сторис"
 
         org_folder.mkdir(
             parents=True,
-            exist_ok=True
+            exist_ok=True,
         )
 
         reviews_folder.mkdir(
             parents=True,
-            exist_ok=True
+            exist_ok=True,
+        )
+
+        stories_folder.mkdir(
+            parents=True,
+            exist_ok=True,
         )
 
         base_url = (
@@ -44,18 +41,30 @@ class YandexRouter:
             .rstrip("/")
         )
 
-        gallery_url = (
-            base_url +
-            "/gallery/"
-        )
-
-        reviews_url = (
-            base_url +
-            "/reviews/"
-        )
+        gallery_url = f"{base_url}/gallery/"
+        reviews_url = f"{base_url}/reviews/"
 
         self.log("Организация:")
         self.log(base_url)
+
+        # ==================================================
+        # СТОРИС
+        # ==================================================
+
+        self.log("Запускаем сбор сторис")
+
+        story_downloader = YandexStoriesDownloader()
+
+        stories = story_downloader.collect(base_url)
+
+        story_downloader.download(
+            stories,
+            stories_folder,
+        )
+
+        self.log(
+            f"Сторис скачано: {len(stories)}"
+        )
 
         # ==================================================
         # ФОТО ОРГАНИЗАЦИИ
@@ -63,20 +72,19 @@ class YandexRouter:
 
         self.log("Открываем галерею организации")
         self.log(gallery_url)
-
         self.log("Запускаем сбор фото организации")
 
         photo_downloader = YandexPhotoDownloader(
-            headless=False
+            headless=False,
         )
 
         org_photos = photo_downloader.collect(
-            gallery_url
+            gallery_url,
         )
 
         photo_downloader.download(
             org_photos,
-            folder=org_folder
+            folder=org_folder,
         )
 
         self.log(
@@ -89,20 +97,19 @@ class YandexRouter:
 
         self.log("Открываем отзывы")
         self.log(reviews_url)
-
         self.log("Запускаем сбор фото отзывов")
 
         review_downloader = YandexReviewDownloader(
-            headless=False
+            headless=False,
         )
 
         review_photos = review_downloader.collect(
-            reviews_url
+            reviews_url,
         )
 
         review_downloader.download(
             review_photos,
-            folder=reviews_folder
+            folder=reviews_folder,
         )
 
         self.log(
@@ -119,7 +126,7 @@ class YandexRouter:
 
         comparator = PhotoComparator(
             org_folder=org_folder,
-            reviews_folder=reviews_folder
+            reviews_folder=reviews_folder,
         )
 
         comparator.compare()
@@ -129,7 +136,6 @@ class YandexRouter:
         # ==================================================
 
         self.log("================================")
-
         self.log("ГОТОВО")
 
         self.log(
@@ -141,6 +147,10 @@ class YandexRouter:
         )
 
         self.log(
+            f"Сторис: {len(stories)}"
+        )
+
+        self.log(
             "Дубли удалены из папки организации"
         )
 
@@ -148,7 +158,6 @@ class YandexRouter:
 
 
 if __name__ == "__main__":
-
     url = input(
         "\nСсылка Яндекс организации:\n> "
     ).strip()
@@ -161,5 +170,5 @@ if __name__ == "__main__":
 
     router.run(
         url=url,
-        save_dir=save_dir
+        save_dir=save_dir,
     )
