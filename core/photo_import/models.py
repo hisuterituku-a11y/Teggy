@@ -27,9 +27,15 @@ class ImportStatus(Enum):
 @dataclass
 class PhotoInfo:
     """Информация об одной фотографии."""
+
     url: str
     filename: str
     source: SourceType
+
+    # новая информация
+    category: str = ""
+    is_review: bool = False
+
     status: ImportStatus = ImportStatus.PENDING
     local_path: Optional[Path] = None
     size: Optional[int] = None
@@ -67,33 +73,31 @@ class ImportProgress:
     message: str = ""
 
 
-# ===== ИСКЛЮЧЕНИЯ =====
-
-class PhotoImportError(Exception):
-    """Базовое исключение."""
-    pass
-
-
-class ParserError(PhotoImportError):
-    """Ошибка парсинга."""
-    pass
-
-
-class DownloadError(PhotoImportError):
-    """Ошибка скачивания."""
-    pass
-
-
-class NetworkError(PhotoImportError):
-    """Ошибка сети."""
-    pass
-
-
-class CancelledError(PhotoImportError):
-    """Отмена пользователем."""
-    pass
-
-
-class SourceNotSupportedError(PhotoImportError):
-    """Неподдерживаемый источник."""
-    pass
+# ИСПРАВЛЕНО: раньше здесь дублировались классы исключений
+# (PhotoImportError, ParserError, DownloadError, NetworkError,
+# CancelledError, SourceNotSupportedError) — те же самые по имени, но
+# СОВСЕМ ДРУГИЕ по идентичности классы, чем в core/photo_import/exceptions.py.
+#
+# Это опасный баг: providers.py (и, вероятно, другой код) ловит
+# исключения через `from core.photo_import.exceptions import ParserError`.
+# Если где-то в проекте исключение поднимается через
+# `from core.photo_import.models import ParserError`, то `except ParserError`
+# в providers.py его НЕ поймает, несмотря на одинаковое имя класса —
+# для Python это два независимых класса. Ошибка тихо "утечёт" мимо
+# обработчика вместо того, чтобы быть аккуратно обработанной.
+#
+# Исключения теперь определены только в одном месте — в
+# core/photo_import/exceptions.py. Если models.py где-то нужно
+# использовать эти классы (например, для аннотаций типов), их следует
+# импортировать оттуда:
+#
+#     from core.photo_import.exceptions import (
+#         PhotoImportError,
+#         ParserError,
+#         DownloadError,
+#         NetworkError,
+#         CancelledError,
+#         SourceNotSupportedError,
+#     )
+#
+# а не переопределять заново.

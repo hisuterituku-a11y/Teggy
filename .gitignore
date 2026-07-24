@@ -1,0 +1,58 @@
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Python environments
+.venv/
+venv/
+env/
+
+# IDE and local tools
+.idea/
+.vscode/
+.vibe/
+
+# Build results
+build/
+dist/
+*.spec
+*.exe
+*.zip
+*.pkg
+*.pyz
+
+# Playwright browsers
+ms-playwright/
+**/ms-playwright/
+
+# Logs and temporary files
+*.log
+duplicates_report.txt
+
+# Downloaded/generated data
+passports/
+reviews_photos/
+yandex_photos/
+test_downloads/
+reviews_urls.json
+
+# Old application copies
+теги который до нового ехе/
+ТЕСТЫ/
+
+# Local backup files
+*_working_before_refactor.py
+*_before_refactor.py
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# OS files
+Thumbs.db
+desktop.ini
+.DS_Store

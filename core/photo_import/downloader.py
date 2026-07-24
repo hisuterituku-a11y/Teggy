@@ -1,34 +1,192 @@
 """
-Скачивание фотографий с поддержкой прогресса и отмены.
+Загрузчик фотографий.
+
+Отвечает только за:
+- скачивание файлов
+- повторные попытки
+- обработку ошибок
+- отмену
+- обновление PhotoInfo
+
+Не знает про GUI.
 """
 
 from pathlib import Path
-from typing import List, Optional, Callable
-import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import time
-from datetime import datetime
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    as_completed
+)
 
-from core.photo_import.models import PhotoInfo, ImportStatus
-from core.photo_import.exceptions import DownloadError, CancelledError
+from typing import Callable, List
+import threading
+import time
+import requests
+
+from core.photo_import.models import (
+    PhotoInfo,
+    ImportStatus
+)
 
 
 class Downloader:
     """
-    Скачивает фотографии.
-
-    Особенности:
-    - многопоточность (max_workers)
-    - повторные попытки (retries)
-    - отмена
-    - прогресс через callback
-    - пропуск существующих файлов
+    Многопоточный downloader.
     """
 
-    def __init__(self, max_workers: int = 5, retries: int = 3):
+    def __init__(
+        self,
+        max_workers: int = 5,
+        retries: int = 3,
+        timeout: int = 30
+    ):
+
         self.max_workers = max_workers
         self.retries = retries
-        self._is_cancelled = False
+        self.timeout = timeout
+
+        self._cancel_event = threading.Event()
+
+
+
+    # ==================================================
+    # PUBLIC
+    # ==================================================
+
+
+    def download(
+        self,
+        photos: List[PhotoInfo],
+        save_dir: Path,
+        on_progress: Callable = None,
+        skip_existing: bool = True
+    ) -> List[PhotoInfo]:
+
+        """
+        Скачивает список фотографий.
+
+        Всегда возвращает ВСЕ photo objects.
+        Даже отменённые.
+        """
+
+
+        if self._cancel_event.is_set():
+            for photo in photos:
+                photo.status = ImportStatus.CANCELLED
+
+            return photos
+
+        self._cancel_event.clear()
+
+
+        save_dir.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+
+        results = []
+
+
+        total = len(photos)
+
+        completed = 0
+
+
+
+        with ThreadPoolExecutor(
+            max_workers=self.max_workers
+        ) as executor:
+
+
+            futures = {}
+
+
+            for photo in photos:
+
+
+                # уже отменили до старта
+
+                if self._cancel_event.is_set():
+
+                    photo.status = ImportStatus.CANCELLED
+
+                    results.append(photo)
+
+                    continue
+
+
+
+                future = executor.submit(
+
+                    self._download_single,
+
+                    photo,
+
+                    save_dir,
+
+                    skip_existing
+
+                )
+
+
+                futures[future] = photo
+
+
+
+            for future in as_completed(futures):
+
+
+                photo = futures[future]
+
+
+                try:
+
+                    result = future.result()
+
+
+                except Exception as e:
+
+
+                    # железная страховка
+
+                    photo.status = ImportStatus.FAILED
+
+                    photo.error = str(e)
+
+                    result = photo
+
+
+
+                results.append(result)
+
+
+
+                completed += 1
+
+
+
+                if on_progress:
+
+                    on_progress(
+
+                        completed,
+
+                        total,
+
+                        result.filename
+
+                    )
+
+
+
+        return results
+
+
+
+    # ==================================================
+    # SINGLE FILE
+    # ==================================================
+
 
     def _download_single(
         self,
@@ -36,119 +194,208 @@ class Downloader:
         save_dir: Path,
         skip_existing: bool
     ) -> PhotoInfo:
-        """Скачивает один файл с повторными попытками."""
-        if self._is_cancelled:
+
+
+
+        if self._cancel_event.is_set():
+
             photo.status = ImportStatus.CANCELLED
-            photo.error = "Отменено"
+
             return photo
 
-        # Определяем имя файла
-        filename = photo.filename or photo.url.split('/')[-1].split('?')[0] or "unknown.jpg"
-        save_path = save_dir / filename
 
-        # Пропускаем, если уже есть
-        if skip_existing and save_path.exists():
-            photo.status = ImportStatus.SKIP
-            photo.local_path = save_path
-            photo.size = save_path.stat().st_size
-            return photo
-
-        # Скачиваем с повторами
-        for attempt in range(self.retries):
-            if self._is_cancelled:
-                photo.status = ImportStatus.CANCELLED
-                photo.error = "Отменено"
-                return photo
-
-            try:
-                response = requests.get(
-                    photo.url,
-                    timeout=30,
-                    stream=True,
-                    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-                )
-                response.raise_for_status()
-
-                # Сохраняем
-                save_dir.mkdir(parents=True, exist_ok=True)
-                with open(save_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        if self._is_cancelled:
-                            save_path.unlink(missing_ok=True)
-                            photo.status = ImportStatus.CANCELLED
-                            photo.error = "Отменено"
-                            return photo
-                        if chunk:
-                            f.write(chunk)
-
-                photo.status = ImportStatus.SUCCESS
-                photo.local_path = save_path
-                photo.size = save_path.stat().st_size
-                return photo
-
-            except requests.exceptions.RequestException as e:
-                if attempt == self.retries - 1:
-                    photo.status = ImportStatus.FAILED
-                    photo.error = f"Ошибка: {e}"
-                    return photo
-                time.sleep(2 ** attempt)  # 1, 2, 4 секунды
-
-        photo.status = ImportStatus.FAILED
-        photo.error = "Не удалось скачать"
-        return photo
-
-    def download(
-        self,
-        photos: List[PhotoInfo],
-        save_dir: Path,
-        on_progress: Optional[Callable[[int, int, str], None]] = None,
-        skip_existing: bool = True,
-    ) -> List[PhotoInfo]:
-        
-
-        self._is_cancelled = False
-        total = len(photos)
-        completed = 0
-
-        if not photos:
-            
-            return []
 
         try:
-            save_dir.mkdir(parents=True, exist_ok=True)
-            
+
+
+            # Фото отзывов складываем отдельно
+            if photo.is_review:
+                target_dir = save_dir / "отзывы"
+            else:
+                target_dir = save_dir
+
+
+            target_dir.mkdir(
+                parents=True,
+                exist_ok=True
+            )
+
+
+            save_path = (
+                target_dir /
+                photo.filename
+            )
+
+
+
+            photo.local_path = save_path
+
+
+
+            # -------------------------
+            # skip
+            # -------------------------
+
+            if (
+                skip_existing
+                and
+                save_path.exists()
+            ):
+
+                photo.status = ImportStatus.SKIP
+
+                return photo
+
+
+
+            # -------------------------
+            # download
+            # -------------------------
+
+
+            photo.status = ImportStatus.DOWNLOADING
+
+
+
+            response = self._request_with_retry(
+                photo.url
+            )
+
+
+
+            if response is None:
+
+                photo.status = ImportStatus.FAILED
+
+                photo.error = (
+                    "Не удалось получить файл"
+                )
+
+                return photo
+
+
+
+
+            # -------------------------
+            # save
+            # -------------------------
+
+
+            with open(
+                save_path,
+                "wb"
+            ) as f:
+
+                f.write(
+                    response.content
+                )
+
+
+
+            photo.size = (
+                save_path.stat().st_size
+            )
+
+
+            photo.status = ImportStatus.SUCCESS
+
+
+
         except Exception as e:
-           
-            print(e)
-            return []
 
-        
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = {
-                executor.submit(
-                    self._download_single,
-                    photo,
-                    save_dir,
-                    skip_existing
-                ): photo for photo in photos
-            }
 
-            for future in as_completed(futures):
-                if self._is_cancelled:
-                    for f in futures:
-                        f.cancel()
-                    break
+            photo.status = ImportStatus.FAILED
 
-                result = future.result()
-                completed += 1
+            photo.error = str(e)
 
-                if on_progress:
-                    filename = result.local_path.name if result.local_path else result.url
-                    on_progress(completed, total, filename)
 
-        # Возвращаем результаты
-        return [future.result() for future in futures if not future.cancelled()]
 
-    def cancel(self) -> None:
-        """Отменяет скачивание."""
-        self._is_cancelled = True
+        return photo
+
+
+
+    # ==================================================
+    # REQUEST WITH RETRY
+    # ==================================================
+
+
+    def _request_with_retry(
+        self,
+        url: str
+    ):
+
+
+        last_error = None
+
+
+
+        for attempt in range(
+            1,
+            self.retries + 1
+        ):
+
+
+
+            if self._cancel_event.is_set():
+
+                return None
+
+
+
+            try:
+
+
+                response = requests.get(
+
+                    url,
+
+                    timeout=self.timeout,
+
+                    headers={
+
+                        "User-Agent":
+                        (
+                            "Mozilla/5.0 "
+                            "Chrome/120"
+                        )
+
+                    }
+
+                )
+
+
+
+                response.raise_for_status()
+
+
+                return response
+
+
+
+            except Exception as e:
+
+
+                last_error = e
+
+
+
+                if attempt < self.retries:
+
+                    time.sleep(
+                        attempt
+                    )
+
+
+
+        return None
+
+
+
+    # ==================================================
+    # CANCEL
+    # ==================================================
+
+
+    def cancel(self):
+
+        self._cancel_event.set()
