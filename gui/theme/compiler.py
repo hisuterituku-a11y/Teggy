@@ -1,32 +1,28 @@
 import re
-from typing import Dict
 from pathlib import Path
+from typing import Dict
 
 
 class QSSCompiler:
-    """Компилирует QSS, заменяя @переменные."""
+    """Компилирует все QSS-файлы темы, заменяя @переменные."""
 
     @classmethod
     def compile(cls, theme_path: Path, theme_data: Dict) -> str:
-        qss_path = theme_path / "style.qss"
-        if not qss_path.exists():
+        qss_files = sorted(theme_path.glob("*.qss"), key=lambda path: (path.name != "style.qss", path.name))
+        if not qss_files:
             return ""
 
-        with open(qss_path, "r", encoding="utf-8") as f:
-            qss_raw = f.read()
+        chunks = []
+        for qss_path in qss_files:
+            with open(qss_path, "r", encoding="utf-8") as file:
+                chunks.append(file.read())
 
-        # Собираем все переменные в один словарь
         variables = cls._flatten_variables(theme_data)
-
-       
-
-        # Заменяем @variable на значение (рекурсивно, до 10 проходов)
-        qss = qss_raw
+        qss = "\n\n".join(chunks)
         for _ in range(10):
             qss, changed = cls._replace_variables(qss, variables)
             if not changed:
                 break
-
         return qss
 
     @classmethod
@@ -41,7 +37,7 @@ class QSSCompiler:
         return result
 
     @classmethod
-    def _replace_variables(cls, qss: str, variables: Dict) -> tuple:
+    def _replace_variables(cls, qss: str, variables: Dict) -> tuple[str, bool]:
         changed = False
 
         def replacer(match):
@@ -52,5 +48,5 @@ class QSSCompiler:
                 return str(variables[var_name])
             return match.group(0)
 
-        new_qss = re.sub(r'@([a-zA-Z0-9_]+)', replacer, qss)
+        new_qss = re.sub(r"@([a-zA-Z0-9_]+)", replacer, qss)
         return new_qss, changed
