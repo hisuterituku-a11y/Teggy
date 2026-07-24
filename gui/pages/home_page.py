@@ -19,7 +19,14 @@ from core.svg_loader import load_svg_icon
 class ActionCard(QPushButton):
     activated = Signal(str)
 
-    def __init__(self, title: str, description: str, icon_path: str, page: str, parent=None):
+    def __init__(
+        self,
+        title: str,
+        description: str,
+        icon_path: str,
+        page: str,
+        parent=None,
+    ):
         super().__init__(parent)
         self._page = page
         self.setCursor(Qt.PointingHandCursor)
@@ -32,8 +39,11 @@ class ActionCard(QPushButton):
         layout.setSpacing(10)
 
         icon = QLabel()
-        icon.setPixmap(load_svg_icon(resource_path(icon_path), "#8B5CF6").pixmap(30, 30))
+        icon.setPixmap(
+            load_svg_icon(resource_path(icon_path), "#8B5CF6").pixmap(30, 30)
+        )
         icon.setFixedSize(34, 34)
+        icon.setAttribute(Qt.WA_TransparentForMouseEvents)
         layout.addWidget(icon, alignment=Qt.AlignLeft)
 
         title_label = QLabel(title)
@@ -66,7 +76,9 @@ class HomePage(QWidget):
         root.addWidget(scroll)
 
         content = QWidget()
+        content.setProperty("class", "HomePageContent")
         scroll.setWidget(content)
+
         layout = QVBoxLayout(content)
         layout.setContentsMargins(32, 28, 32, 32)
         layout.setSpacing(24)
@@ -83,19 +95,43 @@ class HomePage(QWidget):
         title.setProperty("class", "PageTitle")
         layout.addWidget(title)
 
-        subtitle = QLabel("Все основные инструменты Teggy — в одном рабочем пространстве.")
+        subtitle = QLabel(
+            "Все основные инструменты Teggy — в одном рабочем пространстве."
+        )
         subtitle.setProperty("class", "PageSubtitle")
         layout.addWidget(subtitle)
 
         cards = QGridLayout()
         cards.setHorizontalSpacing(16)
         cards.setVerticalSpacing(16)
+        cards.setColumnStretch(0, 1)
+        cards.setColumnStretch(1, 1)
 
         items = [
-            ("Метаданные", "Теги, EXIF, геоданные и пакетная обработка изображений.", "assets/icons/file-pen.svg", "metadata"),
-            ("Шаблоны", "Создавай и применяй готовые наборы данных для бизнеса.", "assets/icons/files.svg", "templates"),
-            ("Импорт из Яндекса", "Скачивание фото, историй и материалов из Яндекс Бизнеса.", "assets/icons/download.svg", "yandex"),
-            ("Недавняя папка", "Вернись к последнему рабочему набору изображений.", "assets/icons/folder-open.svg", "metadata"),
+            (
+                "Метаданные",
+                "Теги, EXIF, геоданные и пакетная обработка изображений.",
+                "assets/icons/file-pen.svg",
+                "metadata",
+            ),
+            (
+                "Шаблоны",
+                "Создавай и применяй готовые наборы данных для бизнеса.",
+                "assets/icons/files.svg",
+                "templates",
+            ),
+            (
+                "Импорт из Яндекса",
+                "Скачивание фото, историй и материалов из Яндекс Бизнеса.",
+                "assets/icons/download.svg",
+                "yandex",
+            ),
+            (
+                "Открыть фотографии",
+                "Перейди к рабочему набору изображений и продолжи обработку.",
+                "assets/icons/images.svg",
+                "photos",
+            ),
         ]
 
         for index, item in enumerate(items):
