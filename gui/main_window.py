@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+from datetime import datetime
 from pathlib import Path
 
 from PySide6.QtWidgets import (
@@ -131,6 +133,12 @@ class MainWindow(QMainWindow):
         if hasattr(self, "bottom_log") and hasattr(self.bottom_log, "log"):
             self.bottom_log.log.info(message)
 
+        match = re.search(r"Обработано\s+(\d+)\s+из\s+\d+\s+файлов", message)
+        if match:
+            Settings.increment_processed_files(int(match.group(1)))
+            Settings.update_dashboard_stats(last_run=datetime.now().isoformat(timespec="minutes"))
+            self.home_page.refresh()
+
     def _switch_page(self, page: str) -> None:
         requested_page = page
         page = self._page_aliases.get(page, page)
@@ -147,14 +155,26 @@ class MainWindow(QMainWindow):
             self.home_page.refresh()
         elif page == "templates":
             self.templates_page._refresh_list()
+        elif page == "metadata" and not self.metadata_page.current_files:
+            last_folder = Settings.get_last_folder()
+            folder_path = Path(last_folder) if last_folder else None
+            if folder_path and folder_path.exists() and folder_path.is_dir():
+                self.metadata_page.folder_field.setText(str(folder_path))
+                self.metadata_page._load_files(str(folder_path))
+                self.metadata_page._refresh_templates()
 
         self.stack.setCurrentWidget(widget)
-        self.sidebar.set_active_page(requested_page if requested_page in self.sidebar._buttons else page)
+        active_page = requested_page if requested_page in self.sidebar._buttons else page
+        self.sidebar.set_active_page(active_page)
         self.inspector.setVisible(page == "metadata")
 
     def _choose_folder(self) -> None:
         start_dir = Settings.get_last_folder() or str(Path.home())
-        folder = QFileDialog.getExistingDirectory(self, "Открыть папку с фотографиями", start_dir)
+        folder = QFileDialog.getExistingDirectory(
+            self,
+            "Открыть папку с фотографиями",
+            start_dir,
+        )
         if folder:
             self._on_folder_dropped(folder)
 
@@ -176,6 +196,7 @@ class MainWindow(QMainWindow):
         self.metadata_page.folder_field.setText(path)
         self.metadata_page._load_files(path)
         self.metadata_page._refresh_templates()
+        self.home_page.refresh()
         self.log_message(f"Папка открыта: {path}")
 
     def _on_files_dropped(self, paths: list[str]) -> None:
@@ -192,6 +213,7 @@ class MainWindow(QMainWindow):
         self._open_metadata_workspace()
         self.metadata_page.load_files_from_paths(image_paths)
         self.metadata_page._refresh_templates()
+        self.home_page.refresh()
         self.log_message(f"Загружено из папки: {parent_dir}")
         self.log_message(f"Загружено файлов: {len(image_paths)}")
 
@@ -228,6 +250,7 @@ class MainWindow(QMainWindow):
         self.metadata_page._load_files(str(parent_dir))
         self.metadata_page._refresh_templates()
         self.metadata_page._select_files_by_names([Path(path).name for path in local_paths])
+        self.home_page.refresh()
         self.log_message(f"Открыта папка: {parent_dir}")
         self.log_message(f"Выделено файлов: {len(local_paths)}")
         event.acceptProposedAction()
