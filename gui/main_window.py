@@ -109,6 +109,8 @@ class MainWindow(QMainWindow):
         if app is not None:
             app.installEventFilter(self.dragdrop)
 
+        if self.theme_manager:
+            self._apply_theme(Settings.get_theme() or "dark")
         self._switch_page("home")
 
     def _apply_theme(self, theme_name: str) -> None:
@@ -126,8 +128,10 @@ class MainWindow(QMainWindow):
         from gui.widgets.buttons import IconButton
 
         icon_color = theme.colors.get("icon", theme.colors.get("text", "#FFFFFF"))
+        accent_color = theme.colors.get("accent", icon_color)
         for button in self.findChildren(IconButton):
             button.set_color(icon_color)
+        self.home_page.apply_theme_colors(accent_color, icon_color)
 
     def log_message(self, message: str) -> None:
         if hasattr(self, "bottom_log") and hasattr(self.bottom_log, "log"):
