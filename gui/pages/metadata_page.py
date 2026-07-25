@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QListWidget,
     QListWidgetItem,
     QProgressBar,
@@ -30,8 +29,10 @@ from core.tag_generator import TagGenerator
 from core.template_manager import TemplateManager
 from core.worker_thread import ProcessingThread
 from gui.widgets.buttons import PrimaryButton, SecondaryButton
-from gui.widgets.cards import Card, CardBody, CardHeader
-from gui.widgets.inputs import TagEditor, TextField
+from gui.widgets.cards import PremiumCard
+from gui.widgets.inputs import SearchField, TagEditor, TextField
+from gui.widgets.section import Section
+from gui.widgets.toolbar import Toolbar
 
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
@@ -74,58 +75,62 @@ class MetadataPage(QWidget):
         self._update_selection_label()
         self._update_action_state()
 
-    def _build_toolbar(self) -> QHBoxLayout:
-        toolbar = QHBoxLayout()
-        toolbar.setSpacing(8)
+    def _build_toolbar(self) -> QVBoxLayout:
+        container = QVBoxLayout()
+        container.setContentsMargins(0, 0, 0, 0)
+        container.setSpacing(10)
 
-        self.folder_field = TextField("Выберите папку с изображениями...")
-        self.folder_field.setReadOnly(True)
-        toolbar.addWidget(self.folder_field, stretch=1)
+        toolbar = Toolbar(
+            title="Метаданные",
+            subtitle="Выбор файлов, предпросмотр и запись EXIF/IPTC-данных",
+            compact=True,
+        )
 
         self.browse_btn = SecondaryButton("Открыть папку")
         self.browse_btn.setIcon(QIcon(str(resource_path("assets/icons/folder-open.svg"))))
         self.browse_btn.clicked.connect(self._browse_folder)
-        toolbar.addWidget(self.browse_btn)
+        toolbar.add_action(self.browse_btn)
 
         self.select_all_btn = SecondaryButton("Выделить всё")
         self.select_all_btn.clicked.connect(self._select_all)
-        toolbar.addWidget(self.select_all_btn)
+        toolbar.add_action(self.select_all_btn)
 
         self.deselect_all_btn = SecondaryButton("Снять")
         self.deselect_all_btn.clicked.connect(self._deselect_all)
-        toolbar.addWidget(self.deselect_all_btn)
-        return toolbar
+        toolbar.add_action(self.deselect_all_btn)
+
+        container.addWidget(toolbar)
+
+        self.folder_field = TextField("Выберите папку с изображениями...")
+        self.folder_field.setReadOnly(True)
+        container.addWidget(self.folder_field)
+        return container
 
     def _build_file_browser(self) -> QWidget:
-        panel = QFrame()
-        panel.setProperty("class", "MetadataBrowser")
-        panel.setMinimumWidth(260)
-        panel.setMaximumWidth(380)
+        section = Section(
+            "Файлы",
+            "Выберите изображения для обработки",
+            show_divider=False,
+            spacing=8,
+            content_spacing=8,
+            variant="browser",
+        )
+        section.setProperty("class", "Section MetadataBrowser")
+        section.setMinimumWidth(260)
+        section.setMaximumWidth(380)
 
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
-
-        title_row = QHBoxLayout()
-        title = QLabel("Файлы")
-        title.setProperty("class", "SectionTitle")
-        title_row.addWidget(title)
-        title_row.addStretch()
         self.browser_count = QLabel("0")
         self.browser_count.setProperty("class", "MutedLabel")
-        title_row.addWidget(self.browser_count)
-        layout.addLayout(title_row)
+        section.add_action(self.browser_count)
 
-        self.search_field = QLineEdit()
-        self.search_field.setPlaceholderText("Поиск по имени...")
-        self.search_field.setClearButtonEnabled(True)
+        self.search_field = SearchField(placeholder="Поиск по имени...")
         self.search_field.textChanged.connect(self._apply_file_filter)
-        layout.addWidget(self.search_field)
+        section.add_widget(self.search_field)
 
         self.format_filter = QComboBox()
         self.format_filter.addItem("Все форматы", "")
         self.format_filter.currentIndexChanged.connect(self._apply_file_filter)
-        layout.addWidget(self.format_filter)
+        section.add_widget(self.format_filter)
 
         self.file_list = QListWidget()
         self.file_list.setProperty("class", "FileList")
@@ -133,55 +138,64 @@ class MetadataPage(QWidget):
         self.file_list.setIconSize(QSize(56, 56))
         self.file_list.setSpacing(4)
         self.file_list.itemSelectionChanged.connect(self._on_selection_changed)
-        layout.addWidget(self.file_list, stretch=1)
+        section.add_widget(self.file_list, stretch=1)
 
         self.empty_list_label = QLabel("Откройте папку или перетащите изображения")
         self.empty_list_label.setProperty("class", "InspectorPlaceholder")
         self.empty_list_label.setAlignment(Qt.AlignCenter)
         self.empty_list_label.setWordWrap(True)
-        layout.addWidget(self.empty_list_label)
-        return panel
+        section.add_widget(self.empty_list_label)
+        return section
 
     def _build_preview_panel(self) -> QWidget:
-        panel = QFrame()
-        panel.setProperty("class", "MetadataPreview")
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(12, 0, 12, 0)
-        layout.setSpacing(8)
+        section = Section(
+            "Предпросмотр",
+            "Проверка выбранного изображения",
+            show_divider=False,
+            spacing=8,
+            content_spacing=8,
+            variant="preview",
+        )
+        section.setProperty("class", "Section MetadataPreview")
+        section.content_layout().setContentsMargins(12, 0, 12, 0)
 
-        header = QHBoxLayout()
-        self.preview_title = QLabel("Предпросмотр")
-        self.preview_title.setProperty("class", "SectionTitle")
-        header.addWidget(self.preview_title)
-        header.addStretch()
+        # Сохраняем прежний публичный атрибут: остальная логика меняет его текст.
+        self.preview_title = section.title_label()
+
         self.preview_position = QLabel("")
         self.preview_position.setProperty("class", "MutedLabel")
-        header.addWidget(self.preview_position)
-        layout.addLayout(header)
+        section.add_action(self.preview_position)
 
         self.preview_label = QLabel("Выберите изображение")
         self.preview_label.setProperty("class", "ImagePreview")
         self.preview_label.setAlignment(Qt.AlignCenter)
         self.preview_label.setMinimumSize(360, 260)
         self.preview_label.setWordWrap(True)
-        layout.addWidget(self.preview_label, stretch=1)
+        section.add_widget(self.preview_label, stretch=1)
 
         self.preview_info = QLabel("Файл не выбран")
         self.preview_info.setProperty("class", "MutedLabel")
         self.preview_info.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.preview_info)
-        return panel
+        section.add_widget(self.preview_info)
+        return section
 
     def _build_editor_panel(self) -> QWidget:
-        panel = QFrame()
-        panel.setProperty("class", "MetadataEditor")
-        panel.setMinimumWidth(340)
-        panel.setMaximumWidth(430)
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(10)
+        section = Section(
+            "Редактор",
+            "Шаблоны и значения метаданных",
+            show_divider=False,
+            spacing=8,
+            content_spacing=10,
+            variant="editor",
+        )
+        section.setProperty("class", "Section MetadataEditor")
+        section.setMinimumWidth(340)
+        section.setMaximumWidth(430)
 
         template_row = QHBoxLayout()
+        template_row.setContentsMargins(0, 0, 0, 0)
+        template_row.setSpacing(8)
+
         self.template_combo = QComboBox()
         self.template_combo.setPlaceholderText("Выберите шаблон...")
         self.template_combo.currentTextChanged.connect(self._apply_template)
@@ -190,14 +204,15 @@ class MetadataPage(QWidget):
         self.save_template_btn = SecondaryButton("Сохранить")
         self.save_template_btn.clicked.connect(self._save_as_template)
         template_row.addWidget(self.save_template_btn)
-        layout.addLayout(template_row)
+        section.add_layout(template_row)
 
-        meta_card = Card()
-        header = CardHeader()
-        header.set_title("Метаданные")
-        meta_card.add_widget(header)
+        meta_card = PremiumCard(
+            title="Метаданные",
+            subtitle="Заполняются для всех выбранных файлов",
+            variant="metadata",
+            compact=True,
+        )
 
-        body = CardBody()
         self.title_field = TextField("Название")
         self.subject_field = TextField("Тема")
         self.author_field = TextField("Автор")
@@ -210,8 +225,7 @@ class MetadataPage(QWidget):
             self.comment_field,
             self.copyright_field,
         ):
-            body.add_widget(field)
-        meta_card.add_widget(body)
+            meta_card.add_widget(field)
 
         self.keywords_field = TagEditor()
         self.keywords_field.setPlaceholderText("Теги — по одному на строке")
@@ -222,26 +236,26 @@ class MetadataPage(QWidget):
         self.generate_tags_btn.setEnabled(False)
         self.generate_tags_btn.clicked.connect(self._generate_tags)
         meta_card.add_widget(self.generate_tags_btn)
-        layout.addWidget(meta_card, stretch=1)
+        section.add_widget(meta_card, stretch=1)
 
         self.delete_original_cb = QCheckBox("Удалить исходные файлы после конвертации")
-        layout.addWidget(self.delete_original_cb)
+        section.add_widget(self.delete_original_cb)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
         self.progress_bar.setValue(0)
-        layout.addWidget(self.progress_bar)
+        section.add_widget(self.progress_bar)
 
         self.action_btn = PrimaryButton("Записать метаданные")
         self.action_btn.setIcon(QIcon(str(resource_path("assets/icons/save.svg"))))
         self.action_btn.clicked.connect(self._start_processing)
-        layout.addWidget(self.action_btn)
+        section.add_widget(self.action_btn)
 
         self.cancel_btn = SecondaryButton("Отменить обработку")
         self.cancel_btn.setVisible(False)
         self.cancel_btn.clicked.connect(self._cancel_processing)
-        layout.addWidget(self.cancel_btn)
-        return panel
+        section.add_widget(self.cancel_btn)
+        return section
 
     def _build_status_bar(self) -> QHBoxLayout:
         status = QHBoxLayout()
