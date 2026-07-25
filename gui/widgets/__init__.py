@@ -7,6 +7,9 @@ from .buttons import (
     SuccessButton,
 )
 from .cards import Card, CardBody, CardHeader, PremiumCard
+from .divider import Divider
+from .section import Section
+from .toolbar import Toolbar
 from .inputs import SearchField, TagEditor, TextField
 from .labels import (
     BadgeLabel,
@@ -30,6 +33,9 @@ __all__ = [
     "CardHeader",
     "CardBody",
     "PremiumCard",
+    "Divider",
+    "Section",
+    "Toolbar",
     "TextField",
     "SearchField",
     "TagEditor",
