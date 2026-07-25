@@ -1,43 +1,72 @@
-﻿{
-    "name":  "Corporate",
-    "colors":  {
-                   "bg":  "#2E303C",
-                   "card":  "#3A3D4A",
-                   "surface":  "#464959",
-                   "text":  "#FDFEFF",
-                   "text_secondary":  "#B0B3C0",
-                   "accent":  "#F73A00",
-                   "accent_hover":  "#FF5A2A",
-                   "accent_pressed":  "#D92E00",
-                   "border":  "#4E5262",
-                   "hover":  "#3E4150",
-                   "success":  "#2ECC71",
-                   "warning":  "#F4B400",
-                   "error":  "#E74C3C",
-                   "selection":  "#F73A0033",
-                   "icon": "#FDFEFF"
-               },
-    "spacing":  {
-                    "xs":  4,
-                    "sm":  8,
-                    "md":  16,
-                    "lg":  24,
-                    "xl":  32
-                },
-    "radius":  {
-                   "sm":  6,
-                   "md":  10,
-                   "lg":  16
-               },
-    "typography":  {
-                       "family":  "Inter",
-                       "size":  13,
-                       "size_small":  11,
-                       "size_large":  16
-                   },
-    "animation":  {
-                      "fast":  150,
-                      "normal":  200,
-                      "slow":  300
-                  }
+{
+  "name": "Corporate Premium",
+  "colors": {
+    "bg": "#2E303C",
+    "card": "#3A3D4A",
+    "surface": "#464959",
+    "surface_hover": "#505464",
+    "surface_pressed": "#393C49",
+    "text": "#FDFEFF",
+    "text_secondary": "#B0B3C0",
+    "text_disabled": "#777B89",
+    "accent": "#F73A00",
+    "accent_hover": "#FF5A2A",
+    "accent_pressed": "#D92E00",
+    "accent_soft": "#F73A0026",
+    "border": "#4E5262",
+    "border_hover": "#666B7D",
+    "hover": "#3E4150",
+    "success": "#2ECC71",
+    "success_hover": "#3ED983",
+    "success_pressed": "#25A85C",
+    "success_soft": "#2ECC7126",
+    "warning": "#F4B400",
+    "warning_soft": "#F4B40026",
+    "error": "#E74C3C",
+    "error_hover": "#F05D4E",
+    "error_pressed": "#C83D30",
+    "error_soft": "#E74C3C26",
+    "selection": "#F73A0033",
+    "icon": "#FDFEFF",
+    "focus": "#FF6B3D"
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32,
+    "xxl": 48
+  },
+  "radius": {
+    "xs": 8,
+    "sm": 12,
+    "md": 16,
+    "lg": 22,
+    "xl": 28,
+    "pill": 22
+  },
+  "size": {
+    "button": 44,
+    "button_compact": 36,
+    "icon_button": 40,
+    "input": 44,
+    "input_compact": 36,
+    "control_icon": 20,
+    "focus_border": 2
+  },
+  "typography": {
+    "family": "Inter",
+    "size": 13,
+    "size_small": 11,
+    "size_large": 16,
+    "weight_medium": 500,
+    "weight_semibold": 600,
+    "weight_bold": 700
+  },
+  "animation": {
+    "fast": 150,
+    "normal": 200,
+    "slow": 300
+  }
 }

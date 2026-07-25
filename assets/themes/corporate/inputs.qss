@@ -1,0 +1,263 @@
+/* Teggy Premium Foundation — inputs
+   Состояния поддерживают свойства state=error|success|warning. */
+
+QLineEdit,
+QTextEdit,
+QPlainTextEdit,
+QSpinBox,
+QDoubleSpinBox,
+QDateEdit,
+QDateTimeEdit,
+QTimeEdit,
+QComboBox {
+    min-height: @size_input px;
+    padding: 0 @spacing_md px;
+    background-color: @colors_card;
+    color: @colors_text;
+    selection-background-color: @colors_accent;
+    selection-color: @colors_text;
+    border: 1px solid @colors_border;
+    border-radius: @radius_md px;
+    font-family: "@typography_family";
+    font-size: @typography_size px;
+    outline: none;
+}
+
+QTextEdit,
+QPlainTextEdit {
+    padding: @spacing_sm px @spacing_md px;
+}
+
+QLineEdit:hover,
+QTextEdit:hover,
+QPlainTextEdit:hover,
+QSpinBox:hover,
+QDoubleSpinBox:hover,
+QDateEdit:hover,
+QDateTimeEdit:hover,
+QTimeEdit:hover,
+QComboBox:hover {
+    background-color: @colors_surface;
+    border-color: @colors_border_hover;
+}
+
+QLineEdit:focus,
+QTextEdit:focus,
+QPlainTextEdit:focus,
+QSpinBox:focus,
+QDoubleSpinBox:focus,
+QDateEdit:focus,
+QDateTimeEdit:focus,
+QTimeEdit:focus,
+QComboBox:focus,
+QComboBox:on {
+    background-color: @colors_card;
+    border: @size_focus_border px solid @colors_focus;
+}
+
+QLineEdit:disabled,
+QTextEdit:disabled,
+QPlainTextEdit:disabled,
+QSpinBox:disabled,
+QDoubleSpinBox:disabled,
+QDateEdit:disabled,
+QDateTimeEdit:disabled,
+QTimeEdit:disabled,
+QComboBox:disabled {
+    background-color: @colors_surface_pressed;
+    color: @colors_text_disabled;
+    border-color: @colors_border;
+}
+
+QLineEdit:read-only,
+QTextEdit:read-only,
+QPlainTextEdit:read-only {
+    background-color: @colors_surface_pressed;
+    color: @colors_text_secondary;
+}
+
+/* Concrete Teggy widgets */
+QLineEdit[class="TextField"],
+QLineEdit[class="SearchField"],
+QTextEdit[class="TagEditor"] {
+    background-color: @colors_card;
+}
+
+QLineEdit[class="SearchField"] {
+    padding-left: @spacing_lg px;
+    border-radius: @radius_pill px;
+}
+
+QTextEdit[class="TagEditor"] {
+    min-height: 120px;
+    border-radius: @radius_lg px;
+}
+
+/* Validation states set by InputStateMixin */
+QLineEdit[state="error"],
+QTextEdit[state="error"],
+QPlainTextEdit[state="error"] {
+    background-color: @colors_error_soft;
+    border: @size_focus_border px solid @colors_error;
+}
+
+QLineEdit[state="success"],
+QTextEdit[state="success"],
+QPlainTextEdit[state="success"] {
+    background-color: @colors_success_soft;
+    border: @size_focus_border px solid @colors_success;
+}
+
+QLineEdit[state="warning"],
+QTextEdit[state="warning"],
+QPlainTextEdit[state="warning"] {
+    background-color: @colors_warning_soft;
+    border: @size_focus_border px solid @colors_warning;
+}
+
+/* Optional compact mode */
+QLineEdit[compact="true"],
+QTextEdit[compact="true"],
+QPlainTextEdit[compact="true"],
+QSpinBox[compact="true"],
+QDoubleSpinBox[compact="true"],
+QComboBox[compact="true"] {
+    min-height: @size_input_compact px;
+    padding-left: @spacing_sm px;
+    padding-right: @spacing_sm px;
+    border-radius: @radius_sm px;
+    font-size: @typography_size_small px;
+}
+
+/* ComboBox */
+QComboBox {
+    padding-right: @spacing_xl px;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: @size_input px;
+    background-color: transparent;
+    border: none;
+    border-left: 1px solid @colors_border;
+    border-top-right-radius: @radius_md px;
+    border-bottom-right-radius: @radius_md px;
+}
+
+QComboBox::drop-down:hover {
+    background-color: @colors_hover;
+}
+
+QComboBox::down-arrow {
+    width: 10px;
+    height: 10px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: @colors_card;
+    color: @colors_text;
+    selection-background-color: @colors_accent;
+    selection-color: @colors_text;
+    border: 1px solid @colors_border;
+    border-radius: @radius_sm px;
+    padding: @spacing_xs px;
+    outline: none;
+}
+
+QComboBox QAbstractItemView::item {
+    min-height: @size_input_compact px;
+    padding: 0 @spacing_sm px;
+    border-radius: @radius_xs px;
+}
+
+/* Spin boxes */
+QSpinBox,
+QDoubleSpinBox,
+QDateEdit,
+QDateTimeEdit,
+QTimeEdit {
+    padding-right: @size_input px;
+}
+
+QSpinBox::up-button,
+QDoubleSpinBox::up-button,
+QDateEdit::up-button,
+QDateTimeEdit::up-button,
+QTimeEdit::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 28px;
+    background-color: transparent;
+    border: none;
+    border-left: 1px solid @colors_border;
+    border-top-right-radius: @radius_md px;
+}
+
+QSpinBox::down-button,
+QDoubleSpinBox::down-button,
+QDateEdit::down-button,
+QDateTimeEdit::down-button,
+QTimeEdit::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 28px;
+    background-color: transparent;
+    border: none;
+    border-left: 1px solid @colors_border;
+    border-bottom-right-radius: @radius_md px;
+}
+
+QSpinBox::up-button:hover,
+QSpinBox::down-button:hover,
+QDoubleSpinBox::up-button:hover,
+QDoubleSpinBox::down-button:hover,
+QDateEdit::up-button:hover,
+QDateEdit::down-button:hover,
+QDateTimeEdit::up-button:hover,
+QDateTimeEdit::down-button:hover,
+QTimeEdit::up-button:hover,
+QTimeEdit::down-button:hover {
+    background-color: @colors_hover;
+}
+
+/* Checkboxes and radio buttons */
+QCheckBox,
+QRadioButton {
+    color: @colors_text;
+    spacing: @spacing_sm px;
+    font-family: "@typography_family";
+    font-size: @typography_size px;
+}
+
+QCheckBox:disabled,
+QRadioButton:disabled {
+    color: @colors_text_disabled;
+}
+
+QCheckBox::indicator,
+QRadioButton::indicator {
+    width: 18px;
+    height: 18px;
+    background-color: @colors_card;
+    border: 1px solid @colors_border;
+}
+
+QCheckBox::indicator {
+    border-radius: @radius_xs px;
+}
+
+QRadioButton::indicator {
+    border-radius: 10px;
+}
+
+QCheckBox::indicator:hover,
+QRadioButton::indicator:hover {
+    border-color: @colors_accent;
+}
+
+QCheckBox::indicator:checked,
+QRadioButton::indicator:checked {
+    background-color: @colors_accent;
+    border: 2px solid @colors_accent_hover;
+}
