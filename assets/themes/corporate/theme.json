@@ -28,7 +28,8 @@
     "error_soft": "#E74C3C26",
     "selection": "#F73A0033",
     "icon": "#FDFEFF",
-    "focus": "#FF6B3D"
+    "focus": "#FF6B3D",
+    "overlay": "#14151BCC"
   },
   "spacing": {
     "xs": 4,
@@ -58,7 +59,12 @@
     "sidebar": 264,
     "sidebar_item": 44,
     "card_header": 48,
-    "divider": 1
+    "divider": 1,
+    "scrollbar": 12,
+    "scrollbar_handle_min": 36,
+    "table_row": 42,
+    "table_header": 40,
+    "dialog_min_width": 420
   },
   "typography": {
     "family": "Inter",
