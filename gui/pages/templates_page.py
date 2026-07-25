@@ -7,7 +7,6 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QListWidget,
     QListWidgetItem,
     QMessageBox,
@@ -20,8 +19,11 @@ from core.exceptions import TemplateError
 from core.paths import resource_path
 from core.template_manager import TemplateManager
 from gui.widgets.buttons import PrimaryButton, SecondaryButton
-from gui.widgets.cards import Card, CardBody, CardHeader
-from gui.widgets.inputs import TagEditor, TextField
+from gui.widgets.cards import PremiumCard
+from gui.widgets.divider import Divider
+from gui.widgets.inputs import SearchField, TagEditor, TextField
+from gui.widgets.section import Section
+from gui.widgets.toolbar import Toolbar
 
 
 class TemplatesPage(QWidget):
@@ -61,63 +63,45 @@ class TemplatesPage(QWidget):
         self._refresh_list()
         self._create_template(log_event=False)
 
-    def _build_header(self) -> QWidget:
-        header = QWidget()
-        header.setProperty("class", "TemplatesWorkspaceHeader")
-        layout = QHBoxLayout(header)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(12)
-
-        text_box = QVBoxLayout()
-        text_box.setSpacing(2)
-
-        title = QLabel("Templates 2.0")
-        title.setProperty("class", "PageTitle")
-        text_box.addWidget(title)
-
-        subtitle = QLabel("Создавайте, находите и редактируйте наборы метаданных")
-        subtitle.setProperty("class", "PageSubtitle")
-        text_box.addWidget(subtitle)
-
-        layout.addLayout(text_box)
-        layout.addStretch()
+    def _build_header(self) -> Toolbar:
+        toolbar = Toolbar(
+            title="Templates 2.0",
+            subtitle="Создавайте, находите и редактируйте наборы метаданных",
+        )
+        toolbar.setProperty("class", "Toolbar TemplatesWorkspaceHeader")
 
         self.header_create_btn = PrimaryButton("Новый шаблон")
         self.header_create_btn.clicked.connect(self._create_template)
-        layout.addWidget(self.header_create_btn)
-        return header
+        toolbar.add_action(self.header_create_btn)
+        return toolbar
 
-    def _build_library_panel(self) -> QWidget:
-        panel = QWidget()
-        panel.setProperty("class", "TemplateLibraryPanel")
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(10)
+    def _build_library_panel(self) -> Section:
+        section = Section(
+            "Библиотека шаблонов",
+            "Поиск, копирование и удаление сохранённых наборов",
+            show_divider=False,
+            content_spacing=10,
+        )
+        section.setProperty("class", "Section TemplateLibraryPanel")
+        section.setMinimumWidth(280)
 
-        card = Card()
-        header = CardHeader()
-        header.set_title("Библиотека шаблонов")
-        card.add_widget(header)
-
-        body = CardBody()
-
-        self.search_field = QLineEdit()
-        self.search_field.setProperty("class", "TemplateSearch")
-        self.search_field.setPlaceholderText("Поиск по названию и содержимому...")
-        self.search_field.setClearButtonEnabled(True)
+        self.search_field = SearchField(
+            placeholder="Поиск по названию и содержимому..."
+        )
+        self.search_field.setProperty("class", "SearchField TemplateSearch")
         self.search_field.textChanged.connect(self._apply_filter)
-        body.add_widget(self.search_field)
+        section.add_widget(self.search_field)
 
         self.library_summary = QLabel("0 шаблонов")
         self.library_summary.setProperty("class", "TemplateLibrarySummary")
-        body.add_widget(self.library_summary)
+        section.add_widget(self.library_summary)
 
         self.template_list = QListWidget()
         self.template_list.setProperty("class", "TemplateList TemplateLibrary")
         self.template_list.setSelectionMode(QAbstractItemView.SingleSelection)
         self.template_list.setAlternatingRowColors(True)
         self.template_list.itemSelectionChanged.connect(self._on_list_selection_changed)
-        body.add_widget(self.template_list)
+        section.add_widget(self.template_list, stretch=1)
 
         actions = QHBoxLayout()
         actions.setSpacing(8)
@@ -134,62 +118,56 @@ class TemplatesPage(QWidget):
         self.delete_btn.clicked.connect(self._delete_template)
         actions.addWidget(self.delete_btn)
 
-        body.add_layout(actions)
-        card.add_widget(body)
-        layout.addWidget(card)
-        return panel
+        section.add_layout(actions)
+        return section
 
-    def _build_editor_panel(self) -> QWidget:
-        panel = QWidget()
-        panel.setProperty("class", "TemplateEditorPanel")
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(10)
+    def _build_editor_panel(self) -> Section:
+        section = Section(
+            "Редактор шаблона",
+            "Настройте поля, которые будут применяться к метаданным",
+            show_divider=False,
+            content_spacing=10,
+        )
+        section.setProperty("class", "Section TemplateEditorPanel")
 
-        editor_card = Card()
-        editor_header = CardHeader()
-        editor_header.set_title("Редактор шаблона")
-        editor_card.add_widget(editor_header)
-
-        body = CardBody()
+        editor_card = PremiumCard(compact=True)
+        editor_card.setProperty("class", "Card PremiumCard TemplateEditorCard")
 
         self.editor_hint = QLabel("Новый шаблон")
         self.editor_hint.setProperty("class", "TemplateEditorHint")
-        body.add_widget(self.editor_hint)
+        editor_card.add_widget(self.editor_hint)
 
         self.template_name_field = TextField("Имя шаблона")
-        body.add_widget(self.template_name_field)
+        editor_card.add_widget(self.template_name_field)
 
-        separator = QFrame()
-        separator.setFrameShape(QFrame.HLine)
-        separator.setProperty("class", "TemplateEditorSeparator")
-        body.add_widget(separator)
+        separator = Divider.horizontal()
+        separator.setProperty("class", "Divider TemplateEditorSeparator")
+        editor_card.add_widget(separator)
 
         self.title_field = TextField("Название")
-        body.add_widget(self.title_field)
+        editor_card.add_widget(self.title_field)
 
         self.subject_field = TextField("Тема")
-        body.add_widget(self.subject_field)
+        editor_card.add_widget(self.subject_field)
 
         self.author_field = TextField("Автор")
-        body.add_widget(self.author_field)
+        editor_card.add_widget(self.author_field)
 
         self.keywords_label = QLabel("Ключевые слова")
         self.keywords_label.setProperty("class", "FieldLabel")
-        body.add_widget(self.keywords_label)
+        editor_card.add_widget(self.keywords_label)
 
         self.keywords_field = TagEditor()
         self.keywords_field.setPlaceholderText("Один тег на строку")
-        body.add_widget(self.keywords_field)
+        editor_card.add_widget(self.keywords_field)
 
         self.comment_field = TextField("Комментарий")
-        body.add_widget(self.comment_field)
+        editor_card.add_widget(self.comment_field)
 
         self.copyright_field = TextField("Авторские права")
-        body.add_widget(self.copyright_field)
+        editor_card.add_widget(self.copyright_field)
 
-        editor_card.add_widget(body)
-        layout.addWidget(editor_card, stretch=1)
+        section.add_widget(editor_card, stretch=1)
 
         action_row = QHBoxLayout()
         action_row.setSpacing(8)
@@ -205,11 +183,11 @@ class TemplatesPage(QWidget):
         self.save_btn.clicked.connect(self._save_template)
         action_row.addWidget(self.save_btn)
 
-        layout.addLayout(action_row)
-        return panel
+        section.add_layout(action_row)
+        return section
 
     def _build_status_bar(self) -> QWidget:
-        bar = QWidget()
+        bar = QFrame()
         bar.setProperty("class", "TemplateStatusBar")
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(12, 8, 12, 8)
