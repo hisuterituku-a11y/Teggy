@@ -1,0 +1,91 @@
+/* Teggy Premium Foundation — toolbar and application header */
+
+QToolBar,
+Toolbar,
+QWidget[toolbar="true"] {
+    min-height: @size_toolbar px;
+    max-height: @size_toolbar px;
+    background-color: @colors_bg;
+    border: none;
+    border-bottom: 1px solid @colors_border;
+    spacing: @spacing_sm px;
+    padding: 0 @spacing_md px;
+}
+
+QToolBar::separator {
+    width: @size_divider px;
+    margin: @spacing_sm px;
+    background-color: @colors_border;
+}
+
+QToolBar QToolButton,
+Toolbar QToolButton,
+QWidget[toolbar="true"] QToolButton {
+    min-width: @size_icon_button px;
+    max-width: @size_icon_button px;
+    min-height: @size_icon_button px;
+    max-height: @size_icon_button px;
+    padding: 0;
+    background-color: transparent;
+    color: @colors_text;
+    border: 1px solid transparent;
+    border-radius: @radius_pill px;
+}
+
+QToolBar QToolButton:hover,
+Toolbar QToolButton:hover,
+QWidget[toolbar="true"] QToolButton:hover {
+    background-color: @colors_hover;
+    border-color: @colors_border;
+}
+
+QToolBar QToolButton:pressed,
+QToolBar QToolButton:checked,
+Toolbar QToolButton:pressed,
+Toolbar QToolButton:checked,
+QWidget[toolbar="true"] QToolButton:pressed,
+QWidget[toolbar="true"] QToolButton:checked {
+    background-color: @colors_accent_soft;
+    border-color: @colors_accent;
+}
+
+Header,
+QWidget[appHeader="true"] {
+    min-height: @size_toolbar px;
+    background-color: @colors_bg;
+    border: none;
+    border-bottom: 1px solid @colors_border;
+}
+
+Header QLabel[role="title"],
+QWidget[appHeader="true"] QLabel[role="title"] {
+    color: @colors_text;
+    font-family: "@typography_family";
+    font-size: @typography_size_large px;
+    font-weight: @typography_weight_bold;
+}
+
+Header QLabel[role="subtitle"],
+QWidget[appHeader="true"] QLabel[role="subtitle"] {
+    color: @colors_text_secondary;
+    font-family: "@typography_family";
+    font-size: @typography_size_small px;
+}
+
+/* Хлебные крошки и тихие действия */
+QLabel[role="breadcrumb"] {
+    color: @colors_text_secondary;
+    font-size: @typography_size_small px;
+}
+
+QPushButton[role="headerAction"],
+QToolButton[role="headerAction"] {
+    background-color: transparent;
+    border-color: transparent;
+}
+
+QPushButton[role="headerAction"]:hover,
+QToolButton[role="headerAction"]:hover {
+    background-color: @colors_hover;
+    border-color: @colors_border;
+}

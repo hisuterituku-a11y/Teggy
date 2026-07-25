@@ -53,7 +53,12 @@
     "input": 44,
     "input_compact": 36,
     "control_icon": 20,
-    "focus_border": 2
+    "focus_border": 2,
+    "toolbar": 60,
+    "sidebar": 264,
+    "sidebar_item": 44,
+    "card_header": 48,
+    "divider": 1
   },
   "typography": {
     "family": "Inter",
