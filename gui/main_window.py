@@ -6,12 +6,13 @@ from PySide6.QtWidgets import (
     QStackedWidget,
 )
 
+from core.version import display_version
 from gui.components.sidebar import Sidebar
 from gui.components.topbar import TopBar
 from gui.pages.dashboard import Dashboard
 from gui.pages.tagging import TaggingPage
 from gui.pages.yandex_maps import YandexMapsPage
-from PySide6.QtWidgets import QPushButton
+
 
 class MainWindow(QMainWindow):
     def __init__(self, theme_manager=None):
@@ -19,7 +20,7 @@ class MainWindow(QMainWindow):
 
         self.theme_manager = theme_manager
 
-        self.setWindowTitle("Teggy")
+        self.setWindowTitle(display_version())
         self.resize(1440, 900)
 
         central = QWidget()
@@ -46,7 +47,6 @@ class MainWindow(QMainWindow):
         self.dashboard_page = Dashboard()
         self.photo_page = TaggingPage()
         self.yandex_maps_page = YandexMapsPage()
-
 
         self.pages.addWidget(
             self.dashboard_page
