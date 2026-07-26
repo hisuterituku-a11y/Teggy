@@ -1,109 +1,80 @@
-"""
-Конвертация изображений в JPG.
-"""
+"""Конвертация изображений в JPG."""
 
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
+
 from PIL import Image
 
 from core.exceptions import ConversionError
 
 
 class ImageConverter:
-    """
-    Конвертирует изображения в JPG.
+    """Конвертирует WebP, PNG, BMP и TIFF в JPG."""
 
-    Поддерживаемые форматы: WebP, PNG, BMP, TIFF.
-    """
-
-    SUPPORTED_FORMATS = {'.webp', '.png', '.bmp', '.tif', '.tiff'}
+    SUPPORTED_FORMATS = {".webp", ".png", ".bmp", ".tif", ".tiff"}
 
     @staticmethod
     def convert(
         filepath: Path,
         output_dir: Optional[Path] = None,
         quality: int = 100,
-        delete_original: bool = False
+        delete_original: bool = False,
     ) -> Path:
-        """
-        Конвертирует одно изображение в JPG.
+        """Конвертирует одно изображение в JPG.
 
-        Args:
-            filepath: путь к файлу
-            output_dir: папка для сохранения (если None — рядом с оригиналом)
-            quality: качество JPG (1-100)
-            delete_original: удалить исходный файл
-
-        Returns:
-            путь к новому файлу
-
-        Raises:
-            ConversionError: если не удалось конвертировать
+        При ``delete_original=True`` новый JPG создаётся рядом с исходником,
+        после чего исходный файл удаляется. Так режим замены действительно
+        заменяет фото, а не переносит результат в чужую папку.
         """
         try:
-            # Проверяем формат
+            filepath = Path(filepath)
             suffix = filepath.suffix.lower()
             if suffix not in ImageConverter.SUPPORTED_FORMATS:
                 raise ConversionError(
                     f"Формат {suffix} не поддерживается. "
-                    f"Поддерживаемые: {', '.join(ImageConverter.SUPPORTED_FORMATS)}"
+                    f"Поддерживаемые: {', '.join(sorted(ImageConverter.SUPPORTED_FORMATS))}"
                 )
 
-            # Определяем выходной путь
-            if output_dir is None:
-                output_dir = filepath.parent
+            target_dir = filepath.parent if delete_original else (output_dir or filepath.parent)
+            target_dir.mkdir(parents=True, exist_ok=True)
+            new_path = target_dir / f"{filepath.stem}.jpg"
 
-            output_dir.mkdir(parents=True, exist_ok=True)
-            new_name = filepath.stem + '.jpg'
-            new_path = output_dir / new_name
+            with Image.open(filepath) as image:
+                if image.mode not in ("RGB", "L"):
+                    image = image.convert("RGB")
+                elif image.mode == "L":
+                    image = image.convert("RGB")
+                image.save(new_path, "JPEG", quality=quality, subsampling=0)
 
-            # Открываем и конвертируем
-            img = Image.open(filepath)
-
-            # Конвертируем в RGB (для JPG)
-            if img.mode in ('RGBA', 'LA', 'P'):
-                img = img.convert('RGB')
-
-            # Сохраняем как JPG
-            img.save(new_path, 'JPEG', quality=quality, subsampling=0)
-
-            # Удаляем оригинал если нужно
-            if delete_original:
+            if delete_original and filepath.resolve() != new_path.resolve():
                 filepath.unlink()
 
             return new_path
-
-        except Exception as e:
-            raise ConversionError(f"Ошибка конвертации {filepath.name}: {e}")
+        except ConversionError:
+            raise
+        except Exception as error:
+            raise ConversionError(f"Ошибка конвертации {filepath.name}: {error}") from error
 
     @staticmethod
     def convert_batch(
         filepaths: List[Path],
         output_dir: Optional[Path] = None,
         quality: int = 100,
-        delete_original: bool = False
+        delete_original: bool = False,
     ) -> Dict[Path, Optional[Path]]:
-        """
-        Конвертирует несколько изображений в JPG.
-
-        Returns:
-            словарь {оригинал: новый_файл или None если ошибка}
-        """
-        results = {}
+        results: Dict[Path, Optional[Path]] = {}
         for filepath in filepaths:
             try:
-                new_path = ImageConverter.convert(
+                results[filepath] = ImageConverter.convert(
                     filepath,
                     output_dir,
                     quality,
-                    delete_original
+                    delete_original,
                 )
-                results[filepath] = new_path
             except ConversionError:
                 results[filepath] = None
         return results
 
     @staticmethod
     def needs_conversion(filepath: Path) -> bool:
-        """Проверяет, нужно ли конвертировать файл."""
-        return filepath.suffix.lower() in ImageConverter.SUPPORTED_FORMATS
+        return Path(filepath).suffix.lower() in ImageConverter.SUPPORTED_FORMATS
