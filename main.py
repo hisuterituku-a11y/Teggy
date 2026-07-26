@@ -18,8 +18,13 @@ if __name__ == "__main__":
     
     # Загружаем последнюю тему из настроек
     from core.settings import Settings
-    last_theme = Settings.get_theme() or "dark"
+    last_theme = Settings.get_theme() or "corporate"
     theme = theme_manager.load(last_theme)
+
+    print("THEME:", last_theme)
+    print("QSS LENGTH:", len(theme.qss))
+    print(theme.qss[:300])
+
     app.setStyleSheet(theme.qss)
     
     

@@ -1,0 +1,151 @@
+QWidget {
+    background: #070B18;
+    color: #F7F5FF;
+    font-family: "Segoe UI";
+}
+
+#Sidebar, #TopBar, #QuickCard, #StatCard {
+    background: #0E1428;
+    border: 1px solid #242D50;
+    border-radius: 20px;
+}
+
+#Logo {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+#LogoSub {
+    color: #9DA5C1;
+    font-size: 11px;
+}
+
+#SideButton {
+    background: transparent;
+    border: none;
+    color: #D8DDF4;
+    text-align: left;
+    padding: 12px;
+    border-radius: 14px;
+}
+
+#SideButton:hover {
+    background: #1A2343;
+}
+
+#PremiumCard {
+    background: #17102B;
+    border: 1px solid #915CFF;
+    border-radius: 18px;
+    padding: 16px;
+}
+
+#UserCard {
+    color: #D8DDF4;
+    padding: 12px;
+}
+
+#PageTitle {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+#Search {
+    background: #141B35;
+    border: 1px solid #242D50;
+    border-radius: 14px;
+    padding: 10px 14px;
+}
+
+#RoundButton {
+    min-width: 38px;
+    min-height: 38px;
+    border-radius: 19px;
+    background: #141B35;
+    border: 1px solid #242D50;
+}
+
+#CardIcon {
+    font-size: 26px;
+}
+
+#CardTitle, #StatTitle {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+#CardSubtitle {
+    color: #9DA5C1;
+}
+
+#StatValue {
+    font-size: 30px;
+    font-weight: 700;
+}
+#HeroPanel,
+#StatsBlock,
+#TaskCard,
+#FileList,
+#ProjectRow,
+#QuickStartCard {
+
+    background: #11182D;
+
+    border: 1px solid #27335A;
+
+    border-radius: 22px;
+
+    padding: 12px;
+}
+
+
+#HeroTitle {
+
+    font-size: 24px;
+
+    font-weight: 700;
+
+}
+
+
+#HeroSubtitle {
+
+    color: #9DA5C1;
+
+    font-size: 14px;
+
+}
+
+
+#QuickStartCard:hover {
+
+    border: 1px solid #8B5CF6;
+
+    background: #171F3A;
+
+}
+
+
+#CardTitle {
+
+    font-size: 16px;
+
+}
+
+
+#SectionTitle {
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+}
+
+
+#TaskText {
+
+    color: #CBD5E1;
+
+    font-size: 15px;
+
+}

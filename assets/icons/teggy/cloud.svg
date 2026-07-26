@@ -1,0 +1,41 @@
+<svg width="32"
+height="32"
+viewBox="0 0 32 32"
+fill="none"
+xmlns="http://www.w3.org/2000/svg">
+
+
+<defs>
+<linearGradient id="cloud"
+x1="5"
+y1="5"
+x2="27"
+y2="27">
+
+<stop stop-color="#60A5FA"/>
+<stop offset="1" stop-color="#8B5CF6"/>
+
+</linearGradient>
+</defs>
+
+
+<path
+
+d="
+M10 24
+H23
+C25.8 24 27.5 22.1 27.5 19.8
+C27.5 17.4 25.7 15.6 23.4 15.5
+C22.6 12 19.7 9.5 16.3 9.5
+C13 9.5 10.2 11.7 9.3 14.8
+C6.7 15 5 16.9 5 19.3
+C5 21.9 7.2 24 10 24Z
+"
+
+stroke="url(#cloud)"
+stroke-width="2"
+stroke-linecap="round"
+stroke-linejoin="round"/>
+
+
+</svg>

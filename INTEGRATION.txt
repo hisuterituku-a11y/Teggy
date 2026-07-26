@@ -1,0 +1,52 @@
+TEGGY UI V2 — PAGES
+
+Скопируй папку gui/pages в проект с заменой нужных файлов.
+
+Рекомендуемые импорты:
+
+from gui.pages.dashboard_page import DashboardPage
+from gui.pages.metadata_page import MetadataPage
+from gui.pages.templates_page import TemplatesPage
+from gui.pages.yandex_page import YandexPage
+
+Совместимость сохранена:
+- HomePage = DashboardPage
+- YandexDownloaderPage = YandexPage
+
+Пример регистрации в QStackedWidget:
+
+self.dashboard_page = DashboardPage()
+self.metadata_page = MetadataPage()
+self.templates_page = TemplatesPage()
+self.yandex_page = YandexPage()
+
+self.pages.addWidget(self.dashboard_page)
+self.pages.addWidget(self.metadata_page)
+self.pages.addWidget(self.templates_page)
+self.pages.addWidget(self.yandex_page)
+
+Связи Dashboard:
+
+self.dashboard_page.page_requested.connect(self.navigate_to)
+self.dashboard_page.open_folder_requested.connect(
+    lambda: self.navigate_to("metadata")
+)
+self.dashboard_page.create_template_requested.connect(
+    lambda: self.navigate_to("templates")
+)
+
+Metadata -> Inspector:
+
+self.metadata_page.file_selected.connect(self.inspector.update_file_info)
+
+Templates -> Inspector:
+
+self.templates_page.template_context_changed.connect(
+    self.inspector.update_template_info
+)
+
+После изменения шаблонов:
+
+self.templates_page.templates_changed.connect(
+    self.metadata_page._refresh_templates
+)

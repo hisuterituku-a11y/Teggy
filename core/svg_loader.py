@@ -41,3 +41,4 @@ def load_svg_icon(path: Path, color: str) -> QIcon:
     except Exception as e:
         print(f"Ошибка загрузки иконки {path}: {e}")
         return QIcon()
+    

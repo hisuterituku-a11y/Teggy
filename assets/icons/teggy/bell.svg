@@ -1,0 +1,57 @@
+<svg width="24" height="24" viewBox="0 0 24 24"
+fill="none"
+xmlns="http://www.w3.org/2000/svg">
+
+<defs>
+    <linearGradient id="bellGradient"
+        x1="6"
+        y1="4"
+        x2="18"
+        y2="20">
+
+        <stop stop-color="#C084FC"/>
+        <stop offset="1" stop-color="#7C3AED"/>
+
+    </linearGradient>
+</defs>
+
+
+<path
+
+d="
+M18 10
+C18 6.7 15.8 4.5 12 4.5
+C8.2 4.5 6 6.7 6 10
+V14
+L4.8 16.2
+C4.5 16.8 4.9 17.5 5.6 17.5
+H18.4
+C19.1 17.5 19.5 16.8 19.2 16.2
+L18 14
+V10Z
+"
+
+fill="url(#bellGradient)"/>
+
+
+<path
+
+d="
+M9.5 19
+C10 20.1 10.9 20.5 12 20.5
+C13.1 20.5 14 20.1 14.5 19
+"
+
+stroke="#E9D5FF"
+stroke-width="1.6"
+stroke-linecap="round"/>
+
+
+<circle
+cx="17.5"
+cy="6.5"
+r="2.2"
+fill="#F43F86"/>
+
+
+</svg>

@@ -1,53 +1,62 @@
 from pathlib import Path
-from typing import Dict, List
 
-from gui.theme.compiler import QSSCompiler
-from gui.theme.loader import ThemeLoader
-from gui.theme.models import Theme
-from gui.theme.validator import ThemeValidator
+
+class ThemeData:
+    def __init__(self, qss: str):
+        self.qss = qss
 
 
 class ThemeManager:
-    """Управляет темами. Загружает, валидирует, компилирует и кэширует."""
 
-    def __init__(self, themes_dir: Path):
-        self.themes_dir = themes_dir
-        self._cache: Dict[str, Theme] = {}
+    def __init__(self, themes_path):
+        self.themes_path = Path(themes_path)
 
-    def load(self, name: str) -> Theme:
-        """Загружает тему с кэшированием."""
-        if name in self._cache:
-            return self._cache[name]
 
-        theme_path = self.themes_dir / name
-        data = ThemeLoader.load(theme_path)
-        ThemeValidator.validate(data)
-        qss = QSSCompiler.compile(theme_path, data)
+    def load(self, theme_name: str):
 
-        theme = Theme(
-            name=name,
-            path=theme_path,
-            colors=data.get("colors", {}),
-            spacing=data.get("spacing", {}),
-            radius=data.get("radius", {}),
-            typography=data.get("typography", {}),
-            animation=data.get("animation", {}),
-            icons=data.get("icons", {}),
-            patterns=data.get("patterns", {}),
-            qss=qss,
+        theme_folder = self.themes_path / theme_name
+
+        if not theme_folder.exists():
+            return ThemeData("")
+
+
+        qss_parts = []
+
+
+        # основной стиль
+        style = theme_folder / "style.qss"
+
+        if style.exists():
+            print("LOADING STYLE:", style)
+            
+            qss_parts.append(
+                style.read_text(
+                    encoding="utf-8"
+                )
+            )
+
+
+        # дополнительные стили
+        dashboard = theme_folder / "dashboard.qss"
+
+        if dashboard.exists():
+            qss_parts.append(
+                dashboard.read_text(
+                    encoding="utf-8"
+                )
+            )
+
+
+        inspector = theme_folder / "inspector.qss"
+
+        if inspector.exists():
+            qss_parts.append(
+                inspector.read_text(
+                    encoding="utf-8"
+                )
+            )
+
+
+        return ThemeData(
+            "\n\n".join(qss_parts)
         )
-        self._cache[name] = theme
-        return theme
-
-    def clear_cache(self) -> None:
-        self._cache.clear()
-
-    def list_themes(self) -> List[str]:
-        """Возвращает список доступных тем."""
-        if not self.themes_dir.exists():
-            return []
-        return [
-            directory.name
-            for directory in self.themes_dir.iterdir()
-            if directory.is_dir() and (directory / "theme.json").exists()
-        ]

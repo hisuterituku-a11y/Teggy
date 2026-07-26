@@ -1,450 +1,1234 @@
-/* Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ СЃС‚РёР»СЊ */
+/* =========================================
+   Teggy Corporate Neon UI
+   Dashboard v1
+========================================= */
+
+
 QWidget {
-    background: @colors_bg;
-    color: @colors_text;
+
+    color: #F7F5FF;
+
+    font-family: "Segoe UI";
+
+    font-size: 13px;
+
 }
 
 
-/* Скроллбары */
-QScrollBar:vertical {
-    background: @colors_bg;
-    width: 10px;
-    border-radius: 5px;
-    margin: 0px;
+QMainWindow,
+QStackedWidget,
+QScrollArea {
+
+    background: #070B18;
+
 }
 
-QScrollBar::handle:vertical {
-    background: @colors_border;
-    border-radius: 5px;
-    min-height: 20px;
+
+/* =========================
+   MAIN SHELL
+========================= */
+
+#Sidebar,
+#TopBar {
+
+    background: #0E1428;
+
+    border: 1px solid #242D50;
+
 }
 
-QScrollBar::handle:vertical:hover {
-    background: @colors_accent;
+
+/* =========================
+   SIDEBAR
+========================= */
+
+
+#Logo {
+
+    font-size: 26px;
+    font-weight: 700;
+
 }
 
-QScrollBar::add-line:vertical,
-QScrollBar::sub-line:vertical {
-    height: 0px;
-    background: transparent;
-}
 
-QScrollBar::add-page:vertical,
-QScrollBar::sub-page:vertical {
-    background: transparent;
-}
+#LogoSub {
 
-QScrollBar:horizontal {
-    background: @colors_bg;
-    height: 10px;
-    border-radius: 5px;
-    margin: 0px;
-}
-
-QScrollBar::handle:horizontal {
-    background: @colors_border;
-    border-radius: 5px;
-    min-width: 20px;
-}
-
-QScrollBar::handle:horizontal:hover {
-    background: @colors_accent;
-}
-
-QScrollBar::add-line:horizontal,
-QScrollBar::sub-line:horizontal {
-    width: 0px;
-    background: transparent;
-}
-
-QScrollBar::add-page:horizontal,
-QScrollBar::sub-page:horizontal {
-    background: transparent;
-}
-
-/* РљР°СЂС‚РѕС‡РєРё */
-QFrame[class="Card"] {
-    background: @colors_card;
-    border-radius: 10px;
-}
-
-QFrame[class="CardHeader"] {
-    background: @colors_card;
-    color: @colors_text;
-    font-weight: bold;
-    border-bottom: 1px solid @colors_border;
-    padding: @spacing_sm px @spacing_md px;
-    border-radius: 10px 10px 0 0;
-}
-
-QFrame[class="CardHeader"]:hover,
-QFrame[class="CardHeader"]:focus,
-QFrame[class="CardHeader"]:selected,
-QFrame[class="CardHeader"]:pressed {
-    background: @colors_card;
-    border: none;
-    outline: none;
-}
-
-QFrame[class="CardBody"] {
-    background: transparent;
-    padding: @spacing_md px;
-    border-radius: 0 0 10px 10px;
-}
-
-QLabel[class="CardHeaderLabel"] {
-    background: transparent;
-    color: @colors_text;
-}
-
-QLabel[class="CardHeaderLabel"]:hover,
-QLabel[class="CardHeaderLabel"]:focus,
-QLabel[class="CardHeaderLabel"]:selected {
-    background: transparent;
-    color: @colors_text;
-}
-
-/* РљРЅРѕРїРєРё */
-QPushButton {
-    border-radius: 8px;
-}
-
-QPushButton[class="PrimaryButton"] {
-    background: @colors_accent;
-    color: @colors_text;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 20px;
-    font-weight: bold;
-}
-
-QPushButton[class="PrimaryButton"]:hover {
-    background: @colors_accent_hover;
-}
-
-QPushButton[class="PrimaryButton"]:pressed {
-    background: @colors_accent_pressed;
-}
-
-QPushButton[class="PrimaryButton"]:disabled {
-    background: @colors_border;
-    color: @colors_text_secondary;
-}
-
-QPushButton[class="SecondaryButton"] {
-    background: transparent;
-    color: @colors_accent;
-    border: 1px solid @colors_accent;
-    border-radius: 8px;
-    padding: 8px 20px;
-}
-
-QPushButton[class="SecondaryButton"]:hover {
-    background: @colors_accent;
-    color: @colors_text;
-}
-
-QPushButton[class="SecondaryButton"]:pressed {
-    background: @colors_accent_pressed;
-    border-color: @colors_accent_pressed;
-}
-
-QPushButton[class="SecondaryButton"]:disabled {
-    border-color: @colors_border;
-    color: @colors_text_secondary;
-}
-
-QPushButton[class="IconButton"] {
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    padding: 4px;
-}
-
-QPushButton[class="IconButton"]:hover {
-    background: @colors_hover;
-}
-
-QPushButton[class="IconButton"]:pressed {
-    background: @colors_border;
-}
-
-/* РџРѕР»СЏ РІРІРѕРґР° */
-QLineEdit, QTextEdit {
-    border-radius: 8px;
-    padding: 6px 10px;
-    background: @colors_bg;
-    color: @colors_text;
-    border: 1px solid @colors_border;
-}
-
-QLineEdit:focus, QTextEdit:focus {
-    border-color: @colors_accent;
-}
-
-QLineEdit:disabled, QTextEdit:disabled {
-    color: @colors_text_secondary;
-}
-
-.TextField {
-    background: @colors_bg;
-    color: @colors_text;
-    border: 1px solid @colors_border;
-    border-radius: 8px;
-    padding: 6px 10px;
-}
-
-.TextField:focus {
-    border-color: @colors_accent;
-}
-
-.TextField:disabled {
-    color: @colors_text_secondary;
-}
-
-.TagEditor {
-    background: @colors_bg;
-    color: @colors_text;
-    border: 1px solid @colors_border;
-    border-radius: 8px;
-    padding: 6px 10px;
-}
-
-.TagEditor:focus {
-    border-color: @colors_accent;
-}
-
-/* ComboBox */
-QComboBox {
-    background: @colors_bg;
-    color: @colors_text;
-    border: 1px solid @colors_border;
-    border-radius: 8px;
-    padding: 6px 10px;
-    min-height: 20px;
-}
-
-QComboBox:hover {
-    border-color: @colors_accent;
-}
-
-QComboBox:focus {
-    border-color: @colors_accent;
-}
-
-QComboBox::drop-down {
-    border: none;
-    width: 20px;
-}
-
-QComboBox::down-arrow {
-    image: url(assets/icons/chevron-down.svg);
-    width: 12px;
-    height: 12px;
-}
-
-QComboBox:on {
-    border-color: @colors_accent;
-}
-
-QComboBox:disabled {
-    color: @colors_text_secondary;
-    border-color: @colors_border;
-}
-
-QComboBox QAbstractItemView {
-    background: @colors_card;
-    color: @colors_text;
-    border: 1px solid @colors_border;
-    border-radius: 8px;
-    padding: 4px;
-}
-
-QComboBox QAbstractItemView::item {
-    padding: 6px 10px;
-    border-radius: 4px;
-}
-
-QComboBox QAbstractItemView::item:hover {
-    background: @colors_hover;
-}
-
-QComboBox QAbstractItemView::item:selected {
-    background: @colors_selection;
-    color: @colors_text;
-    border-left: 3px solid @colors_accent;
-}
-
-/* РЎРїРёСЃРѕРє С„Р°Р№Р»РѕРІ */
-QListWidget[class="FileList"] {
-    background: @colors_bg;
-    color: @colors_text;
-    border: 1px solid @colors_border;
-    border-radius: 8px;
-    outline: none;
-    show-decoration-selected: 0;
-    selection-background-color: transparent;
-    selection-color: @colors_text;
-}
-
-QListWidget[class="FileList"]::item {
-    padding: @spacing_sm px @spacing_md px;
-    border-left: 3px solid transparent;
-    background: transparent;
-}
-
-QListWidget[class="FileList"]::item:hover {
-    background: @colors_hover;
-}
-
-QListWidget[class="FileList"]::item:selected {
-    background: transparent;
-    border-left: 3px solid @colors_accent;
-    color: @colors_text;
-}
-
-QListWidget[class="FileList"]::item:selected:hover {
-    background: transparent;
-}
-
-/* Р§РµРєР±РѕРєСЃ */
-QCheckBox {
-    color: @colors_text;
-    spacing: 8px;
-}
-
-QCheckBox::indicator {
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    border: 2px solid @colors_border;
-    background: @colors_bg;
-}
-
-QCheckBox::indicator:hover {
-    border-color: @colors_accent;
-}
-
-QCheckBox::indicator:checked {
-    background: @colors_accent;
-    border-color: @colors_accent;
-}
-
-QCheckBox::indicator:checked:hover {
-    background: @colors_accent_hover;
-}
-
-QCheckBox::indicator:disabled {
-    opacity: 0.5;
-}
-
-QCheckBox:disabled {
-    color: @colors_text_secondary;
-}
-
-/* РџСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂ */
-QProgressBar {
-    background: @colors_surface;
-    border: none;
-    border-radius: 8px;
-    height: 8px;
-}
-
-QProgressBar::chunk {
-    background: @colors_accent;
-    border-radius: 8px;
-}
-
-/* Р›РѕРі */
-.LogWidget {
-    background: @colors_bg;
-    color: @colors_text_secondary;
-    border: 1px solid @colors_border;
-    border-radius: 8px;
-    font-family: "Consolas";
+    color: #9DA5C1;
     font-size: 11px;
+
 }
 
-/* Header */
-.Header {
-    background: @colors_card;
-    border-bottom: 1px solid @colors_border;
-}
 
-.HeaderLogo {
-    color: @colors_text;
-    font-size: @typography_size_large px;
-    font-weight: bold;
-}
+#SideButton {
 
-.HeaderButton {
     background: transparent;
+
+    color: #D8DDF4;
+
+    border-radius: 14px;
+
+    padding: 12px;
+
+    text-align: left;
+
+}
+
+
+#SideButton:hover {
+
+    background: #151E3B;
+
+}
+
+
+#SideButton:checked {
+
+    background: #39206B;
+
+    border: 1px solid #915CFF;
+
+}
+
+
+/* =========================
+   TOP BAR
+========================= */
+
+
+#Search {
+
+    background: #141B35;
+
+    border: 1px solid #242D50;
+
+    border-radius: 14px;
+
+    padding: 10px 14px;
+
+}
+
+
+#RoundButton {
+
+    background: #141B35;
+
+    border: 1px solid #242D50;
+
+    border-radius: 18px;
+
+    min-width: 36px;
+    min-height: 36px;
+
+}
+
+#RoundButton:hover {
+
+    border-color: #915CFF;
+
+    background: #1A2343;
+
+}
+
+/* =========================
+   HERO
+========================= */
+
+
+#HeroPanel {
+
+    background:
+    qlineargradient(
+        x1:0,
+        y1:0,
+        x2:1,
+        y2:1,
+        stop:0 #111A3A,
+        stop:0.5 #1C1450,
+        stop:1 #34135A
+    );
+
+
+    border-radius: 26px;
+
+    border: 1px solid #413074;
+
+}
+
+
+#HeroTitle {
+
+    font-size: 24px;
+
+    font-weight: 700;
+
+}
+
+
+#HeroSubtitle {
+
+    color: #AAB2D4;
+
+}
+
+
+/* =========================
+   QUICK ACTIONS
+========================= */
+
+
+#QuickStartCard {
+
+    background: rgba(255,255,255,0.03);
+
+    border: 1px solid #303B68;
+
+    border-radius: 18px;
+
+}
+
+
+#QuickStartCard:hover {
+
+    border-color: #915CFF;
+
+    background: #1A2343;
+
+}
+
+
+#CardIcon {
+
+    font-size: 28px;
+
+}
+
+
+#CardTitle {
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+}
+
+
+#CardSubtitle {
+
+    color: #9DA5C1;
+
+}
+
+
+#RoundButton {
+
+    color: white;
+
+}
+
+
+/* =========================
+   STATISTICS
+========================= */
+
+
+#StatsBlock {
+
+    background: #0E1428;
+
+    border-radius: 22px;
+
+    border: 1px solid #242D50;
+
+}
+
+
+#SectionTitle {
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+}
+
+
+#StatValue {
+
+    font-size: 28px;
+
+    font-weight: 700;
+
+}
+
+
+/* =========================
+   TASK
+========================= */
+
+
+#TaskCard {
+
+    background: #0E1428;
+
+    border-radius: 22px;
+
+    border: 1px solid #242D50;
+
+}
+
+
+#TaskText {
+
+    color: #CBD5E1;
+
+}
+
+
+/* =========================
+   FILE LIST
+========================= */
+
+
+#FileList {
+
+    background: #0E1428;
+
+    border-radius: 22px;
+
+    border: 1px solid #242D50;
+
+}
+
+
+#FileList QLabel {
+
+    padding: 8px;
+
+    color: #D8DDF4;
+
+}
+
+
+/* =========================
+   PROJECTS
+========================= */
+
+
+#ProjectRow {
+
+    background: #0E1428;
+
+    border-radius: 16px;
+
+    border: 1px solid #242D50;
+
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+
+/* =========================
+   NORMAL BUTTONS
+========================= */
+
+QPushButton:hover {
+
+    background: #151E3B;
+
+}
+
+
+#RoundButton:hover {
+
+    background: #1A2343;
+
+    border-color: #915CFF;
+
+}
+
+
+QPushButton:hover {
+
+    background: #A778FF;
+
+}
+
+
+QPushButton:pressed {
+
+    background: #7042DA;
+
+}
+/* =========================
+   TASK PROGRESS
+========================= */
+
+
+#TaskProgress {
+
+    background: #141B35;
+
     border: none;
+
     border-radius: 8px;
-    padding: 4px;
+
+    height: 12px;
+
+    text-align: center;
+
+    color: #F7F5FF;
+
 }
 
-.HeaderButton:hover {
-    background: @colors_hover;
+
+#TaskProgress::chunk {
+
+    background: #915CFF;
+
+    border-radius: 8px;
+
 }
 
-/* Sidebar */
-.Sidebar {
-    background: @colors_card;
-    border-right: 1px solid @colors_border;
+
+
+/* =========================
+   FILE ITEMS
+========================= */
+
+#FileItem {
+
+    background: #11182D;
+
+    color: #D8DDF4;
+
+    border-radius: 12px;
+
+    padding: 8px;
+
+    margin-top: 6px;
+
 }
 
-.SidebarButton {
+
+#FileItem:hover {
+
+    background: #151E3B;
+
+}
+
+
+#FileItem:hover {
+
+    background: #151E3B;
+
+    border-radius: 10px;
+
+}
+
+
+
+/* =========================
+   PROJECT ROW
+========================= */
+
+
+
+#ProjectInfo {
+
+    color: #9DA5C1;
+
+}
+QLabel {
+
     background: transparent;
+
+}
+/* =========================================================
+   Sprint 3.6 additions
+   Новые элементы Dashboard:
+   - donut statistics
+   - file items
+   - task footer
+   - extended stats
+========================================================= */
+
+
+/* =========================
+   SMALL STAT VALUES
+========================= */
+
+#StatValueSmall {
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    color: #F7F5FF;
+
+}
+
+
+
+#StatsFooter {
+
+    color: #9DA5C1;
+
+    font-size: 12px;
+
+}
+
+
+
+/* =========================
+   TASK DETAILS
+========================= */
+
+
+#TaskStatus {
+
+    color: #21D99A;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+}
+
+
+
+#TaskFooter {
+
+    color: #9DA5C1;
+
+    font-size: 13px;
+
+}
+
+
+
+/* =========================
+   FILE ITEMS
+========================= */
+
+
+
+#FileItem:hover {
+
+    background: #151E3B;
+
+}
+
+
+#FileName {
+
+    color: #F7F5FF;
+
+    font-weight: 600;
+
+}
+
+
+#FileInfo {
+
+    color: #9DA5C1;
+
+    font-size: 12px;
+
+}
+
+
+
+/* =========================
+   PROJECT ROW
+========================= */
+
+
+#ProjectTitle {
+
+    color: #F7F5FF;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+}
+
+
+#ProjectInfo {
+
+    color: #9DA5C1;
+
+}
+
+/* =========================================================
+   Sprint 3.7 Sidebar polish
+   - premium navigation
+   - active state
+   - footer user block
+========================================================= */
+
+
+/* =========================
+   SIDEBAR CONTAINER
+========================= */
+
+#Sidebar {
+
+    background: #0B1022;
+
+    border-right: 1px solid #242D50;
+
+}
+
+
+/* =========================
+   LOGO AREA
+========================= */
+
+#Logo {
+
+    color: #FFFFFF;
+
+    font-size: 28px;
+
+    font-weight: 800;
+
+    padding-top: 8px;
+
+}
+
+
+#LogoSub {
+
+    color: #7F89AB;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+
+}
+
+
+/* =========================
+   NAVIGATION BUTTONS
+========================= */
+
+#SideButton {
+
+    min-height: 44px;
+
+    margin: 3px 10px;
+
+    padding-left: 14px;
+
+    padding-right: 14px;
+
+    border-radius: 12px;
+
+    color: #B9C2E3;
+
+    font-weight: 500;
+
+}
+
+
+#SideButton:hover {
+
+    background: #151D39;
+
+    color: #FFFFFF;
+
+}
+
+
+#SideButton:checked {
+
+    background:
+    qlineargradient(
+        x1:0,
+        y1:0,
+        x2:1,
+        y2:0,
+        stop:0 #39206B,
+        stop:1 #24164A
+    );
+
+
+    border: 1px solid #915CFF;
+
+    color: #FFFFFF;
+
+    font-weight: 700;
+
+}
+
+
+/* =========================
+   SIDEBAR ICON ALIGNMENT
+========================= */
+
+#SideButton::icon {
+
+    margin-left: 4px;
+
+    margin-right: 12px;
+
+}
+
+
+/* =========================
+   PREMIUM FOOTER
+========================= */
+
+#SidebarFooter {
+
+    background: #11182D;
+
+    border: 1px solid #303B68;
+
+    border-radius: 16px;
+
+    margin: 12px;
+
+    padding: 14px;
+
+}
+
+
+#SidebarFooter:hover {
+
+    border-color: #915CFF;
+
+}
+
+
+/* =========================
+   USER BLOCK
+========================= */
+
+#UserName {
+
+    color: #FFFFFF;
+
+    font-weight: 700;
+
+    font-size: 14px;
+
+}
+
+
+#UserPlan {
+
+    color: #915CFF;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+}
+
+
+#UserStorage {
+
+    color: #9DA5C1;
+
+    font-size: 12px;
+
+}
+
+
+/* =========================
+   SIDEBAR DIVIDER
+========================= */
+
+#SidebarDivider {
+
+    background: #242D50;
+
+    max-height: 1px;
+
+}
+
+
+/* =========================
+   SCROLL FIX
+========================= */
+
+#Sidebar QScrollBar:vertical {
+
+    background: transparent;
+
+    width: 6px;
+
+}
+
+
+#Sidebar QScrollBar::handle:vertical {
+
+    background: #303B68;
+
+    border-radius: 3px;
+
+}
+/* =========================================================
+   Sprint 3.8 TopBar polish
+
+   Улучшение верхней панели:
+   - стеклянный фон
+   - новые кнопки
+   - аккуратный поиск
+
+========================================================= */
+
+
+/* =========================
+   TOP BAR CONTAINER
+========================= */
+
+#TopBar {
+
+    background: #0B1022;
+
+    border-bottom: 1px solid #242D50;
+
+}
+
+
+/* =========================
+   PAGE TITLE
+========================= */
+
+#PageTitle {
+
+    color: #F7F5FF;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+}
+
+
+
+/* =========================
+   SEARCH
+========================= */
+
+#Search {
+
+    background: #141B35;
+
+    border: 1px solid #303B68;
+
+    border-radius: 18px;
+
+    min-height: 38px;
+
+    padding-left: 16px;
+
+    color: #F7F5FF;
+
+}
+
+
+#Search:focus {
+
+    border-color: #915CFF;
+
+}
+
+
+
+/* =========================
+   TOP BUTTONS
+========================= */
+
+
+#ThemeButton,
+#NotifyButton,
+#ProfileButton {
+
+
+    background: #141B35;
+
+    border: 1px solid #303B68;
+
+    border-radius: 18px;
+
+
+    min-width: 38px;
+
+    min-height: 38px;
+
+
+    color: #F7F5FF;
+
+}
+
+/* =========================
+   TOP BAR ICON SIZE
+========================= */
+
+/*
+   SVG внутри круглых кнопок.
+   Увеличиваем визуальный вес,
+   потому что stroke-иконки имеют
+   больше свободного пространства.
+*/
+
+#ThemeButton::icon,
+#NotifyButton::icon {
+
+    width: 22px;
+    height: 22px;
+
+}
+
+/* =========================
+   TOP ICONS
+========================= */
+
+/*
+   SVG-иконки внутри кнопок.
+   
+   Размер контролируем отдельно,
+   чтобы не зависеть от исходного SVG.
+*/
+
+#ThemeButton::icon,
+#NotifyButton::icon {
+
+    width: 20px;
+    height: 20px;
+
+}
+
+#ThemeButton:hover,
+#NotifyButton:hover,
+#ProfileButton:hover {
+
+
+    background: #1A2343;
+
+    border-color: #915CFF;
+
+
+}
+
+
+
+/* =========================
+   PROFILE BUTTON
+
+   LU как маленький аккаунт
+========================= */
+
+
+#ProfileButton {
+
+    background: qlineargradient(
+        x1:0,
+        y1:0,
+        x2:1,
+        y2:1,
+        stop:0 #915CFF,
+        stop:1 #5B21B6
+    );
+
     border: none;
-    border-radius: 8px;
-    padding: @spacing_sm px;
+
+    border-radius: 22px;
+
+    min-width: 42px;
+    min-height: 42px;
+
+    font-weight: 700;
+
+}
+/* =========================================================
+   Sprint 3.7.1 Sidebar profile cleanup
+   - единый профиль пользователя
+   - улучшение Premium блока
+========================================================= */
+
+
+/* =========================
+   PREMIUM CARD
+========================= */
+
+#PremiumCard {
+
+    background:
+    qlineargradient(
+        x1:0,
+        y1:0,
+        x2:1,
+        y2:1,
+        stop:0 #17102B,
+        stop:1 #24164A
+    );
+
+    border: 1px solid #915CFF;
+
+    border-radius: 16px;
+
+    padding: 14px;
+
+    color: #F7F5FF;
+
 }
 
-.SidebarButton:hover {
-    background: @colors_hover;
+
+
+/* =========================
+   USER PROFILE
+========================= */
+
+
+#UserCard {
+
+    background: #11182D;
+
+    border: 1px solid #242D50;
+
+    border-radius: 18px;
+
+    padding: 14px;
+
+    color: #F7F5FF;
+
+    font-size: 13px;
+
 }
 
-.SidebarButton:pressed {
-    background: @colors_accent;
+
+#UserCard:hover {
+
+    border-color: #915CFF;
+
+}
+/* =========================================================
+   Sprint 3.11 User avatar
+   Новый блок профиля Sidebar
+========================================================= */
+
+
+#Avatar {
+
+    background: qlineargradient(
+        x1:0,
+        y1:0,
+        x2:1,
+        y2:1,
+        stop:0 #A78BFA,
+        stop:1 #6D28D9
+    );
+
+    color: white;
+
+    border-radius: 20px;
+
+    min-width: 40px;
+    max-width: 40px;
+
+    min-height: 40px;
+    max-height: 40px;
+
+    font-weight: 700;
+
 }
 
-/* Inspector */
-.Inspector {
-    background: @colors_card;
-    border-left: 1px solid @colors_border;
+
+#UserName {
+
+    color: #F7F5FF;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
 }
 
-.InspectorTitle {
-    color: @colors_text;
-    font-size: @typography_size_large px;
-    font-weight: bold;
+
+#UserPlan {
+
+    color: #A78BFA;
+
+    font-size: 12px;
+
 }
 
-.InspectorInfo {
-    color: @colors_text_secondary;
+
+#UserStorage {
+
+    color: #9DA5C1;
+
+    font-size: 12px;
+
 }
 
-.InspectorPlaceholder {
-    color: @colors_text_secondary;
+/* =========================================================
+   Sprint 3.12 Premium Card
+   Карточка тарифа Sidebar
+========================================================= */
+
+
+#PremiumCard {
+
+    background:
+    qlineargradient(
+        x1:0,
+        y1:0,
+        x2:1,
+        y2:1,
+        stop:0 #17102B,
+        stop:1 #24164A
+    );
+
+    border: 1px solid #6942B5;
+
+    border-radius: 18px;
+
 }
 
-.InspectorSubtitle {
-    color: @colors_text;
-    font-weight: bold;
+
+#PremiumTitle {
+
+    color: #F7F5FF;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
 }
 
-.InspectorMetadata {
-    color: @colors_text;
+
+#PremiumText {
+
+    color: #C4B5FD;
+
+    font-size: 12px;
+
+}
+/* =========================================================
+Sprint 4.1 Teggy Logo
+========================================================= */
+
+
+#LogoIcon {
+
+    background: transparent;
+
 }
 
-.InspectorMuted {
-    color: @colors_text_secondary;
-    font-style: italic;
+
+#Logo {
+
+    font-size: 26px;
+
+    font-weight: 800;
+
+    color: #FFFFFF;
+
+}
+#PrimaryButton {
+
+    background: #915CFF;
+
+    border-radius: 12px;
+
+    padding: 10px 18px;
+
+    color: white;
+
 }
 
-/* BottomLog */
-.BottomLog {
-    background: @colors_bg;
-    border-top: 1px solid @colors_border;
+
+#PrimaryButton:hover {
+
+    background: #A778FF;
+
+}
+/* =========================
+   PHOTO PAGE
+========================= */
+
+
+#PhotoPanel {
+
+    background: #0E1428;
+
+    border: 1px solid #242D50;
+
+    border-radius: 22px;
+
+}
+
+
+#EmptyState {
+
+    color: #9DA5C1;
+
+    min-height: 160px;
+
+}
+
+
+#PrimaryButton {
+
+    background: #915CFF;
+
+    color: white;
+
+    border-radius: 12px;
+
+    padding: 10px 18px;
+
+    font-weight: 600;
+
+}
+
+
+#PrimaryButton:hover {
+
+    background: #A778FF;
+
+}
+#FolderItem {
+
+    background: #141B35;
+
+    border: 1px solid #303B68;
+
+    border-radius: 14px;
+
+}
+
+
+#FolderText {
+
+    color: #F7F5FF;
+
+    font-size: 13px;
+
+}
+
+
+#RemoveButton {
+
+    background: transparent;
+
+    color: #9DA5C1;
+
+    border: none;
+
+}
+
+
+#RemoveButton:hover {
+
+    color: #FF6B8A;
+
 }
