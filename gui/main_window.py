@@ -55,6 +55,9 @@ class MainWindow(QMainWindow):
         self.theme_manager = theme_manager
         self.update_service = UpdateService(self)
         self.update_service.update_available.connect(self._show_update_available)
+        self.update_service.no_update.connect(self._handle_no_update)
+        self.update_service.failed.connect(self._handle_update_failure)
+        self._manual_update_check = False
         self._initial_geometry_applied = False
 
         self.setWindowTitle(display_version())
@@ -108,7 +111,7 @@ class MainWindow(QMainWindow):
             )
 
         self.dashboard_page.navigate_requested.connect(self._open_page_by_name)
-        self.dashboard_page.check_updates_requested.connect(self.update_service.check)
+        self.dashboard_page.check_updates_requested.connect(self._start_manual_update_check)
 
         self._resize_handles = self._create_resize_handles()
         self._switch_page(0, "Главная")
@@ -132,6 +135,24 @@ class MainWindow(QMainWindow):
     def _switch_page(self, index: int, page_name: str) -> None:
         self.pages.setCurrentIndex(index)
         self.sidebar.set_active(page_name)
+
+    def _start_manual_update_check(self) -> None:
+        self._manual_update_check = True
+        self.dashboard_page.set_update_checking()
+
+        if not self.update_service.check():
+            self._manual_update_check = False
+            self.dashboard_page.set_update_result("Проверка уже выполняется.")
+
+    def _handle_no_update(self) -> None:
+        if self._manual_update_check:
+            self.dashboard_page.set_update_result("Установлена актуальная версия Teggy.")
+        self._manual_update_check = False
+
+    def _handle_update_failure(self, message: str) -> None:
+        if self._manual_update_check:
+            self.dashboard_page.set_update_result(f"Не удалось проверить обновления: {message}")
+        self._manual_update_check = False
 
     def reset_interface_geometry(self) -> None:
         screen = self.screen() or QGuiApplication.primaryScreen()
@@ -277,6 +298,12 @@ class MainWindow(QMainWindow):
         AboutDialog(self).exec()
 
     def _show_update_available(self, release: ReleaseInfo) -> None:
+        if self._manual_update_check:
+            self.dashboard_page.set_update_result(
+                f"Доступна новая версия: Teggy {release.version}."
+            )
+        self._manual_update_check = False
+
         message = QMessageBox(self)
         message.setIcon(QMessageBox.Icon.Information)
         message.setWindowTitle("Доступно обновление")
