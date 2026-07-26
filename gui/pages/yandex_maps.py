@@ -30,6 +30,7 @@ class YandexMapsPage(QWidget):
         # В настройки не сохраняется.
         self.output_folder = None
         self.service = YandexService()
+        self.is_downloading = False
 
         self.setup_ui()
         self.update_download_button()
@@ -345,6 +346,12 @@ class YandexMapsPage(QWidget):
         # DOWNLOAD BUTTON
         # =========================
 
+        download_buttons_layout = QHBoxLayout()
+
+        download_buttons_layout.setSpacing(
+            10
+        )
+
         self.download_button = QPushButton(
             "Скачать данные"
         )
@@ -357,8 +364,33 @@ class YandexMapsPage(QWidget):
             self.start_download
         )
 
-        root.addWidget(
-            self.download_button
+        download_buttons_layout.addWidget(
+            self.download_button,
+            1
+        )
+
+        self.cancel_button = QPushButton(
+            "Отменить"
+        )
+
+        self.cancel_button.setObjectName(
+            "YandexActionButton"
+        )
+
+        self.cancel_button.setEnabled(
+            False
+        )
+
+        self.cancel_button.clicked.connect(
+            self.cancel_download
+        )
+
+        download_buttons_layout.addWidget(
+            self.cancel_button
+        )
+
+        root.addLayout(
+            download_buttons_layout
         )
 
         self.download_status = QLabel(
@@ -697,7 +729,9 @@ class YandexMapsPage(QWidget):
 
         Stories скачиваются только по выбору пользователя.
         """
-
+        if self.is_downloading:
+            return
+        
         url = self.url_input.text().strip()
 
         if self.output_folder is None:
@@ -709,6 +743,7 @@ class YandexMapsPage(QWidget):
         download_stories = (
             self.stories_checkbox.isChecked()
         )
+        self.is_downloading = True
 
         self.download_log.clear()
 
@@ -718,6 +753,9 @@ class YandexMapsPage(QWidget):
 
         self.download_button.setEnabled(
             False
+        )
+        self.cancel_button.setEnabled(
+            True
         )
 
         self.folder_button.setEnabled(
@@ -750,6 +788,28 @@ class YandexMapsPage(QWidget):
             skip_existing=True,
         )
 
+    def cancel_download(self):
+        """
+        Запрашивает отмену текущей загрузки.
+        """
+
+        if not self.is_downloading:
+            return
+
+        self.cancel_button.setEnabled(
+            False
+        )
+
+        self.download_status.setText(
+            "Отмена загрузки..."
+        )
+
+        self.append_download_log(
+            "Запрошена отмена загрузки"
+        )
+
+        self.service.cancel()
+
     def append_download_log(self, text: str):
         """
         Добавляет сообщение backend в журнал загрузки.
@@ -771,7 +831,11 @@ class YandexMapsPage(QWidget):
         Завершает состояние загрузки и возвращает интерфейс
         в обычный режим.
         """
+        self.is_downloading = False
 
+        self.cancel_button.setEnabled(
+            False
+        )
         self.download_progress.setVisible(
             False
         )

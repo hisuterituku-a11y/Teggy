@@ -290,3 +290,44 @@ def test_progress_message_updates_status(
     assert page.download_status.text() == (
         "Фото организации"
     )
+def test_cancel_calls_service(qtbot):
+    page = YandexMapsPage()
+
+    page.is_downloading = True
+
+    page.service.cancel = Mock()
+
+    page.cancel_download()
+
+    page.service.cancel.assert_called_once()
+def test_cancel_button_disabled_after_click(qtbot):
+    page = YandexMapsPage()
+
+    page.is_downloading = True
+
+    page.service.cancel = Mock()
+
+    page.cancel_button.setEnabled(True)
+
+    page.cancel_download()
+
+    assert not page.cancel_button.isEnabled()
+def test_second_start_is_ignored(qtbot):
+    page = YandexMapsPage()
+
+    page.is_downloading = True
+
+    page.service.start = Mock()
+
+    page.start_download()
+
+    page.service.start.assert_not_called()
+def test_finished_resets_downloading_flag(qtbot):
+    page = YandexMapsPage()
+
+    page.is_downloading = True
+
+    page.on_download_finished(True)
+
+    assert page.is_downloading is False
+    
