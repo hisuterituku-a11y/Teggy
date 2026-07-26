@@ -1,9 +1,11 @@
 from PySide6.QtCore import QTimer, Qt, QUrl
 from PySide6.QtGui import (
     QAction,
+    QColor,
     QDesktopServices,
     QGuiApplication,
     QPainterPath,
+    QPalette,
     QRegion,
 )
 from PySide6.QtWidgets import QLabel, QMainWindow, QMessageBox, QScrollArea, QWidget
@@ -55,16 +57,19 @@ class MainWindow(QMainWindow):
         self.update_service.update_available.connect(self._show_update_available)
         self._initial_geometry_applied = False
 
-        # Обновлять маску на каждом пикселе системного resize дорого и даёт
-        # заметное мерцание на Windows. Применяем её после короткой паузы.
-        self._mask_timer = QTimer(self)
-        self._mask_timer.setSingleShot(True)
-        self._mask_timer.setInterval(120)
-        self._mask_timer.timeout.connect(self._apply_rounded_mask)
-
         self.setWindowTitle(display_version())
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+
+        # Полупрозрачное верхнеуровневое окно заставляет Windows заново
+        # композить шапку и sidebar при каждом шаге системного resize.
+        # Сам интерфейс непрозрачный, поэтому держим нативную поверхность окна
+        # непрозрачной и используем маску только для формы углов.
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
+        self.setAutoFillBackground(True)
+        palette = self.palette()
+        palette.setColor(QPalette.ColorRole.Window, QColor("#070B18"))
+        self.setPalette(palette)
+
         self.setMinimumSize(self.MIN_WINDOW_WIDTH, self.MIN_WINDOW_HEIGHT)
 
         self._create_menu()
@@ -240,16 +245,7 @@ class MainWindow(QMainWindow):
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
-
-        # Во время живого resize не пересчитываем сложную маску на каждом
-        # событии. Это и было источником мигания окна.
-        if not self.isMaximized():
-            self.clearMask()
-            self._mask_timer.start()
-        else:
-            self._mask_timer.stop()
-            self.clearMask()
-
+        self._apply_rounded_mask()
         self._layout_resize_handles()
 
     def changeEvent(self, event) -> None:
