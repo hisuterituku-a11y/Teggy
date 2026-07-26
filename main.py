@@ -1,34 +1,25 @@
 import sys
-from pathlib import Path
+
 from PySide6.QtWidgets import QApplication
+
+from core.paths import resource_path
+from core.settings import Settings
 from gui.main_window import MainWindow
 from gui.theme.manager import ThemeManager
 
 
-if __name__ == "__main__":
+def main() -> int:
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
-    
-    # Создаём менеджер тем один раз
-    from core.paths import resource_path
 
-    theme_manager = ThemeManager(
-        resource_path("assets", "themes")
-    )
-    
-    # Загружаем последнюю тему из настроек
-    from core.settings import Settings
-    last_theme = "default"
-    theme = theme_manager.load(last_theme)
-
-    print("THEME:", last_theme)
-    print("QSS LENGTH:", len(theme.qss))
-    print(theme.qss[:300])
-
+    theme_manager = ThemeManager(resource_path("assets", "themes"))
+    theme = theme_manager.load(Settings.get_theme())
     app.setStyleSheet(theme.qss)
-    
-    
+
     window = MainWindow(theme_manager)
     window.show()
-    sys.exit(app.exec())
-   
+    return app.exec()
+
+
+if __name__ == "__main__":
+    sys.exit(main())
