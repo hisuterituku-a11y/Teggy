@@ -1,5 +1,5 @@
 from PySide6.QtCore import QTimer, QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QAction, QDesktopServices
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QMainWindow,
@@ -13,6 +13,7 @@ from core.update_checker import ReleaseInfo
 from core.version import display_version
 from gui.components.sidebar import Sidebar
 from gui.components.topbar import TopBar
+from gui.dialogs.about_dialog import AboutDialog
 from gui.pages.dashboard import Dashboard
 from gui.pages.tagging import TaggingPage
 from gui.pages.yandex_maps import YandexMapsPage
@@ -29,6 +30,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(display_version())
         self.resize(1440, 900)
+        self._create_menu()
 
         central = QWidget()
         layout = QHBoxLayout(central)
@@ -82,6 +84,16 @@ class MainWindow(QMainWindow):
 
         # Не задерживаем запуск окна сетевым запросом.
         QTimer.singleShot(1500, self.update_service.check)
+
+    def _create_menu(self) -> None:
+        help_menu = self.menuBar().addMenu("Справка")
+
+        about_action = QAction("О программе", self)
+        about_action.triggered.connect(self._show_about_dialog)
+        help_menu.addAction(about_action)
+
+    def _show_about_dialog(self) -> None:
+        AboutDialog(self).exec()
 
     def _show_update_available(self, release: ReleaseInfo) -> None:
         message = QMessageBox(self)
