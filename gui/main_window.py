@@ -2,6 +2,7 @@ from PySide6.QtCore import QTimer, QUrl
 from PySide6.QtGui import QAction, QDesktopServices
 from PySide6.QtWidgets import (
     QHBoxLayout,
+    QLabel,
     QMainWindow,
     QMessageBox,
     QStackedWidget,
@@ -10,7 +11,7 @@ from PySide6.QtWidgets import (
 )
 
 from core.update_checker import ReleaseInfo
-from core.version import display_version
+from core.version import __version__, display_version
 from gui.components.sidebar import Sidebar
 from gui.components.topbar import TopBar
 from gui.dialogs.about_dialog import AboutDialog
@@ -38,6 +39,10 @@ class MainWindow(QMainWindow):
         layout.setSpacing(0)
 
         self.sidebar = Sidebar()
+        version_label = self.sidebar.findChild(QLabel, "VersionLabel")
+        if version_label is not None:
+            version_label.setText(f"v{__version__}")
+
         self.sidebar.menu_buttons["Главная"].clicked.connect(
             lambda: self.pages.setCurrentIndex(0)
         )
