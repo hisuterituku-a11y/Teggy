@@ -1,30 +1,22 @@
 from pathlib import Path
 
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
 
 
 ICON_PATH = Path(__file__).resolve().parents[2] / "assets" / "icons" / "teggy"
-ACTIVE_ICON_COLOR = QColor("#FFFFFF")
 
 
 def load_icon(name: str) -> QIcon:
     return QIcon(str(ICON_PATH / f"{name}.svg"))
 
 
-def load_tinted_icon(name: str, color: QColor, size: QSize = QSize(22, 22)) -> QIcon:
-    source = QIcon(str(ICON_PATH / f"{name}.svg")).pixmap(size)
-    tinted = QPixmap(source.size())
-    tinted.fill(Qt.GlobalColor.transparent)
-
-    painter = QPainter(tinted)
-    painter.drawPixmap(0, 0, source)
-    painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
-    painter.fillRect(tinted.rect(), color)
-    painter.end()
-
-    return QIcon(tinted)
+def load_active_icon(name: str) -> QIcon:
+    filled_path = ICON_PATH / f"{name}-filled.svg"
+    if filled_path.exists():
+        return QIcon(str(filled_path))
+    return load_icon(name)
 
 
 class Sidebar(QFrame):
@@ -88,7 +80,7 @@ class Sidebar(QFrame):
             button.page_name = text
 
             normal_icon = load_icon(icon_name)
-            active_icon = load_tinted_icon(icon_name, ACTIVE_ICON_COLOR)
+            active_icon = load_active_icon(icon_name)
             self._menu_icons[text] = (normal_icon, active_icon)
 
             button.setChecked(active)
