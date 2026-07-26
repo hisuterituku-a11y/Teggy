@@ -27,7 +27,7 @@ class TaggingPage(BaseTaggingPage):
             if label.text() == "3. Куда сохранить результат":
                 label.hide()
 
-        old_checkbox = self.replace_originals_checkbox
+        old_checkbox = self.delete_originals_checkbox
         old_checkbox.setText("Удалять исходные фото после обработки")
         old_checkbox.setObjectName("ToggleCheckBox")
         old_checkbox.setToolTip(
