@@ -8,8 +8,32 @@
 
 #WindowBody,
 #ContentShell,
-#PageStack {
-    background: transparent;
+#PageStack,
+#PageScroll,
+#PageScroll > QWidget,
+#PageScroll > QWidget > QWidget {
+    background: #070B18;
+}
+
+#PageScroll {
+    border: none;
+}
+
+#PageScroll QScrollBar:vertical {
+    background: #0B1022;
+    width: 10px;
+    margin: 0;
+}
+
+#PageScroll QScrollBar::handle:vertical {
+    background: #39206B;
+    border-radius: 5px;
+    min-height: 28px;
+}
+
+#PageScroll QScrollBar::add-line:vertical,
+#PageScroll QScrollBar::sub-line:vertical {
+    height: 0;
 }
 
 #WindowTitleBar {
