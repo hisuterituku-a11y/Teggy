@@ -42,8 +42,10 @@ class ResizeHandle(QWidget):
 class MainWindow(QMainWindow):
     RESIZE_BORDER = 7
     RESIZE_CORNER = 14
-    SAFE_WIDTH = 1280
-    SAFE_HEIGHT = 800
+    MIN_WINDOW_WIDTH = 1180
+    MIN_WINDOW_HEIGHT = 720
+    SAFE_WIDTH = 1440
+    SAFE_HEIGHT = 900
 
     def __init__(self, theme_manager=None):
         super().__init__()
@@ -56,7 +58,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(display_version())
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setMinimumSize(1024, 640)
+        self.setMinimumSize(self.MIN_WINDOW_WIDTH, self.MIN_WINDOW_HEIGHT)
 
         self._create_menu()
 
@@ -80,7 +82,7 @@ class MainWindow(QMainWindow):
         self.settings_page = SettingsPage()
         self.settings_page.reset_interface_requested.connect(self.reset_interface_geometry)
 
-        self.pages.addWidget(self.dashboard_page)
+        self.pages.addWidget(self._scroll_page(self.dashboard_page))
         self.pages.addWidget(self._scroll_page(self.photo_page))
         self.pages.addWidget(self._scroll_page(self.yandex_maps_page))
         self.pages.addWidget(self.settings_page)
@@ -119,8 +121,9 @@ class MainWindow(QMainWindow):
 
     def reset_interface_geometry(self) -> None:
         screen = self.screen() or QGuiApplication.primaryScreen()
+        self.showNormal()
+
         if screen is None:
-            self.showNormal()
             self.resize(self.SAFE_WIDTH, self.SAFE_HEIGHT)
             return
 
@@ -132,7 +135,6 @@ class MainWindow(QMainWindow):
         x = available.x() + (available.width() - width) // 2
         y = available.y() + (available.height() - height) // 2
 
-        self.showNormal()
         self.setGeometry(x, y, width, height)
         self._apply_rounded_mask()
         self._layout_resize_handles()
@@ -219,10 +221,10 @@ class MainWindow(QMainWindow):
             return
 
         available = screen.availableGeometry()
-        width = min(1440, max(self.minimumWidth(), available.width() - 40))
-        height = min(900, max(self.minimumHeight(), available.height() - 40))
+        width = min(self.SAFE_WIDTH, max(self.minimumWidth(), available.width() - 40))
+        height = min(self.SAFE_HEIGHT, max(self.minimumHeight(), available.height() - 40))
         x = available.x() + max(20, (available.width() - width) // 2)
-        y = available.y() + 20
+        y = available.y() + max(20, (available.height() - height) // 2)
 
         self.setGeometry(x, y, width, height)
         self._initial_geometry_applied = True
