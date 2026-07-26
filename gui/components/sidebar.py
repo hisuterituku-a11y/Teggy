@@ -1,15 +1,30 @@
 from pathlib import Path
 
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
 
 
 ICON_PATH = Path(__file__).resolve().parents[2] / "assets" / "icons" / "teggy"
+ACTIVE_ICON_COLOR = QColor("#FFFFFF")
 
 
 def load_icon(name: str) -> QIcon:
     return QIcon(str(ICON_PATH / f"{name}.svg"))
+
+
+def load_tinted_icon(name: str, color: QColor, size: QSize = QSize(22, 22)) -> QIcon:
+    source = QIcon(str(ICON_PATH / f"{name}.svg")).pixmap(size)
+    tinted = QPixmap(source.size())
+    tinted.fill(Qt.GlobalColor.transparent)
+
+    painter = QPainter(tinted)
+    painter.drawPixmap(0, 0, source)
+    painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
+    painter.fillRect(tinted.rect(), color)
+    painter.end()
+
+    return QIcon(tinted)
 
 
 class Sidebar(QFrame):
@@ -64,14 +79,20 @@ class Sidebar(QFrame):
         ]
 
         self.menu_buttons = {}
-        for text, icon, active in menu:
+        self._menu_icons = {}
+        for text, icon_name, active in menu:
             button = QPushButton(text)
-            button.setIcon(load_icon(icon))
             button.setIconSize(QSize(22, 22))
             button.setObjectName("SideButton")
             button.setCheckable(True)
             button.page_name = text
+
+            normal_icon = load_icon(icon_name)
+            active_icon = load_tinted_icon(icon_name, ACTIVE_ICON_COLOR)
+            self._menu_icons[text] = (normal_icon, active_icon)
+
             button.setChecked(active)
+            button.setIcon(active_icon if active else normal_icon)
             self.menu_buttons[text] = button
             layout.addWidget(button)
 
@@ -92,3 +113,10 @@ class Sidebar(QFrame):
         premium_layout.addWidget(premium_text)
 
         layout.addWidget(premium_card)
+
+    def set_active(self, page_name: str) -> None:
+        for name, button in self.menu_buttons.items():
+            is_active = name == page_name
+            button.setChecked(is_active)
+            normal_icon, active_icon = self._menu_icons[name]
+            button.setIcon(active_icon if is_active else normal_icon)
