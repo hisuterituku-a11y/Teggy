@@ -1,8 +1,16 @@
+from __future__ import annotations
+
 from pathlib import Path
 from shutil import copy2
 
-from PySide6.QtCore import Qt, QUrl, Signal
-from PySide6.QtGui import QDesktopServices, QDragEnterEvent, QDropEvent, QPixmap
+from PySide6.QtCore import QSize, Qt, QUrl, Signal
+from PySide6.QtGui import (
+    QDesktopServices,
+    QDragEnterEvent,
+    QDropEvent,
+    QImageReader,
+    QPixmap,
+)
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
@@ -24,17 +32,45 @@ from core.files.file_service import FileService
 from core.tag_generator import TagGenerator
 from core.worker_thread import ProcessingThread
 from gui.dialogs.image_viewer import ImageViewerDialog
+from gui.dialogs.processing_result_dialog import ProcessingResultDialog
 
 
 class ClickableThumbnailCard(QFrame):
     clicked = Signal(str)
     double_clicked = Signal(str)
+    remove_requested = Signal(str)
 
     def __init__(self, file_path: str, parent=None):
         super().__init__(parent)
         self.file_path = file_path
         self.setObjectName("ThumbnailCard")
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setMouseTracking(True)
+
+        self.remove_button = QPushButton("✕", self)
+        self.remove_button.setObjectName("ThumbnailRemoveButton")
+        self.remove_button.setFixedSize(26, 26)
+        self.remove_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.remove_button.hide()
+        self.remove_button.clicked.connect(
+            lambda checked=False: self.remove_requested.emit(self.file_path)
+        )
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        margin = 7
+        self.remove_button.move(self.width() - self.remove_button.width() - margin, margin)
+        self.remove_button.raise_()
+
+    def enterEvent(self, event) -> None:
+        self.remove_button.show()
+        self.remove_button.raise_()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event) -> None:
+        if not self.remove_button.underMouse():
+            self.remove_button.hide()
+        super().leaveEvent(event)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -51,12 +87,16 @@ class TaggingPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAcceptDrops(True)
+
         self.selected_folders: list[str] = []
+        self.selected_files: list[Path] = []
+        self.excluded_files: set[Path] = set()
         self.metadata_fields: dict[str, QWidget] = {}
         self.processing_thread = None
         self.selected_card = None
         self.selected_photo_path = None
         self.last_output_dir: Path | None = None
+        self._source_files_for_cleanup: list[Path] = []
 
         root = QVBoxLayout(self)
         root.setContentsMargins(32, 24, 32, 24)
@@ -107,7 +147,7 @@ class TaggingPage(QWidget):
         layout.addWidget(title)
 
         description = QLabel(
-            "Добавьте папки кнопкой или перетащите их прямо в это окно"
+            "Добавьте папки кнопкой или перетащите папки и отдельные фотографии прямо в это окно"
         )
         description.setObjectName("CardSubtitle")
         description.setWordWrap(True)
@@ -122,7 +162,7 @@ class TaggingPage(QWidget):
         button_row.addStretch(1)
         layout.addLayout(button_row)
 
-        self.drop_hint = QLabel("Перетащите папки сюда")
+        self.drop_hint = QLabel("Перетащите папки или фото сюда")
         self.drop_hint.setObjectName("CardSubtitle")
         self.drop_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.drop_hint.setMinimumHeight(34)
@@ -186,23 +226,18 @@ class TaggingPage(QWidget):
         layout.setContentsMargins(20, 14, 20, 14)
         layout.setSpacing(6)
 
-        title = QLabel("3. Куда сохранить результат")
-        title.setObjectName("CardTitle")
-        layout.addWidget(title)
-
-        self.replace_originals_checkbox = QCheckBox(
-            "Заменить исходные фото готовыми"
+        self.delete_originals_checkbox = QCheckBox(
+            "Удалять исходные фото после обработки"
         )
-        self.replace_originals_checkbox.setToolTip(
-            "Включено: исходные JPG будут протегированы на месте, а остальные "
-            "форматы будут заменены JPG. Выключено: исходники сохранятся, "
-            "готовые фото появятся в папке Teggy."
+        self.delete_originals_checkbox.setToolTip(
+            "Если включено, исходные фотографии удалятся только после успешной обработки. "
+            "Готовые файлы всё равно сохранятся в папке Teggy."
         )
-        layout.addWidget(self.replace_originals_checkbox)
+        layout.addWidget(self.delete_originals_checkbox)
 
         explanation = QLabel(
-            "Не включено: исходники останутся нетронутыми, готовые фото сохранятся "
-            "в папку Teggy. Включено: готовые фото заменят исходные."
+            "По умолчанию исходники сохраняются, а готовые фото появляются в папке Teggy. "
+            "Включите галочку только если исходные файлы больше не нужны."
         )
         explanation.setObjectName("CardSubtitle")
         explanation.setWordWrap(True)
@@ -237,28 +272,49 @@ class TaggingPage(QWidget):
         layout.addWidget(self.gallery_scroll)
         return card
 
+    def _valid_drop_paths(self, event) -> list[Path]:
+        paths: list[Path] = []
+        if not event.mimeData().hasUrls():
+            return paths
+        for url in event.mimeData().urls():
+            local_path = url.toLocalFile()
+            if not local_path:
+                continue
+            path = Path(local_path)
+            try:
+                if path.exists():
+                    paths.append(path)
+            except OSError:
+                continue
+        return paths
+
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        if event.mimeData().hasUrls() and any(
-            Path(url.toLocalFile()).exists() for url in event.mimeData().urls()
-        ):
+        if self._valid_drop_paths(event):
             event.acceptProposedAction()
             self.drop_hint.setText("Отпускайте, папки не убегут")
         else:
             event.ignore()
 
     def dragLeaveEvent(self, event) -> None:
-        self.drop_hint.setText("Перетащите папки сюда")
+        self.drop_hint.setText("Перетащите папки или фото сюда")
         super().dragLeaveEvent(event)
 
     def dropEvent(self, event: QDropEvent) -> None:
         added = False
-        for url in event.mimeData().urls():
-            path = Path(url.toLocalFile())
-            folder = path if path.is_dir() else path.parent
-            if folder.exists() and str(folder) not in self.selected_folders:
-                self.selected_folders.append(str(folder))
-                added = True
-        self.drop_hint.setText("Перетащите папки сюда")
+        for path in self._valid_drop_paths(event):
+            if path.is_dir():
+                folder = str(path)
+                if folder not in self.selected_folders:
+                    self.selected_folders.append(folder)
+                    added = True
+            elif FileService.is_image(path):
+                resolved = path.resolve()
+                if resolved not in self.selected_files:
+                    self.selected_files.append(resolved)
+                    self.excluded_files.discard(resolved)
+                    added = True
+
+        self.drop_hint.setText("Перетащите папки или фото сюда")
         if added:
             self.update_folder_list()
         event.acceptProposedAction()
@@ -272,6 +328,10 @@ class TaggingPage(QWidget):
     def remove_folder(self, folder: str):
         if folder in self.selected_folders:
             self.selected_folders.remove(folder)
+        folder_path = Path(folder)
+        self.excluded_files = {
+            path for path in self.excluded_files if path.parent != folder_path
+        }
         self.update_folder_list()
 
     def update_folder_list(self):
@@ -282,7 +342,7 @@ class TaggingPage(QWidget):
                 widget.deleteLater()
 
         for folder in self.selected_folders:
-            files = FileService.get_files(Path(folder))
+            files = self._files_from_folder(Path(folder))
             card = QFrame()
             card.setObjectName("FolderItem")
             row = QHBoxLayout(card)
@@ -313,7 +373,59 @@ class TaggingPage(QWidget):
             row.addWidget(remove)
             self.folder_container.addWidget(card)
 
+        if self.selected_files:
+            card = QFrame()
+            card.setObjectName("FolderItem")
+            row = QHBoxLayout(card)
+            row.setContentsMargins(12, 8, 12, 8)
+            info = QLabel(f"Отдельные фотографии\n{len(self.selected_files)} файлов")
+            info.setObjectName("FolderText")
+            row.addWidget(info, 1)
+            clear_button = QPushButton("Очистить")
+            clear_button.setObjectName("RemoveButton")
+            clear_button.clicked.connect(self._clear_selected_files)
+            row.addWidget(clear_button)
+            self.folder_container.addWidget(card)
+
         self.update_gallery()
+
+    def _clear_selected_files(self) -> None:
+        self.selected_files.clear()
+        self.update_folder_list()
+
+    def _files_from_folder(self, folder: Path) -> list[Path]:
+        return [
+            Path(file_info.path).resolve()
+            for file_info in FileService.get_files(folder)
+            if Path(file_info.path).resolve() not in self.excluded_files
+        ]
+
+    def _collect_source_files(self) -> list[Path]:
+        files: list[Path] = []
+        seen: set[Path] = set()
+
+        for folder in self.selected_folders:
+            for path in self._files_from_folder(Path(folder)):
+                if path not in seen:
+                    files.append(path)
+                    seen.add(path)
+
+        for path in self.selected_files:
+            resolved = path.resolve()
+            if resolved.exists() and resolved not in self.excluded_files and resolved not in seen:
+                files.append(resolved)
+                seen.add(resolved)
+
+        return files
+
+    def remove_photo(self, file_path: str) -> None:
+        path = Path(file_path).resolve()
+        self.selected_files = [item for item in self.selected_files if item.resolve() != path]
+        self.excluded_files.add(path)
+        if self.selected_photo_path == str(path):
+            self.selected_photo_path = None
+            self.selected_card = None
+        self.update_folder_list()
 
     def open_image_viewer(self, file_path: str):
         ImageViewerDialog(file_path=file_path, parent=self).exec()
@@ -326,32 +438,29 @@ class TaggingPage(QWidget):
             counter += 1
         return target
 
-    def _prepare_processing_files(self, source_files: list[Path]) -> tuple[list[Path], Path | None]:
-        if self.replace_originals_checkbox.isChecked():
-            self.last_output_dir = None
-            return source_files, None
-
-        output_dir = Path(self.selected_folders[0]) / "Teggy"
+    def _prepare_processing_files(self, source_files: list[Path]) -> tuple[list[Path], Path]:
+        base_folder = Path(self.selected_folders[0]) if self.selected_folders else source_files[0].parent
+        output_dir = base_folder / "Teggy"
         output_dir.mkdir(parents=True, exist_ok=True)
+
         prepared: list[Path] = []
         for source in source_files:
             target = self._unique_target(output_dir, source)
             copy2(source, target)
             prepared.append(target)
+
         self.last_output_dir = output_dir
+        self._source_files_for_cleanup = source_files.copy()
         return prepared, output_dir
 
     def start_processing(self):
-        if not self.selected_folders:
-            QMessageBox.warning(self, "Папка не выбрана", "Сначала добавьте папку с фотографиями.")
-            return
-
-        source_files: list[Path] = []
-        for folder in self.selected_folders:
-            source_files.extend(Path(file_info.path) for file_info in FileService.get_files(Path(folder)))
-
+        source_files = self._collect_source_files()
         if not source_files:
-            QMessageBox.warning(self, "Фотографии не найдены", "В выбранных папках нет поддерживаемых изображений.")
+            QMessageBox.warning(
+                self,
+                "Фотографии не найдены",
+                "Добавьте папку или отдельные фотографии для обработки.",
+            )
             return
 
         raw_tags = self.metadata_fields["keywords"].toPlainText()
@@ -376,12 +485,12 @@ class TaggingPage(QWidget):
 
         self.processing_thread = ProcessingThread()
         self.processing_thread.setup(
-            folder_path=self.selected_folders[0],
+            folder_path=str(source_files[0].parent),
             file_list=files,
             metadata=metadata,
             tags=tags,
             delete_original=True,
-            output_dir=str(output_dir) if output_dir else None,
+            output_dir=str(output_dir),
         )
         self.processing_thread.progress.connect(self.processing_progress)
         self.processing_thread.log.connect(print)
@@ -396,34 +505,55 @@ class TaggingPage(QWidget):
         self.start_button.setEnabled(True)
         self.start_button.setText("▶ Запустить тегирование")
 
-        total = stats.get("total", 0)
-        processed = stats.get("processed", 0)
-        converted = stats.get("converted", 0)
         failed = stats.get("failed", 0)
         cancelled = stats.get("cancelled", False)
+        processed = stats.get("processed", 0)
+        total = stats.get("total", 0)
 
-        message = QMessageBox(self)
-        message.setIcon(QMessageBox.Icon.Information)
-        message.setWindowTitle("Обработка завершена")
-        message.setText("Готово" if not cancelled else "Обработка отменена")
-        message.setInformativeText(
-            f"Всего файлов: {total}\n"
-            f"Протегировано: {processed}\n"
-            f"Преобразовано в JPG: {converted}\n"
-            f"Ошибок: {failed}"
-        )
-        open_button = None
-        if self.last_output_dir and self.last_output_dir.exists():
-            open_button = message.addButton("Открыть папку Teggy", QMessageBox.ButtonRole.ActionRole)
-        message.addButton("Закрыть", QMessageBox.ButtonRole.AcceptRole)
-        message.exec()
-        if open_button is not None and message.clickedButton() is open_button:
-            QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.last_output_dir)))
+        if (
+            self.delete_originals_checkbox.isChecked()
+            and not cancelled
+            and failed == 0
+            and processed == total
+        ):
+            for source in self._source_files_for_cleanup:
+                try:
+                    source.unlink(missing_ok=True)
+                except OSError:
+                    pass
+            self.selected_files = [path for path in self.selected_files if path.exists()]
+
+        ProcessingResultDialog(
+            total=total,
+            processed=processed,
+            converted=stats.get("converted", 0),
+            failed=failed,
+            output_dir=self.last_output_dir,
+            cancelled=cancelled,
+            parent=self,
+        ).exec()
+
+        self.update_folder_list()
 
     def processing_failed(self, message):
         self.start_button.setEnabled(True)
         self.start_button.setText("▶ Запустить тегирование")
         QMessageBox.critical(self, "Ошибка обработки", str(message))
+
+    def _load_thumbnail(self, file_path: Path, target_size: QSize) -> QPixmap:
+        reader = QImageReader(str(file_path))
+        reader.setAutoTransform(True)
+        source_size = reader.size()
+        if source_size.isValid():
+            scaled_size = source_size.scaled(
+                target_size,
+                Qt.AspectRatioMode.KeepAspectRatio,
+            )
+            reader.setScaledSize(scaled_size)
+        image = reader.read()
+        if image.isNull():
+            return QPixmap()
+        return QPixmap.fromImage(image)
 
     def update_gallery(self):
         self.selected_card = None
@@ -437,10 +567,7 @@ class TaggingPage(QWidget):
             if widget:
                 widget.deleteLater()
 
-        files = []
-        for folder in self.selected_folders:
-            files.extend(FileService.get_files(Path(folder)))
-
+        files = self._collect_source_files()
         if not files:
             empty = QLabel("Фотографии появятся здесь")
             empty.setObjectName("EmptyState")
@@ -449,13 +576,16 @@ class TaggingPage(QWidget):
             return
 
         columns = 5
-        for visible_index, file_info in enumerate(files):
-            file_path = Path(file_info.path)
+        visible_index = 0
+        preview_size = QSize(144, 105)
+
+        for file_path in files:
             if not file_path.exists() or file_path.stat().st_size == 0:
                 continue
 
             card = ClickableThumbnailCard(str(file_path))
             card.double_clicked.connect(self.open_image_viewer)
+            card.remove_requested.connect(self.remove_photo)
             card.clicked.connect(
                 lambda path, current_card=card: self.select_thumbnail(current_card, path)
             )
@@ -467,19 +597,13 @@ class TaggingPage(QWidget):
 
             preview = QLabel()
             preview.setObjectName("ThumbnailImage")
-            preview.setFixedSize(144, 105)
+            preview.setFixedSize(preview_size)
             preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            preview.setScaledContents(False)
 
-            pixmap = QPixmap(str(file_path))
+            pixmap = self._load_thumbnail(file_path, preview_size)
             if not pixmap.isNull():
-                preview.setPixmap(
-                    pixmap.scaled(
-                        144,
-                        105,
-                        Qt.AspectRatioMode.KeepAspectRatio,
-                        Qt.TransformationMode.SmoothTransformation,
-                    )
-                )
+                preview.setPixmap(pixmap)
             else:
                 preview.setText("Нет превью")
 
@@ -493,6 +617,7 @@ class TaggingPage(QWidget):
             row = visible_index // columns
             column = visible_index % columns
             self.gallery_grid.addWidget(card, row, column)
+            visible_index += 1
 
     def select_thumbnail(self, card: ClickableThumbnailCard, file_path: str):
         if self.selected_card is card:
