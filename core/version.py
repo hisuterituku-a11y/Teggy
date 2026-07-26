@@ -2,9 +2,18 @@
 
 from __future__ import annotations
 
+import re
+
 APP_NAME = "Teggy"
-__version__ = "0.1.0"
-VERSION = tuple(int(part) for part in __version__.split("."))
+__version__ = "2.1.0-dev"
+VERSION = (2, 1, 0)
+
+_VERSION_PATTERN = re.compile(
+    r"^v?(?P<major>0|[1-9]\d*)\."
+    r"(?P<minor>0|[1-9]\d*)\."
+    r"(?P<patch>0|[1-9]\d*)"
+    r"(?:-(?P<prerelease>[0-9A-Za-z.-]+))?$"
+)
 
 
 def display_version() -> str:
@@ -15,19 +24,26 @@ def display_version() -> str:
 def is_newer_version(candidate: str, current: str = __version__) -> bool:
     """Проверяет, новее ли версия candidate текущей версии приложения.
 
-    Поддерживает стабильные версии в формате MAJOR.MINOR.PATCH. Префикс ``v``
-    допускается, чтобы напрямую сравнивать теги GitHub Releases.
+    Поддерживает версии ``MAJOR.MINOR.PATCH`` и предварительные версии вроде
+    ``2.1.0-dev``. Префикс ``v`` допускается для тегов GitHub Releases.
     """
     return _parse_version(candidate) > _parse_version(current)
 
 
-def _parse_version(value: str) -> tuple[int, int, int]:
-    normalized = value.strip().removeprefix("v")
-    parts = normalized.split(".")
-
-    if len(parts) != 3 or any(not part.isdigit() for part in parts):
+def _parse_version(value: str) -> tuple[int, int, int, int, str]:
+    match = _VERSION_PATTERN.fullmatch(value.strip())
+    if match is None:
         raise ValueError(
             f"Некорректная версия {value!r}: ожидается формат MAJOR.MINOR.PATCH"
         )
 
-    return tuple(int(part) for part in parts)
+    prerelease = match.group("prerelease") or ""
+    is_stable = 1 if not prerelease else 0
+
+    return (
+        int(match.group("major")),
+        int(match.group("minor")),
+        int(match.group("patch")),
+        is_stable,
+        prerelease,
+    )
