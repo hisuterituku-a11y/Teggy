@@ -1,17 +1,22 @@
+from PySide6.QtCore import QTimer, QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
-    QMainWindow,
-    QWidget,
     QHBoxLayout,
-    QVBoxLayout,
+    QMainWindow,
+    QMessageBox,
     QStackedWidget,
+    QVBoxLayout,
+    QWidget,
 )
 
+from core.update_checker import ReleaseInfo
 from core.version import display_version
 from gui.components.sidebar import Sidebar
 from gui.components.topbar import TopBar
 from gui.pages.dashboard import Dashboard
 from gui.pages.tagging import TaggingPage
 from gui.pages.yandex_maps import YandexMapsPage
+from gui.services.update_service import UpdateService
 
 
 class MainWindow(QMainWindow):
@@ -19,6 +24,8 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.theme_manager = theme_manager
+        self.update_service = UpdateService(self)
+        self.update_service.update_available.connect(self._show_update_available)
 
         self.setWindowTitle(display_version())
         self.resize(1440, 900)
@@ -72,3 +79,23 @@ class MainWindow(QMainWindow):
         layout.addLayout(content, 1)
 
         self.setCentralWidget(central)
+
+        # Не задерживаем запуск окна сетевым запросом.
+        QTimer.singleShot(1500, self.update_service.check)
+
+    def _show_update_available(self, release: ReleaseInfo) -> None:
+        message = QMessageBox(self)
+        message.setIcon(QMessageBox.Icon.Information)
+        message.setWindowTitle("Доступно обновление")
+        message.setText(f"Доступна версия Teggy {release.version}")
+        message.setInformativeText(
+            "Открыть страницу релиза для загрузки новой версии?"
+        )
+        message.setStandardButtons(
+            QMessageBox.StandardButton.Open
+            | QMessageBox.StandardButton.Cancel
+        )
+        message.setDefaultButton(QMessageBox.StandardButton.Open)
+
+        if message.exec() == QMessageBox.StandardButton.Open:
+            QDesktopServices.openUrl(QUrl(release.page_url))
