@@ -35,7 +35,7 @@ class ProcessingResultDialog(QDialog):
         self.setModal(True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setFixedSize(470, 350)
+        self.setFixedSize(480, 370)
 
         shell = QWidget(self)
         shell.setObjectName("ResultDialog")
@@ -60,20 +60,21 @@ class ProcessingResultDialog(QDialog):
         content = QWidget()
         content.setObjectName("ResultContent")
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(28, 24, 28, 24)
-        content_layout.setSpacing(16)
+        content_layout.setContentsMargins(28, 26, 28, 26)
+        content_layout.setSpacing(18)
 
         title = QLabel("Обработка отменена" if cancelled else "Готово")
         title.setObjectName("ResultTitle")
+        title.setMinimumHeight(32)
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         content_layout.addWidget(title)
 
         stats = QFrame()
         stats.setObjectName("ResultStats")
         stats_layout = QGridLayout(stats)
-        stats_layout.setContentsMargins(18, 14, 18, 14)
+        stats_layout.setContentsMargins(18, 16, 18, 16)
         stats_layout.setHorizontalSpacing(24)
-        stats_layout.setVerticalSpacing(10)
+        stats_layout.setVerticalSpacing(12)
 
         rows = (
             ("Всего файлов", total),
@@ -84,9 +85,15 @@ class ProcessingResultDialog(QDialog):
         for row, (label_text, value) in enumerate(rows):
             label = QLabel(label_text)
             label.setObjectName("ResultStatLabel")
+            label.setMinimumHeight(24)
+            label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+
             value_label = QLabel(str(value))
             value_label.setObjectName("ResultStatValue")
-            value_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            value_label.setMinimumHeight(24)
+            value_label.setAlignment(
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            )
             stats_layout.addWidget(label, row, 0)
             stats_layout.addWidget(value_label, row, 1)
 
