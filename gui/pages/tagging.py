@@ -119,20 +119,18 @@ class TaggingPage(QWidget):
     def _build_metadata_card(self) -> QFrame:
         card = QFrame()
         card.setObjectName("PhotoPanel")
+        card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        outer = QVBoxLayout(card)
-        outer.setContentsMargins(20, 16, 20, 16)
-        outer.setSpacing(10)
+        layout = QGridLayout(card)
+        layout.setContentsMargins(20, 16, 20, 16)
+        layout.setHorizontalSpacing(12)
+        layout.setVerticalSpacing(8)
+        layout.setColumnMinimumWidth(0, 140)
+        layout.setColumnStretch(1, 1)
 
         title = QLabel("2. Метаданные")
         title.setObjectName("CardTitle")
-        outer.addWidget(title)
-
-        grid = QGridLayout()
-        grid.setContentsMargins(0, 0, 0, 0)
-        grid.setHorizontalSpacing(12)
-        grid.setVerticalSpacing(8)
-        grid.setColumnStretch(1, 1)
+        layout.addWidget(title, 0, 0, 1, 2)
 
         fields = [
             ("title", "Название", "Введите название"),
@@ -143,27 +141,27 @@ class TaggingPage(QWidget):
             ("keywords", "Теги", "Введите теги по одному в строке"),
         ]
 
-        for row_index, (key, label_text, placeholder) in enumerate(fields):
+        for row_index, (key, label_text, placeholder) in enumerate(fields, start=1):
             label = QLabel(label_text)
             label.setFixedWidth(140)
-            label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-            grid.addWidget(label, row_index, 0)
 
             if key == "keywords":
+                label.setAlignment(Qt.AlignmentFlag.AlignTop)
                 edit = QTextEdit()
-                edit.setFixedHeight(96)
-                edit.setStyleSheet("padding: 8px 10px; margin: 0;")
+                edit.setFixedHeight(88)
             else:
+                label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
                 edit = QLineEdit()
                 edit.setFixedHeight(34)
-                edit.setStyleSheet("padding: 0 10px; margin: 0;")
 
             edit.setPlaceholderText(placeholder)
             edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             self.metadata_fields[key] = edit
-            grid.addWidget(edit, row_index, 1)
 
-        outer.addLayout(grid)
+            layout.addWidget(label, row_index, 0)
+            layout.addWidget(edit, row_index, 1)
+            layout.setRowStretch(row_index, 0)
+
         return card
 
     def _build_gallery_card(self) -> QFrame:
@@ -262,19 +260,16 @@ class TaggingPage(QWidget):
             files.extend(file_info.path for file_info in FileService.get_files(Path(folder)))
 
         if not files:
-            QMessageBox.warning(
-                self,
-                "Фотографии не найдены",
-                "В выбранных папках нет поддерживаемых изображений.",
-            )
+            QMessageBox.warning(self, "Фотографии не найдены", "В выбранных папках нет поддерживаемых изображений.")
             return
 
         keywords_widget = self.metadata_fields["keywords"]
-        tags = TagGenerator.parse_tags_input(keywords_widget.toPlainText())
-        metadata = {
-            key: widget.toPlainText() if key == "keywords" else widget.text()
-            for key, widget in self.metadata_fields.items()
-        }
+        raw_tags = keywords_widget.toPlainText()
+        tags = TagGenerator.parse_tags_input(raw_tags)
+
+        metadata = {}
+        for key, widget in self.metadata_fields.items():
+            metadata[key] = widget.toPlainText() if key == "keywords" else widget.text()
 
         self.start_button.setEnabled(False)
         self.start_button.setText("Обработка…")
