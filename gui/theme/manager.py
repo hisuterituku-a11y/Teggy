@@ -11,6 +11,7 @@ class ThemeManager:
         "style.qss",
         "dashboard.qss",
         "inspector.qss",
+        "window.qss",
     )
 
     def __init__(self, themes_path=None):
