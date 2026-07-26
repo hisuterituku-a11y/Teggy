@@ -1,12 +1,13 @@
 from pathlib import Path
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 
 @dataclass
 class FileInfo:
     """Информация о файле."""
+
     name: str
     path: Path
     size: int
@@ -28,16 +29,16 @@ class FileInfo:
         """Возвращает размер в удобном формате."""
         if self.size < 1024:
             return f"{self.size} B"
-        elif self.size < 1024 * 1024:
+        if self.size < 1024 * 1024:
             return f"{self.size / 1024:.1f} KB"
-        elif self.size < 1024 * 1024 * 1024:
+        if self.size < 1024 * 1024 * 1024:
             return f"{self.size / (1024 * 1024):.1f} MB"
         return f"{self.size / (1024 * 1024 * 1024):.2f} GB"
 
 
 class FileService:
     """Сервис для работы с файлами."""
-    
+
     IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff'}
 
     @staticmethod
@@ -47,34 +48,32 @@ class FileService:
 
     @staticmethod
     def get_files(folder_path: Path) -> List[FileInfo]:
-        """Возвращает список изображений в папке."""
+        """Возвращает уникальный список изображений в папке."""
         if not folder_path.exists():
             return []
 
-        files = []
+        files: list[FileInfo] = []
+        seen_paths: set[Path] = set()
+
         for ext in FileService.IMAGE_EXTENSIONS:
             for file_path in folder_path.glob(f"*{ext}"):
-                stat = file_path.stat()
+                resolved_path = file_path.resolve()
+                if resolved_path in seen_paths:
+                    continue
 
+                stat = file_path.stat()
                 if stat.st_size == 0:
                     continue
 
+                seen_paths.add(resolved_path)
                 files.append(
                     FileInfo(
                         name=file_path.name,
                         path=file_path,
                         size=stat.st_size,
-                        modified=datetime.fromtimestamp(stat.st_mtime)
+                        modified=datetime.fromtimestamp(stat.st_mtime),
                     )
                 )
-                files.append(FileInfo(
-                    name=file_path.name,
-                    path=file_path,
-                    size=stat.st_size,
-                    modified=datetime.fromtimestamp(stat.st_mtime)
-                ))
-           
 
-        # Сортируем по имени
-        files.sort(key=lambda f: f.name.lower())
+        files.sort(key=lambda file_info: file_info.name.lower())
         return files
