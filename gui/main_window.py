@@ -6,7 +6,7 @@ from PySide6.QtGui import (
     QPainterPath,
     QRegion,
 )
-from PySide6.QtWidgets import QLabel, QMainWindow, QMessageBox, QScrollArea
+from PySide6.QtWidgets import QLabel, QMainWindow, QMessageBox, QScrollArea, QWidget
 
 from core.update_checker import ReleaseInfo
 from core.version import __version__, display_version
@@ -18,7 +18,30 @@ from gui.pages.yandex_maps import YandexMapsPage
 from gui.services.update_service import UpdateService
 
 
+class ResizeHandle(QWidget):
+    """Невидимая зона изменения размера frameless-окна."""
+
+    def __init__(self, window: QMainWindow, edges: Qt.Edge, cursor: Qt.CursorShape):
+        super().__init__(window)
+        self._window = window
+        self._edges = edges
+        self.setCursor(cursor)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
+
+    def mousePressEvent(self, event) -> None:
+        if event.button() == Qt.MouseButton.LeftButton and not self._window.isMaximized():
+            handle = self._window.windowHandle()
+            if handle is not None:
+                handle.startSystemResize(self._edges)
+                event.accept()
+                return
+        super().mousePressEvent(event)
+
+
 class MainWindow(QMainWindow):
+    RESIZE_BORDER = 7
+    RESIZE_CORNER = 14
+
     def __init__(self, theme_manager=None):
         super().__init__()
 
@@ -30,7 +53,10 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(display_version())
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setMinimumSize(1080, 680)
+
+        # Ниже этого порога Dashboard начинает ломать композицию.
+        # Остальные длинные страницы уже живут в scroll-контейнерах.
+        self.setMinimumSize(1024, 640)
 
         self._create_menu()
 
@@ -69,6 +95,7 @@ class MainWindow(QMainWindow):
                 )
             )
 
+        self._resize_handles = self._create_resize_handles()
         self._switch_page(0, "Главная")
         QTimer.singleShot(1500, self.update_service.check)
 
@@ -84,12 +111,82 @@ class MainWindow(QMainWindow):
 
     def _switch_page(self, index: int, page_name: str) -> None:
         self.pages.setCurrentIndex(index)
-        for name, button in self.sidebar.menu_buttons.items():
-            button.setChecked(name == page_name)
+        self.sidebar.set_active(page_name)
+
+    def _create_resize_handles(self) -> dict[str, ResizeHandle]:
+        return {
+            "left": ResizeHandle(self, Qt.Edge.LeftEdge, Qt.CursorShape.SizeHorCursor),
+            "right": ResizeHandle(self, Qt.Edge.RightEdge, Qt.CursorShape.SizeHorCursor),
+            "top": ResizeHandle(self, Qt.Edge.TopEdge, Qt.CursorShape.SizeVerCursor),
+            "bottom": ResizeHandle(self, Qt.Edge.BottomEdge, Qt.CursorShape.SizeVerCursor),
+            "top_left": ResizeHandle(
+                self,
+                Qt.Edge.TopEdge | Qt.Edge.LeftEdge,
+                Qt.CursorShape.SizeFDiagCursor,
+            ),
+            "top_right": ResizeHandle(
+                self,
+                Qt.Edge.TopEdge | Qt.Edge.RightEdge,
+                Qt.CursorShape.SizeBDiagCursor,
+            ),
+            "bottom_left": ResizeHandle(
+                self,
+                Qt.Edge.BottomEdge | Qt.Edge.LeftEdge,
+                Qt.CursorShape.SizeBDiagCursor,
+            ),
+            "bottom_right": ResizeHandle(
+                self,
+                Qt.Edge.BottomEdge | Qt.Edge.RightEdge,
+                Qt.CursorShape.SizeFDiagCursor,
+            ),
+        }
+
+    def _layout_resize_handles(self) -> None:
+        if not hasattr(self, "_resize_handles"):
+            return
+
+        maximized = self.isMaximized()
+        for handle in self._resize_handles.values():
+            handle.setVisible(not maximized)
+        if maximized:
+            return
+
+        width = self.width()
+        height = self.height()
+        border = self.RESIZE_BORDER
+        corner = self.RESIZE_CORNER
+
+        self._resize_handles["left"].setGeometry(0, corner, border, height - 2 * corner)
+        self._resize_handles["right"].setGeometry(
+            width - border,
+            corner,
+            border,
+            height - 2 * corner,
+        )
+        self._resize_handles["top"].setGeometry(corner, 0, width - 2 * corner, border)
+        self._resize_handles["bottom"].setGeometry(
+            corner,
+            height - border,
+            width - 2 * corner,
+            border,
+        )
+        self._resize_handles["top_left"].setGeometry(0, 0, corner, corner)
+        self._resize_handles["top_right"].setGeometry(width - corner, 0, corner, corner)
+        self._resize_handles["bottom_left"].setGeometry(0, height - corner, corner, corner)
+        self._resize_handles["bottom_right"].setGeometry(
+            width - corner,
+            height - corner,
+            corner,
+            corner,
+        )
+
+        for handle in self._resize_handles.values():
+            handle.raise_()
 
     def showEvent(self, event) -> None:
         super().showEvent(event)
         if self._initial_geometry_applied:
+            self._layout_resize_handles()
             return
 
         screen = self.screen() or QGuiApplication.primaryScreen()
@@ -106,10 +203,18 @@ class MainWindow(QMainWindow):
         self.setGeometry(x, y, width, height)
         self._initial_geometry_applied = True
         self._apply_rounded_mask()
+        self._layout_resize_handles()
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
         self._apply_rounded_mask()
+        self._layout_resize_handles()
+
+    def changeEvent(self, event) -> None:
+        super().changeEvent(event)
+        if event.type() == event.Type.WindowStateChange:
+            QTimer.singleShot(0, self._layout_resize_handles)
+            QTimer.singleShot(0, self._apply_rounded_mask)
 
     def _apply_rounded_mask(self) -> None:
         if self.isMaximized():
