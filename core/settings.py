@@ -38,7 +38,7 @@ class Settings:
 
     @classmethod
     def get_theme(cls) -> str:
-        return cls._read().get("theme", "dark")
+        return cls._read().get("theme", "default")
 
     @classmethod
     def save_theme(cls, theme_name: str):

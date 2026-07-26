@@ -10,7 +10,7 @@ def test_defaults_when_settings_file_does_not_exist(tmp_path, monkeypatch) -> No
     monkeypatch.setattr(Settings, "SETTINGS_FILE", settings_file)
 
     assert Settings.get_last_folder() == ""
-    assert Settings.get_theme() == "dark"
+    assert Settings.get_theme() == "default"
     assert Settings.get_delete_original() is False
     assert Settings.get_last_template() == ""
     assert Settings.get_window_geometry() == {
@@ -48,7 +48,7 @@ def test_invalid_json_falls_back_to_defaults(tmp_path, monkeypatch) -> None:
     settings_file.write_text("{broken json", encoding="utf-8")
     monkeypatch.setattr(Settings, "SETTINGS_FILE", settings_file)
 
-    assert Settings.get_theme() == "dark"
+    assert Settings.get_theme() == "default"
     assert Settings.get_dashboard_stats() == {
         "processed_files": 0,
         "templates_created": 0,

@@ -21,6 +21,7 @@ class YandexWorker(QThread):
         self,
         url: str,
         save_dir: Path,
+        download_stories: bool = False,
         on_log=None,
         on_progress=None,
         on_finished=None,
@@ -30,6 +31,7 @@ class YandexWorker(QThread):
 
         self.url = url
         self.save_dir = Path(save_dir)
+        self.download_stories = download_stories
         self.skip_existing = skip_existing
 
         self._cancel_requested = False
@@ -60,6 +62,7 @@ class YandexWorker(QThread):
             success = router.run(
                 self.url,
                 save_dir=self.save_dir,
+                download_stories=self.download_stories,
                 skip_existing=self.skip_existing,
             )
 

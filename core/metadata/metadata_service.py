@@ -29,6 +29,9 @@ class MetadataService:
         
         try:
             img = Image.open(file_path)
+
+            if img.mode != "RGB":
+                img = img.convert("RGB")
             exif_data = img.info.get('exif')
             
             if not exif_data:

@@ -1,5 +1,5 @@
 /* =========================================
-   Teggy Corporate Neon UI
+   Teggy default Neon UI
    Dashboard v1
 ========================================= */
 
@@ -752,26 +752,7 @@ QLabel {
 }
 
 
-/* =========================
-   SCROLL FIX
-========================= */
 
-#Sidebar QScrollBar:vertical {
-
-    background: transparent;
-
-    width: 6px;
-
-}
-
-
-#Sidebar QScrollBar::handle:vertical {
-
-    background: #303B68;
-
-    border-radius: 3px;
-
-}
 /* =========================================================
    Sprint 3.8 TopBar polish
 
@@ -1231,4 +1212,372 @@ Sprint 4.1 Teggy Logo
 
     color: #FF6B8A;
 
+}
+QLineEdit,
+QTextEdit {
+
+    background: #11182D;
+    color: #F7F5FF;
+    border: 1px solid #27335A;
+    border-radius: 10px;
+    padding: 8px;
+}
+#GalleryScroll {
+    background: transparent;
+    border: none;
+}
+
+#GalleryContent {
+    background: transparent;
+}
+
+#ThumbnailCard {
+    background: #11182D;
+    border: 1px solid #27335A;
+    border-radius: 14px;
+}
+
+#ThumbnailCard:hover {
+    border: 1px solid #8B5CF6;
+    background: #171F3A;
+}
+
+#ThumbnailImage {
+    background: #080D1C;
+    border: 1px solid #202A4A;
+    border-radius: 10px;
+    color: #8F98B7;
+}
+
+#ThumbnailName {
+    color: #E8EBFA;
+    font-size: 12px;
+}
+/* =========================
+   SCROLLBAR
+========================= */
+
+QScrollBar:vertical {
+    background: #0E1428;
+    width: 12px;
+    margin: 14px 0 14px 0;
+    border: none;
+}
+
+QScrollBar::handle:vertical {
+    background: #39456D;
+    border-radius: 6px;
+    min-height: 40px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #915CFF;
+}
+
+QScrollBar::handle:vertical:pressed {
+    background: #7C3AED;
+}
+
+QScrollBar::sub-line:vertical {
+    background: #141B35;
+    border: none;
+    height: 14px;
+    subcontrol-origin: margin;
+    subcontrol-position: top;
+}
+
+QScrollBar::add-line:vertical {
+    background: #141B35;
+    border: none;
+    height: 14px;
+    subcontrol-origin: margin;
+    subcontrol-position: bottom;
+}
+
+QScrollBar::up-arrow:vertical {
+    image: url(assets/icons/teggy/chevron-up.svg);
+    width: 8px;
+    height: 8px;
+}
+
+QScrollBar::down-arrow:vertical {
+    image: url(assets/icons/teggy/chevron-down.svg);
+    width: 8px;
+    height: 8px;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: transparent;
+}
+#ThumbnailCard {
+    background: #11182D;
+    border: 1px solid #27335A;
+    border-radius: 14px;
+}
+
+#ThumbnailCard:hover {
+    border: 1px solid #8B5CF6;
+}
+
+#ThumbnailCard[selected="true"] {
+    border: 2px solid #915CFF;
+    background: #1A2140;
+}
+/* =========================
+   SELECTED THUMBNAIL
+========================= */
+
+#ThumbnailCard[selected="true"] {
+    background: #1A2140;
+    border: 2px solid #915CFF;
+}
+
+#ThumbnailCard[selected="true"]:hover {
+    background: #20294D;
+    border: 2px solid #A778FF;
+}
+/* =========================
+   IMAGE VIEWER
+========================= */
+
+#ImageViewerDialog {
+    background: #0B1020;
+}
+
+#ViewerFileName {
+    color: #F4F6FF;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+#ViewerImageContainer {
+    background: #080C18;
+    border: 1px solid #27335A;
+    border-radius: 14px;
+}
+
+#ViewerImage {
+    background: transparent;
+    color: #8F98B8;
+    font-size: 14px;
+}
+
+#ViewerImageInfo {
+    color: #8F98B8;
+    font-size: 13px;
+}
+
+#ViewerCloseButton {
+    min-width: 100px;
+    min-height: 36px;
+    padding: 0 16px;
+
+    background: #1A2140;
+    color: #F4F6FF;
+
+    border: 1px solid #303B68;
+    border-radius: 8px;
+}
+
+#ViewerCloseButton:hover {
+    background: #252F59;
+    border-color: #915CFF;
+}
+
+#ViewerCloseButton:pressed {
+    background: #151B35;
+}
+/* ==========================================================
+   YANDEX MAPS ACTION BUTTONS
+   ========================================================== */
+
+
+QPushButton#YandexActionButton {
+    min-height: 40px;
+
+    padding: 0 18px;
+
+    background: #171F3A;
+    color: #D8DDF4;
+
+    border: 1px solid #303B68;
+    border-radius: 10px;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QPushButton#YandexActionButton:hover {
+    background: #21194A;
+    color: #FFFFFF;
+
+    border: 1px solid #915CFF;
+}
+
+QPushButton#YandexActionButton:pressed {
+    background: #39206B;
+
+    border: 1px solid #A778FF;
+}
+
+QPushButton#YandexActionButton:disabled {
+    background: #11182D;
+    color: #5F6888;
+
+    border: 1px solid #242D50;
+}
+
+QPushButton#YandexActionButton:hover {
+    color: #FFFFFF;
+    background-color: #8B5CF6;
+    border-color: #8B5CF6;
+}
+
+QPushButton#YandexActionButton:pressed {
+    background-color: #7C3AED;
+    border-color: #7C3AED;
+}
+
+QPushButton#YandexActionButton:disabled {
+    color: #A1A1AA;
+    background-color: #F4F4F5;
+    border-color: #E4E4E7;
+}
+
+
+/* ==========================================================
+   DOWNLOAD OPTION CARDS
+   ========================================================== */
+
+QFrame#DownloadOptionCard {
+    background: #11182D;
+
+    border: 1px solid #27335A;
+    border-radius: 14px;
+}
+
+QFrame#DownloadOptionCard:hover {
+    background: #151D39;
+
+    border: 1px solid #6942B5;
+}
+
+QFrame#DownloadOptionCard[selected="true"] {
+    background:
+        qlineargradient(
+            x1:0,
+            y1:0,
+            x2:1,
+            y2:0,
+            stop:0 #1A1740,
+            stop:1 #24164A
+        );
+
+    border: 1px solid #915CFF;
+}
+
+
+/* ==========================================================
+   DOWNLOAD OPTION TEXT
+   ========================================================== */
+
+QLabel#DownloadOptionTitle {
+    background: transparent;
+
+    color: #F7F5FF;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+QLabel#DownloadOptionDescription {
+    background: transparent;
+
+    color: #9DA5C1;
+
+    font-size: 12px;
+}
+
+
+/* ==========================================================
+   CUSTOM CHECKBOX
+   ========================================================== */
+
+QCheckBox#DownloadOptionCheck {
+    background: transparent;
+
+    spacing: 0;
+}
+
+QCheckBox#DownloadOptionCheck::indicator {
+    width: 20px;
+    height: 20px;
+
+    background: #0B1022;
+
+    border: 1px solid #46517A;
+    border-radius: 6px;
+}
+
+QCheckBox#DownloadOptionCheck::indicator:hover {
+    background: #171F3A;
+
+    border: 1px solid #A778FF;
+}
+
+QCheckBox#DownloadOptionCheck::indicator:checked {
+    background: #915CFF;
+
+    border: 1px solid #A778FF;
+
+    image: url(assets/icons/teggy/check.svg);
+}
+/* ==========================================================
+   YANDEX DOWNLOAD PROGRESS
+   ========================================================== */
+
+QProgressBar#YandexDownloadProgress {
+    min-height: 7px;
+    max-height: 7px;
+
+    background: #11182D;
+
+    border: none;
+    border-radius: 3px;
+}
+
+QProgressBar#YandexDownloadProgress::chunk {
+    background:
+        qlineargradient(
+            x1:0,
+            y1:0,
+            x2:1,
+            y2:0,
+            stop:0 #7650E8,
+            stop:1 #B557F0
+        );
+
+    border-radius: 3px;
+}
+
+
+/* ==========================================================
+   YANDEX DOWNLOAD LOG
+   ========================================================== */
+
+QPlainTextEdit#YandexDownloadLog {
+    padding: 12px;
+
+    background: #0B1022;
+    color: #B7BED8;
+
+    border: 1px solid #242D50;
+    border-radius: 10px;
+
+    selection-background-color: #6842B5;
+    selection-color: #FFFFFF;
+
+    font-family: "Consolas";
+    font-size: 12px;
 }

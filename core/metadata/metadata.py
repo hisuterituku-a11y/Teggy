@@ -95,6 +95,10 @@ class MetadataWriter:
             # Открываем изображение
             img = Image.open(filepath)
 
+            # JPEG не поддерживает прозрачность
+            if img.mode != "RGB":
+                img = img.convert("RGB")
+
             exif_dict = {
                 "0th": {},
                 "Exif": {},

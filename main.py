@@ -18,7 +18,7 @@ if __name__ == "__main__":
     
     # Загружаем последнюю тему из настроек
     from core.settings import Settings
-    last_theme = Settings.get_theme() or "corporate"
+    last_theme = "default"
     theme = theme_manager.load(last_theme)
 
     print("THEME:", last_theme)

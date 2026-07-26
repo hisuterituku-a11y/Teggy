@@ -268,6 +268,7 @@ class YandexRouter:
         self,
         url: str,
         save_dir: Path | str,
+        download_stories: bool = False,
         skip_existing: bool = True,
     ) -> bool:
         self._cancelled = False
@@ -289,6 +290,7 @@ class YandexRouter:
         reviews_folder = save_dir / "Фото отзывы"
         stories_folder = save_dir / "Сторис"
 
+
         org_folder.mkdir(
             parents=True,
             exist_ok=True,
@@ -297,10 +299,11 @@ class YandexRouter:
             parents=True,
             exist_ok=True,
         )
-        stories_folder.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
+        if download_stories:
+            stories_folder.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
 
         self.log("================================")
         self.log("ЗАПУСК ИМПОРТА ИЗ ЯНДЕКС КАРТ")
@@ -363,22 +366,24 @@ class YandexRouter:
         if self._check_cancelled():
             return False
 
-        try:
-            stories_count = self._download_stories(
-                base_url=base_url,
-                folder=stories_folder,
-                skip_existing=skip_existing,
-            )
-        except Exception as exc:
-            message = self._register_error(
-                stage="Stories",
-                exc=exc,
-                url=base_url,
-            )
-            errors.append(message)
-            self.log(
-                "Ошибка Stories не прерывает импорт остальных фотографий"
-            )
+        if download_stories:
+            try:
+                stories_count = self._download_stories(
+                    base_url=base_url,
+                    folder=stories_folder,
+                    skip_existing=skip_existing,
+                )
+            except Exception as exc:
+                message = self._register_error(
+                    stage="Stories",
+                    exc=exc,
+                    url=base_url,
+                )
+                errors.append(message)
+
+                self.log(
+                    "Ошибка Stories не прерывает импорт остальных фотографий"
+                )
 
         if self._check_cancelled():
             return False
@@ -388,7 +393,8 @@ class YandexRouter:
         self.log("ГОТОВО")
         self.log(f"Организация: {org_count} фото")
         self.log(f"Отзывы: {reviews_count} фото")
-        self.log(f"Stories: {stories_count}")
+        if download_stories:
+            self.log(f"Stories: {stories_count}")
 
         if errors:
             self.log(

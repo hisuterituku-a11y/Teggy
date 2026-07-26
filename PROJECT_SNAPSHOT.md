@@ -35,7 +35,7 @@ X:\Teggy\
 │   └── theme/              # Система тем (JSON + QSS с @переменными)
 ├── assets/
 │   ├── icons/              # SVG с currentColor
-│   └── themes/             # 5 тем: dark, light, sakura, frog, corporate
+│   └── themes/             # 5 тем: dark, light, sakura, frog, corporate, default
 │       └── */background.svg # Фоны для каждой темы
 └── templates/              # Пользовательские JSON-шаблоны
 ```

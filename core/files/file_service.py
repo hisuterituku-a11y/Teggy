@@ -55,6 +55,18 @@ class FileService:
         for ext in FileService.IMAGE_EXTENSIONS:
             for file_path in folder_path.glob(f"*{ext}"):
                 stat = file_path.stat()
+
+                if stat.st_size == 0:
+                    continue
+
+                files.append(
+                    FileInfo(
+                        name=file_path.name,
+                        path=file_path,
+                        size=stat.st_size,
+                        modified=datetime.fromtimestamp(stat.st_mtime)
+                    )
+                )
                 files.append(FileInfo(
                     name=file_path.name,
                     path=file_path,

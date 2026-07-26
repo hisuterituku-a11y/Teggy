@@ -218,13 +218,15 @@ class Sidebar(QFrame):
 
         menu = [
             ("Главная", "home", True),
-            ("Фото", "photo", False),
+            ("Тегирование", "photo", False),
+            ("Яндекс Карты", "map", False),
             ("Теги", "tag", False),
             ("Шаблоны", "templates", False),
             ("Настройки", "settings", False),
         ]
 
-
+        # Кнопки навигации по страницам.
+        self.menu_buttons = {}
         for text, icon, active in menu:
 
             button = QPushButton(
@@ -251,6 +253,7 @@ class Sidebar(QFrame):
                 True
             )
             button.page_name = text
+            self.menu_buttons[text] = button
 
             button.setChecked(
                 active

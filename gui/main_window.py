@@ -9,7 +9,8 @@ from PySide6.QtWidgets import (
 from gui.components.sidebar import Sidebar
 from gui.components.topbar import TopBar
 from gui.pages.dashboard import Dashboard
-from gui.pages.tegging import PhotoPage
+from gui.pages.tagging import TaggingPage
+from gui.pages.yandex_maps import YandexMapsPage
 from PySide6.QtWidgets import QPushButton
 
 class MainWindow(QMainWindow):
@@ -27,20 +28,24 @@ class MainWindow(QMainWindow):
         layout.setSpacing(0)
 
         self.sidebar = Sidebar()
-        self.sidebar.findChildren(QPushButton)[0].clicked.connect(
+        self.sidebar.menu_buttons["Главная"].clicked.connect(
             lambda: self.pages.setCurrentIndex(0)
         )
 
-
-        self.sidebar.findChildren(QPushButton)[1].clicked.connect(
+        self.sidebar.menu_buttons["Тегирование"].clicked.connect(
             lambda: self.pages.setCurrentIndex(1)
+        )
+
+        self.sidebar.menu_buttons["Яндекс Карты"].clicked.connect(
+            lambda: self.pages.setCurrentIndex(2)
         )
         self.topbar = TopBar()
 
         self.pages = QStackedWidget()
 
         self.dashboard_page = Dashboard()
-        self.photo_page = PhotoPage()
+        self.photo_page = TaggingPage()
+        self.yandex_maps_page = YandexMapsPage()
 
 
         self.pages.addWidget(
@@ -49,6 +54,10 @@ class MainWindow(QMainWindow):
 
         self.pages.addWidget(
             self.photo_page
+        )
+
+        self.pages.addWidget(
+            self.yandex_maps_page
         )
 
         # правая часть: topbar + страницы

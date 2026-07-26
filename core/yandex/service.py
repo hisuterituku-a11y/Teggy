@@ -13,6 +13,7 @@ class YandexService:
         self,
         url: str,
         save_dir: Path,
+        download_stories: bool = False,
         on_log=None,
         on_progress=None,
         on_finished=None,
@@ -22,6 +23,7 @@ class YandexService:
         self.worker = YandexWorker(
             url=url,
             save_dir=save_dir,
+            download_stories=download_stories,
             on_log=on_log,
             on_progress=on_progress,
             on_finished=on_finished,
