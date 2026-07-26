@@ -1,20 +1,10 @@
 from PySide6.QtCore import QTimer, Qt, QUrl
 from PySide6.QtGui import QAction, QDesktopServices, QGuiApplication
-from PySide6.QtWidgets import (
-    QHBoxLayout,
-    QLabel,
-    QMainWindow,
-    QMessageBox,
-    QStackedWidget,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import QLabel, QMainWindow, QMessageBox
 
 from core.update_checker import ReleaseInfo
 from core.version import __version__, display_version
-from gui.components.sidebar import Sidebar
-from gui.components.topbar import TopBar
-from gui.components.window_title_bar import WindowTitleBar
+from gui.components.application_shell import ApplicationShell
 from gui.dialogs.about_dialog import AboutDialog
 from gui.pages.dashboard import Dashboard
 from gui.pages.tagging import TaggingPage
@@ -33,29 +23,32 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(display_version())
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setMinimumSize(1080, 680)
 
         self._create_menu()
 
-        shell = QWidget()
-        shell.setObjectName("WindowShell")
-        shell_layout = QVBoxLayout(shell)
-        shell_layout.setContentsMargins(1, 1, 1, 1)
-        shell_layout.setSpacing(0)
+        self.shell = ApplicationShell(self)
+        self.setCentralWidget(self.shell)
 
-        self.window_title_bar = WindowTitleBar(self)
+        self.window_title_bar = self.shell.title_bar
+        self.sidebar = self.shell.sidebar
+        self.topbar = self.shell.topbar
+        self.pages = self.shell.pages
+
         self.window_title_bar.help_button.clicked.connect(self._show_about_dialog)
-        shell_layout.addWidget(self.window_title_bar)
 
-        central = QWidget()
-        layout = QHBoxLayout(central)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-
-        self.sidebar = Sidebar()
         version_label = self.sidebar.findChild(QLabel, "VersionLabel")
         if version_label is not None:
             version_label.setText(f"v{__version__}")
+
+        self.dashboard_page = Dashboard()
+        self.photo_page = TaggingPage()
+        self.yandex_maps_page = YandexMapsPage()
+
+        self.pages.addWidget(self.dashboard_page)
+        self.pages.addWidget(self.photo_page)
+        self.pages.addWidget(self.yandex_maps_page)
 
         self.sidebar.menu_buttons["Главная"].clicked.connect(
             lambda: self.pages.setCurrentIndex(0)
@@ -67,30 +60,6 @@ class MainWindow(QMainWindow):
             lambda: self.pages.setCurrentIndex(2)
         )
 
-        self.topbar = TopBar()
-        self.pages = QStackedWidget()
-
-        self.dashboard_page = Dashboard()
-        self.photo_page = TaggingPage()
-        self.yandex_maps_page = YandexMapsPage()
-
-        self.pages.addWidget(self.dashboard_page)
-        self.pages.addWidget(self.photo_page)
-        self.pages.addWidget(self.yandex_maps_page)
-
-        content = QVBoxLayout()
-        content.setContentsMargins(0, 0, 0, 0)
-        content.setSpacing(0)
-        content.addWidget(self.topbar)
-        content.addWidget(self.pages, 1)
-
-        layout.addWidget(self.sidebar)
-        layout.addLayout(content, 1)
-        shell_layout.addWidget(central, 1)
-
-        self.setCentralWidget(shell)
-
-        # Не задерживаем запуск окна сетевым запросом.
         QTimer.singleShot(1500, self.update_service.check)
 
     def showEvent(self, event) -> None:
@@ -114,7 +83,6 @@ class MainWindow(QMainWindow):
 
     def _create_menu(self) -> None:
         self.menuBar().setVisible(False)
-
         help_menu = self.menuBar().addMenu("Справка")
         about_action = QAction("О программе", self)
         about_action.triggered.connect(self._show_about_dialog)
@@ -132,8 +100,7 @@ class MainWindow(QMainWindow):
             "Открыть страницу релиза для загрузки новой версии?"
         )
         message.setStandardButtons(
-            QMessageBox.StandardButton.Open
-            | QMessageBox.StandardButton.Cancel
+            QMessageBox.StandardButton.Open | QMessageBox.StandardButton.Cancel
         )
         message.setDefaultButton(QMessageBox.StandardButton.Open)
 
