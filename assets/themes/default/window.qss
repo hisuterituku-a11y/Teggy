@@ -36,6 +36,33 @@
     height: 0;
 }
 
+#PageStack QLineEdit,
+#PageStack QTextEdit,
+#PageStack QPlainTextEdit {
+    min-height: 38px;
+}
+
+#PageStack QTextEdit,
+#PageStack QPlainTextEdit {
+    min-height: 120px;
+}
+
+#FileList {
+    min-width: 340px;
+}
+
+#FileItem {
+    min-height: 66px;
+    max-height: 66px;
+}
+
+#FileName,
+#FileInfo {
+    min-height: 18px;
+    padding: 0;
+    margin: 0;
+}
+
 #WindowTitleBar {
     background: #0B1022;
     border-bottom: 1px solid #242D50;
