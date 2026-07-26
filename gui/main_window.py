@@ -16,7 +16,7 @@ from gui.components.application_shell import ApplicationShell
 from gui.dialogs.about_dialog import AboutDialog
 from gui.pages.dashboard import Dashboard
 from gui.pages.settings_page import SettingsPage
-from gui.pages.tagging import TaggingPage
+from gui.pages.tagging_fixed import TaggingPage
 from gui.pages.yandex_maps import YandexMapsPage
 from gui.services.update_service import UpdateService
 
