@@ -164,11 +164,26 @@ class Dashboard(QWidget):
         version_row.addStretch(1)
         version_row.addWidget(version_value)
         layout.addLayout(version_row)
+
+        self.update_status_label = QLabel("Готово к проверке")
+        self.update_status_label.setObjectName("CardSubtitle")
+        self.update_status_label.setWordWrap(True)
+        layout.addWidget(self.update_status_label)
         layout.addStretch(1)
 
-        check_button = QPushButton("Проверить обновления")
-        check_button.setObjectName("PrimaryButton")
-        check_button.clicked.connect(self.check_updates_requested)
-        layout.addWidget(check_button)
+        self.check_updates_button = QPushButton("Проверить обновления")
+        self.check_updates_button.setObjectName("PrimaryButton")
+        self.check_updates_button.clicked.connect(self.check_updates_requested)
+        layout.addWidget(self.check_updates_button)
 
         return card
+
+    def set_update_checking(self) -> None:
+        self.update_status_label.setText("Проверяем GitHub Releases…")
+        self.check_updates_button.setEnabled(False)
+        self.check_updates_button.setText("Проверка…")
+
+    def set_update_result(self, message: str) -> None:
+        self.update_status_label.setText(message)
+        self.check_updates_button.setEnabled(True)
+        self.check_updates_button.setText("Проверить обновления")
