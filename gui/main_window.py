@@ -1,5 +1,5 @@
-from PySide6.QtCore import QTimer, QUrl
-from PySide6.QtGui import QAction, QDesktopServices
+from PySide6.QtCore import QTimer, Qt, QUrl
+from PySide6.QtGui import QAction, QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -14,6 +14,7 @@ from core.update_checker import ReleaseInfo
 from core.version import __version__, display_version
 from gui.components.sidebar import Sidebar
 from gui.components.topbar import TopBar
+from gui.components.window_title_bar import WindowTitleBar
 from gui.dialogs.about_dialog import AboutDialog
 from gui.pages.dashboard import Dashboard
 from gui.pages.tagging import TaggingPage
@@ -28,10 +29,23 @@ class MainWindow(QMainWindow):
         self.theme_manager = theme_manager
         self.update_service = UpdateService(self)
         self.update_service.update_available.connect(self._show_update_available)
+        self._initial_geometry_applied = False
 
         self.setWindowTitle(display_version())
-        self.resize(1440, 900)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
+        self.setMinimumSize(1080, 680)
+
         self._create_menu()
+
+        shell = QWidget()
+        shell.setObjectName("WindowShell")
+        shell_layout = QVBoxLayout(shell)
+        shell_layout.setContentsMargins(1, 1, 1, 1)
+        shell_layout.setSpacing(0)
+
+        self.window_title_bar = WindowTitleBar(self)
+        self.window_title_bar.help_button.clicked.connect(self._show_about_dialog)
+        shell_layout.addWidget(self.window_title_bar)
 
         central = QWidget()
         layout = QHBoxLayout(central)
@@ -46,53 +60,62 @@ class MainWindow(QMainWindow):
         self.sidebar.menu_buttons["Главная"].clicked.connect(
             lambda: self.pages.setCurrentIndex(0)
         )
-
         self.sidebar.menu_buttons["Тегирование"].clicked.connect(
             lambda: self.pages.setCurrentIndex(1)
         )
-
         self.sidebar.menu_buttons["Яндекс Карты"].clicked.connect(
             lambda: self.pages.setCurrentIndex(2)
         )
-        self.topbar = TopBar()
 
+        self.topbar = TopBar()
         self.pages = QStackedWidget()
 
         self.dashboard_page = Dashboard()
         self.photo_page = TaggingPage()
         self.yandex_maps_page = YandexMapsPage()
 
-        self.pages.addWidget(
-            self.dashboard_page
-        )
+        self.pages.addWidget(self.dashboard_page)
+        self.pages.addWidget(self.photo_page)
+        self.pages.addWidget(self.yandex_maps_page)
 
-        self.pages.addWidget(
-            self.photo_page
-        )
-
-        self.pages.addWidget(
-            self.yandex_maps_page
-        )
-
-        # правая часть: topbar + страницы
         content = QVBoxLayout()
         content.setContentsMargins(0, 0, 0, 0)
         content.setSpacing(0)
-
         content.addWidget(self.topbar)
         content.addWidget(self.pages, 1)
 
         layout.addWidget(self.sidebar)
         layout.addLayout(content, 1)
+        shell_layout.addWidget(central, 1)
 
-        self.setCentralWidget(central)
+        self.setCentralWidget(shell)
 
         # Не задерживаем запуск окна сетевым запросом.
         QTimer.singleShot(1500, self.update_service.check)
 
-    def _create_menu(self) -> None:
-        help_menu = self.menuBar().addMenu("Справка")
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        if self._initial_geometry_applied:
+            return
 
+        screen = self.screen() or QGuiApplication.primaryScreen()
+        if screen is None:
+            self.resize(1280, 800)
+            return
+
+        available = screen.availableGeometry()
+        width = min(1440, max(self.minimumWidth(), available.width() - 40))
+        height = min(900, max(self.minimumHeight(), available.height() - 40))
+        x = available.x() + max(20, (available.width() - width) // 2)
+        y = available.y() + 20
+
+        self.setGeometry(x, y, width, height)
+        self._initial_geometry_applied = True
+
+    def _create_menu(self) -> None:
+        self.menuBar().setVisible(False)
+
+        help_menu = self.menuBar().addMenu("Справка")
         about_action = QAction("О программе", self)
         about_action.triggered.connect(self._show_about_dialog)
         help_menu.addAction(about_action)
