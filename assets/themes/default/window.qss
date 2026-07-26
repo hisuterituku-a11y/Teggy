@@ -3,11 +3,20 @@
 #WindowShell {
     background: #070B18;
     border: 1px solid #242D50;
+    border-radius: 14px;
+}
+
+#WindowBody,
+#ContentShell,
+#PageStack {
+    background: transparent;
 }
 
 #WindowTitleBar {
     background: #0B1022;
     border-bottom: 1px solid #242D50;
+    border-top-left-radius: 13px;
+    border-top-right-radius: 13px;
 }
 
 #WindowTitle {
@@ -36,23 +45,19 @@
 #WindowCloseButton:hover {
     background: #D43C55;
     color: #FFFFFF;
+    border-top-right-radius: 13px;
 }
 
 #AboutDialog {
     background: #0E1428;
+    border: 1px solid #303B68;
+    border-radius: 14px;
 }
 
-#AboutMark {
-    background: qlineargradient(
-        x1:0, y1:0, x2:1, y2:1,
-        stop:0 #915CFF,
-        stop:1 #5C2FC2
-    );
-    color: #FFFFFF;
-    border: 1px solid #B28AFF;
-    border-radius: 20px;
-    font-size: 30px;
-    font-weight: 800;
+#AboutContent {
+    background: transparent;
+    border-bottom-left-radius: 13px;
+    border-bottom-right-radius: 13px;
 }
 
 #AboutTitle {
@@ -66,7 +71,7 @@
     font-size: 13px;
 }
 
-#AboutRepositoryButton {
+#AboutPrimaryButton {
     background: #7C4DDE;
     color: #FFFFFF;
     border: 1px solid #A778FF;
@@ -75,20 +80,19 @@
     font-weight: 700;
 }
 
-#AboutRepositoryButton:hover {
+#AboutPrimaryButton:hover {
     background: #915CFF;
 }
 
-#AboutButtonBox QPushButton {
+#AboutSecondaryButton {
     background: #141B35;
     color: #D8DDF4;
     border: 1px solid #303B68;
     border-radius: 10px;
-    min-width: 96px;
     min-height: 34px;
 }
 
-#AboutButtonBox QPushButton:hover {
+#AboutSecondaryButton:hover {
     background: #1A2343;
     border-color: #915CFF;
 }
