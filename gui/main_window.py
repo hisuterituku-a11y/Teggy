@@ -59,17 +59,11 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(display_version())
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
-
-        # Полупрозрачное верхнеуровневое окно заставляет Windows заново
-        # композить шапку и sidebar при каждом шаге системного resize.
-        # Сам интерфейс непрозрачный, поэтому держим нативную поверхность окна
-        # непрозрачной и используем маску только для формы углов.
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
         self.setAutoFillBackground(True)
         palette = self.palette()
         palette.setColor(QPalette.ColorRole.Window, QColor("#070B18"))
         self.setPalette(palette)
-
         self.setMinimumSize(self.MIN_WINDOW_WIDTH, self.MIN_WINDOW_HEIGHT)
 
         self._create_menu()
@@ -99,19 +93,22 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(self._scroll_page(self.yandex_maps_page))
         self.pages.addWidget(self.settings_page)
 
-        page_map = {
+        self._page_map = {
             "Главная": 0,
             "Тегирование": 1,
             "Яндекс Карты": 2,
             "Настройки": 3,
         }
-        for name, index in page_map.items():
+        for name, index in self._page_map.items():
             self.sidebar.menu_buttons[name].clicked.connect(
                 lambda checked=False, page_index=index, page_name=name: self._switch_page(
                     page_index,
                     page_name,
                 )
             )
+
+        self.dashboard_page.navigate_requested.connect(self._open_page_by_name)
+        self.dashboard_page.check_updates_requested.connect(self.update_service.check)
 
         self._resize_handles = self._create_resize_handles()
         self._switch_page(0, "Главная")
@@ -126,6 +123,11 @@ class MainWindow(QMainWindow):
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scroll.setWidget(page)
         return scroll
+
+    def _open_page_by_name(self, page_name: str) -> None:
+        index = self._page_map.get(page_name)
+        if index is not None:
+            self._switch_page(index, page_name)
 
     def _switch_page(self, index: int, page_name: str) -> None:
         self.pages.setCurrentIndex(index)
