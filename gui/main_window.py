@@ -13,6 +13,7 @@ from core.version import __version__, display_version
 from gui.components.application_shell import ApplicationShell
 from gui.dialogs.about_dialog import AboutDialog
 from gui.pages.dashboard import Dashboard
+from gui.pages.settings_page import SettingsPage
 from gui.pages.tagging import TaggingPage
 from gui.pages.yandex_maps import YandexMapsPage
 from gui.services.update_service import UpdateService
@@ -41,6 +42,8 @@ class ResizeHandle(QWidget):
 class MainWindow(QMainWindow):
     RESIZE_BORDER = 7
     RESIZE_CORNER = 14
+    SAFE_WIDTH = 1280
+    SAFE_HEIGHT = 800
 
     def __init__(self, theme_manager=None):
         super().__init__()
@@ -53,9 +56,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(display_version())
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-
-        # Ниже этого порога Dashboard начинает ломать композицию.
-        # Остальные длинные страницы уже живут в scroll-контейнерах.
         self.setMinimumSize(1024, 640)
 
         self._create_menu()
@@ -77,15 +77,19 @@ class MainWindow(QMainWindow):
         self.dashboard_page = Dashboard()
         self.photo_page = TaggingPage()
         self.yandex_maps_page = YandexMapsPage()
+        self.settings_page = SettingsPage()
+        self.settings_page.reset_interface_requested.connect(self.reset_interface_geometry)
 
         self.pages.addWidget(self.dashboard_page)
         self.pages.addWidget(self._scroll_page(self.photo_page))
         self.pages.addWidget(self._scroll_page(self.yandex_maps_page))
+        self.pages.addWidget(self.settings_page)
 
         page_map = {
             "Главная": 0,
             "Тегирование": 1,
             "Яндекс Карты": 2,
+            "Настройки": 3,
         }
         for name, index in page_map.items():
             self.sidebar.menu_buttons[name].clicked.connect(
@@ -112,6 +116,26 @@ class MainWindow(QMainWindow):
     def _switch_page(self, index: int, page_name: str) -> None:
         self.pages.setCurrentIndex(index)
         self.sidebar.set_active(page_name)
+
+    def reset_interface_geometry(self) -> None:
+        screen = self.screen() or QGuiApplication.primaryScreen()
+        if screen is None:
+            self.showNormal()
+            self.resize(self.SAFE_WIDTH, self.SAFE_HEIGHT)
+            return
+
+        available = screen.availableGeometry()
+        width = min(self.SAFE_WIDTH, available.width() - 40)
+        height = min(self.SAFE_HEIGHT, available.height() - 40)
+        width = max(self.minimumWidth(), width)
+        height = max(self.minimumHeight(), height)
+        x = available.x() + (available.width() - width) // 2
+        y = available.y() + (available.height() - height) // 2
+
+        self.showNormal()
+        self.setGeometry(x, y, width, height)
+        self._apply_rounded_mask()
+        self._layout_resize_handles()
 
     def _create_resize_handles(self) -> dict[str, ResizeHandle]:
         return {
@@ -191,7 +215,7 @@ class MainWindow(QMainWindow):
 
         screen = self.screen() or QGuiApplication.primaryScreen()
         if screen is None:
-            self.resize(1280, 800)
+            self.resize(self.SAFE_WIDTH, self.SAFE_HEIGHT)
             return
 
         available = screen.availableGeometry()
