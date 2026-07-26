@@ -5,9 +5,17 @@ from core.version import display_version
 
 
 class WindowTitleBar(QFrame):
-    """Кастомная верхняя панель frameless-окна Teggy."""
+    """Переиспользуемая верхняя панель для frameless-окон Teggy."""
 
-    def __init__(self, window):
+    def __init__(
+        self,
+        window,
+        *,
+        title: str | None = None,
+        show_help: bool = True,
+        show_minimize: bool = True,
+        show_maximize: bool = True,
+    ):
         super().__init__(window)
         self._window = window
         self._drag_position: QPoint | None = None
@@ -19,9 +27,9 @@ class WindowTitleBar(QFrame):
         layout.setContentsMargins(14, 0, 0, 0)
         layout.setSpacing(8)
 
-        title = QLabel(display_version())
-        title.setObjectName("WindowTitle")
-        layout.addWidget(title)
+        title_label = QLabel(title or display_version())
+        title_label.setObjectName("WindowTitle")
+        layout.addWidget(title_label)
         layout.addStretch()
 
         self.help_button = self._button("?", "WindowHelpButton", "О программе")
@@ -33,9 +41,21 @@ class WindowTitleBar(QFrame):
         self.maximize_button.clicked.connect(self._toggle_maximized)
         self.close_button.clicked.connect(window.close)
 
-        layout.addWidget(self.help_button)
-        layout.addWidget(self.minimize_button)
-        layout.addWidget(self.maximize_button)
+        if show_help:
+            layout.addWidget(self.help_button)
+        else:
+            self.help_button.hide()
+
+        if show_minimize:
+            layout.addWidget(self.minimize_button)
+        else:
+            self.minimize_button.hide()
+
+        if show_maximize:
+            layout.addWidget(self.maximize_button)
+        else:
+            self.maximize_button.hide()
+
         layout.addWidget(self.close_button)
 
     def _button(self, text: str, object_name: str, tooltip: str) -> QPushButton:
@@ -54,13 +74,15 @@ class WindowTitleBar(QFrame):
             self.maximize_button.setText("❐")
 
     def mouseDoubleClickEvent(self, event) -> None:
-        if event.button() == Qt.MouseButton.LeftButton:
+        if self.maximize_button.isVisible() and event.button() == Qt.MouseButton.LeftButton:
             self._toggle_maximized()
             event.accept()
 
     def mousePressEvent(self, event) -> None:
         if event.button() == Qt.MouseButton.LeftButton and not self._window.isMaximized():
-            self._drag_position = event.globalPosition().toPoint() - self._window.frameGeometry().topLeft()
+            self._drag_position = (
+                event.globalPosition().toPoint() - self._window.frameGeometry().topLeft()
+            )
             event.accept()
 
     def mouseMoveEvent(self, event) -> None:
