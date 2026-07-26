@@ -71,6 +71,28 @@
     margin: 0;
 }
 
+#ThumbnailImage {
+    background: #0A1020;
+    border: 1px solid #29345B;
+    border-radius: 10px;
+    padding: 0;
+}
+
+#ThumbnailRemoveButton {
+    background: rgba(8, 12, 24, 220);
+    color: #FFFFFF;
+    border: 1px solid #48557F;
+    border-radius: 13px;
+    padding: 0;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+#ThumbnailRemoveButton:hover {
+    background: #D43C55;
+    border-color: #FF7188;
+}
+
 #WindowTitleBar {
     background: #0B1022;
     border-bottom: 1px solid #242D50;
@@ -126,12 +148,14 @@
     color: #FFFFFF;
     font-size: 21px;
     font-weight: 800;
+    padding: 2px 0 4px 0;
 }
 
 #AboutDescription,
 #ResultStatLabel {
     color: #AAB2D4;
     font-size: 13px;
+    padding: 2px 0;
 }
 
 #ResultStats {
@@ -144,6 +168,7 @@
     color: #FFFFFF;
     font-size: 15px;
     font-weight: 700;
+    padding: 2px 0;
 }
 
 #AboutPrimaryButton {
