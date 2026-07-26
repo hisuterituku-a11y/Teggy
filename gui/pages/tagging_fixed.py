@@ -29,7 +29,7 @@ class TaggingPage(BaseTaggingPage):
 
         old_checkbox = self.delete_originals_checkbox
         old_checkbox.setText("Удалять исходные фото после обработки")
-        old_checkbox.setObjectName("ToggleCheckBox")
+        old_checkbox.setObjectName("")
         old_checkbox.setToolTip(
             "Без галочки исходники сохранятся, готовые фото появятся в папке Teggy. "
             "С галочкой исходники удалятся только после полностью успешной обработки."
