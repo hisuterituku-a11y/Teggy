@@ -37,18 +37,6 @@ class TagTemplateDialog(QDialog):
 
         shell = QWidget(self)
         shell.setObjectName("TemplateDialog")
-        shell.setStyleSheet(
-            "#TemplateDialog{background:#0E1428;border:1px solid #303B68;border-radius:14px;}"
-            "#TemplateSidebar,#TemplateEditor{background:#11182D;border:1px solid #27335A;border-radius:12px;}"
-            "#TemplateList{background:#0B1022;border:1px solid #27335A;border-radius:10px;padding:6px;}"
-            "#TemplateList::item{min-height:34px;padding:4px 8px;border-radius:7px;}"
-            "#TemplateList::item:selected{background:#39206B;color:white;}"
-            "#TemplateManagerButton{min-height:36px;padding:0 14px;border-radius:10px;font-weight:600;}"
-            "#TemplateDangerButton{min-height:36px;padding:0 14px;border-radius:10px;background:#2A1420;color:#FF9BAD;border:1px solid #6A2A3A;}"
-            "#TemplateDangerButton:hover{background:#3A1825;border-color:#D44A62;}"
-            "#TemplatePrimaryButton{min-height:38px;padding:0 18px;border-radius:10px;background:#915CFF;color:white;border:1px solid #A778FF;font-weight:700;}"
-            "#TemplatePrimaryButton:hover{background:#A778FF;}"
-        )
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
@@ -62,6 +50,7 @@ class TagTemplateDialog(QDialog):
         ))
 
         content = QWidget()
+        content.setObjectName("TemplateContent")
         content_layout = QVBoxLayout(content)
         content_layout.setContentsMargins(22, 20, 22, 22)
         content_layout.setSpacing(14)
