@@ -9,6 +9,13 @@ from gui.pages.tagging_fixed import TaggingPage as BaseTaggingPage
 class TaggingPage(BaseTaggingPage):
     """Финальный слой страницы тегирования с едиными карточками и шаблонами."""
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # Базовый слой повторно добавляет подпись прямо в QCheckBox. Здесь текст
+        # уже вынесен в отдельный QLabel, поэтому оставляем только индикатор.
+        self.delete_originals_checkbox.setText("")
+        self.delete_originals_checkbox.setFixedWidth(24)
+
     def _build_processing_options(self) -> QFrame:
         card = QFrame()
         card.setObjectName("DownloadOptionCard")
@@ -16,14 +23,15 @@ class TaggingPage(BaseTaggingPage):
 
         layout = QHBoxLayout(card)
         layout.setContentsMargins(16, 14, 16, 14)
-        layout.setSpacing(12)
+        layout.setSpacing(14)
 
         self.delete_originals_checkbox = QCheckBox()
         self.delete_originals_checkbox.setObjectName("DownloadOptionCheck")
+        self.delete_originals_checkbox.setFixedWidth(24)
         self.delete_originals_checkbox.setToolTip(
             "Исходные фотографии удалятся только после полностью успешной обработки."
         )
-        layout.addWidget(self.delete_originals_checkbox)
+        layout.addWidget(self.delete_originals_checkbox, 0, Qt.AlignmentFlag.AlignTop)
 
         text_layout = QVBoxLayout()
         text_layout.setContentsMargins(0, 0, 0, 0)
@@ -61,8 +69,8 @@ class TaggingPage(BaseTaggingPage):
             if layout is None:
                 return
             button = QPushButton("✦  Шаблоны метаданных")
-            button.setObjectName("TemplateActionButton")
-            button.setMinimumHeight(38)
+            button.setObjectName("TemplateProminentButton")
+            button.setMinimumHeight(40)
             button.setToolTip("Создать, изменить или применить шаблон метаданных")
             button.clicked.connect(self.open_template_dialog)
             layout.addWidget(
