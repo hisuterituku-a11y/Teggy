@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QPixmap
 from PySide6.QtWidgets import (
     QDialog,
     QFrame,
@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from core.paths import resource_path
 from gui.components.window_title_bar import WindowTitleBar
 
 
@@ -35,7 +36,7 @@ class ProcessingResultDialog(QDialog):
         self.setModal(True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setFixedSize(480, 370)
+        self.setFixedSize(500, 430)
 
         shell = QWidget(self)
         shell.setObjectName("ResultDialog")
@@ -60,10 +61,33 @@ class ProcessingResultDialog(QDialog):
         content = QWidget()
         content.setObjectName("ResultContent")
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(28, 26, 28, 26)
-        content_layout.setSpacing(18)
+        content_layout.setContentsMargins(30, 24, 30, 28)
+        content_layout.setSpacing(16)
 
-        title = QLabel("Обработка отменена" if cancelled else "Готово")
+        icon_name = "dialog-info.svg" if cancelled else (
+            "dialog-error.svg" if failed else "dialog-success.svg"
+        )
+        icon_label = QLabel()
+        icon_label.setObjectName("ResultIcon")
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_pixmap = QPixmap(
+            str(resource_path("assets", "icons", "teggy", icon_name))
+        )
+        if not icon_pixmap.isNull():
+            icon_label.setPixmap(
+                icon_pixmap.scaled(
+                    54,
+                    54,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            )
+        content_layout.addWidget(icon_label)
+
+        title_text = "Обработка отменена" if cancelled else (
+            "Обработка завершена с ошибками" if failed else "Готово"
+        )
+        title = QLabel(title_text)
         title.setObjectName("ResultTitle")
         title.setMinimumHeight(32)
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -101,12 +125,14 @@ class ProcessingResultDialog(QDialog):
 
         if output_dir is not None:
             open_button = QPushButton("Открыть папку Teggy")
-            open_button.setObjectName("AboutPrimaryButton")
+            open_button.setObjectName("PrimaryButton")
+            open_button.setMinimumHeight(40)
             open_button.clicked.connect(self._open_output_dir)
             content_layout.addWidget(open_button)
 
         close_button = QPushButton("Закрыть")
         close_button.setObjectName("AboutSecondaryButton")
+        close_button.setMinimumHeight(40)
         close_button.clicked.connect(self.accept)
         content_layout.addWidget(close_button)
 
