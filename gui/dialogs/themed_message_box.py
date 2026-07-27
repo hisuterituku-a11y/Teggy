@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QMessageBox, QWidget
+
+from core.paths import resource_path
 
 
 class ThemedMessageBox:
@@ -19,7 +22,25 @@ class ThemedMessageBox:
         box = QMessageBox(parent)
         box.setObjectName("ThemedMessageBox")
         box.setOption(QMessageBox.Option.DontUseNativeDialog, True)
-        box.setIcon(icon)
+
+        if icon == QMessageBox.Icon.Warning:
+            warning_pixmap = QPixmap(
+                str(resource_path("assets", "icons", "teggy", "dialog-warning.svg"))
+            )
+            if not warning_pixmap.isNull():
+                box.setIconPixmap(
+                    warning_pixmap.scaled(
+                        42,
+                        42,
+                        Qt.AspectRatioMode.KeepAspectRatio,
+                        Qt.TransformationMode.SmoothTransformation,
+                    )
+                )
+            else:
+                box.setIcon(icon)
+        else:
+            box.setIcon(icon)
+
         box.setWindowTitle(title)
         box.setText(text)
         box.setTextFormat(Qt.TextFormat.PlainText)
