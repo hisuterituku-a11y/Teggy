@@ -61,18 +61,18 @@ class Sidebar(QFrame):
         layout.addWidget(version)
         layout.addSpacing(28)
 
+        # Настройки остаются внутренней страницей и открываются круглыми
+        # кнопками темы и уведомлений в верхней панели.
         menu = [
-            ("Главная", "home", True),
-            ("Тегирование", "photo", False),
-            ("Яндекс Карты", "map", False),
-            ("Теги", "tag", False),
-            ("Шаблоны", "templates", False),
-            ("Настройки", "settings", False),
+            ("Главная", "home", True, True),
+            ("Тегирование", "photo", False, True),
+            ("Яндекс Карты", "map", False, True),
+            ("Настройки", "settings", False, False),
         ]
 
         self.menu_buttons = {}
         self._menu_icons = {}
-        for text, icon_name, active in menu:
+        for text, icon_name, active, visible in menu:
             button = QPushButton(text)
             button.setIconSize(QSize(22, 22))
             button.setObjectName("SideButton")
@@ -85,6 +85,7 @@ class Sidebar(QFrame):
 
             button.setChecked(active)
             button.setIcon(active_icon if active else normal_icon)
+            button.setVisible(visible)
             self.menu_buttons[text] = button
             layout.addWidget(button)
 
