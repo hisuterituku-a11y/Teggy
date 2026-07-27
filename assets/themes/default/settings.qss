@@ -1,0 +1,40 @@
+/* Settings page */
+
+QRadioButton#DownloadOptionCheck {
+    spacing: 10px;
+    background: transparent;
+}
+
+QRadioButton#DownloadOptionCheck::indicator,
+QCheckBox#SettingsCheckBox::indicator {
+    width: 20px;
+    height: 20px;
+    background: #0B1022;
+    border: 1px solid #46517A;
+    border-radius: 6px;
+}
+
+QRadioButton#DownloadOptionCheck::indicator:hover,
+QCheckBox#SettingsCheckBox::indicator:hover {
+    background: #171F3A;
+    border-color: #A778FF;
+}
+
+QRadioButton#DownloadOptionCheck::indicator:checked,
+QCheckBox#SettingsCheckBox::indicator:checked {
+    background: #915CFF;
+    border-color: #A778FF;
+    image: url(assets/icons/teggy/check.svg);
+}
+
+QCheckBox#SettingsCheckBox {
+    min-height: 34px;
+    spacing: 10px;
+    color: #F7F5FF;
+    font-weight: 600;
+}
+
+#SettingsPage QPushButton#YandexActionButton {
+    min-height: 38px;
+    padding: 0 16px;
+}
