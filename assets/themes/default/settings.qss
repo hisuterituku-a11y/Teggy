@@ -1,11 +1,5 @@
 /* Settings page */
 
-QRadioButton#DownloadOptionCheck {
-    spacing: 10px;
-    background: transparent;
-}
-
-QRadioButton#DownloadOptionCheck::indicator,
 QCheckBox#SettingsCheckBox::indicator {
     width: 20px;
     height: 20px;
@@ -14,13 +8,11 @@ QCheckBox#SettingsCheckBox::indicator {
     border-radius: 6px;
 }
 
-QRadioButton#DownloadOptionCheck::indicator:hover,
 QCheckBox#SettingsCheckBox::indicator:hover {
     background: #171F3A;
     border-color: #A778FF;
 }
 
-QRadioButton#DownloadOptionCheck::indicator:checked,
 QCheckBox#SettingsCheckBox::indicator:checked {
     background: #915CFF;
     border-color: #A778FF;
@@ -32,6 +24,28 @@ QCheckBox#SettingsCheckBox {
     spacing: 10px;
     color: #F7F5FF;
     font-weight: 600;
+}
+
+QPushButton#ThemeChoiceButton {
+    min-height: 72px;
+    padding: 12px 16px;
+    text-align: left;
+    background: #11182D;
+    color: #F7F5FF;
+    border: 1px solid #303B68;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+QPushButton#ThemeChoiceButton:hover {
+    background: #171F3A;
+    border-color: #915CFF;
+}
+
+QPushButton#ThemeChoiceButton:checked {
+    background: #39206B;
+    border: 2px solid #A778FF;
+    color: #FFFFFF;
 }
 
 #SettingsPage QPushButton#YandexActionButton {
