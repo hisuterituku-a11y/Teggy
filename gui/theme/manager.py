@@ -93,19 +93,11 @@ class ThemeManager:
     def _scrollbar_postlude(self, theme_name: str) -> str:
         track, handle, hover = self.SCROLLBAR_PALETTES.get(theme_name, self.SCROLLBAR_PALETTES["default"])
         return f"""
-QScrollBar:vertical, #PageScroll QScrollBar:vertical, QAbstractScrollArea QScrollBar:vertical {{
-    background: {track}; width: 10px; margin: 0; border: none;
-}}
-QScrollBar::handle:vertical, #PageScroll QScrollBar::handle:vertical, QAbstractScrollArea QScrollBar::handle:vertical {{
-    background: {handle}; min-height: 28px; border-radius: 5px; border: none;
-}}
+QScrollBar:vertical, #PageScroll QScrollBar:vertical, QAbstractScrollArea QScrollBar:vertical {{ background: {track}; width: 10px; margin: 0; border: none; }}
+QScrollBar::handle:vertical, #PageScroll QScrollBar::handle:vertical, QAbstractScrollArea QScrollBar::handle:vertical {{ background: {handle}; min-height: 28px; border-radius: 5px; border: none; }}
 QScrollBar::handle:vertical:hover, #PageScroll QScrollBar::handle:vertical:hover {{ background: {hover}; }}
-QScrollBar:horizontal, #PageScroll QScrollBar:horizontal, QAbstractScrollArea QScrollBar:horizontal {{
-    background: {track}; height: 10px; margin: 0; border: none;
-}}
-QScrollBar::handle:horizontal, #PageScroll QScrollBar::handle:horizontal, QAbstractScrollArea QScrollBar::handle:horizontal {{
-    background: {handle}; min-width: 28px; border-radius: 5px; border: none;
-}}
+QScrollBar:horizontal, #PageScroll QScrollBar:horizontal, QAbstractScrollArea QScrollBar:horizontal {{ background: {track}; height: 10px; margin: 0; border: none; }}
+QScrollBar::handle:horizontal, #PageScroll QScrollBar::handle:horizontal, QAbstractScrollArea QScrollBar::handle:horizontal {{ background: {handle}; min-width: 28px; border-radius: 5px; border: none; }}
 QScrollBar::handle:horizontal:hover, #PageScroll QScrollBar::handle:horizontal:hover {{ background: {hover}; }}
 QScrollBar::add-line, QScrollBar::sub-line {{ width: 0; height: 0; background: transparent; border: none; }}
 QScrollBar::add-page, QScrollBar::sub-page {{ background: transparent; }}
@@ -116,58 +108,39 @@ QScrollBar::add-page, QScrollBar::sub-page {{ background: transparent; }}
         return f"""
 /* Final component layer. These selectors intentionally win over legacy QSS. */
 #TopBar {{ border-bottom: 1px solid {p['topbar_border']}; }}
-#WindowTitleBar {{
-    background: {p['chrome_bg']}; border: none; border-bottom: 1px solid {p['topbar_border']}; border-radius: 0;
-}}
+#WindowTitleBar {{ background: {p['chrome_bg']}; border: none; border-bottom: 1px solid {p['topbar_border']}; border-radius: 0; }}
 #WindowTitle {{ color: {p['chrome_text']}; background: transparent; font-weight: 600; }}
-#WindowHelpButton, #WindowControlButton, #WindowCloseButton {{
-    background: transparent; color: {p['chrome_text']}; border: none; border-radius: 0;
-}}
+#WindowHelpButton, #WindowControlButton, #WindowCloseButton {{ background: transparent; color: {p['chrome_text']}; border: none; border-radius: 0; }}
 #WindowHelpButton:hover, #WindowControlButton:hover {{ background: {p['chrome_hover']}; color: {p['accent']}; }}
 #WindowCloseButton:hover {{ background: #D94B64; color: #FFFFFF; }}
-#ThemeButton, #NotifyButton, #SettingsButton {{
-    background: {p['chrome_bg']}; color: {p['accent']}; border: 1px solid {p['topbar_border']}; border-radius: 18px;
-}}
-#ThemeButton:hover, #NotifyButton:hover, #SettingsButton:hover {{ background: {p['chrome_hover']}; border-color: {p['accent']}; }}
-QPushButton#YandexActionButton, QPushButton#DashboardSecondaryButton,
-QPushButton#AboutSecondaryButton, QPushButton#TemplateManagerButton {{
-    background: {p['secondary_bg']}; color: {p['secondary_text']};
-    border: 1px solid {p['secondary_border']}; border-radius: 10px;
-}}
-QPushButton#YandexActionButton:hover, QPushButton#DashboardSecondaryButton:hover,
-QPushButton#AboutSecondaryButton:hover, QPushButton#TemplateManagerButton:hover {{
-    background: {p['secondary_hover']}; border-color: {p['accent']};
-}}
+#ThemeButton, #NotifyButton, #SettingsButton {{ background: {p['chrome_bg']}; color: {p['accent']}; border: 1px solid {p['topbar_border']}; border-radius: 18px; }}
+#ThemeButton:hover, #NotifyButton:hover, #SettingsButton:hover {{ background: {p['chrome_hover']}; color: {p['accent']}; border-color: {p['accent']}; }}
+QPushButton#YandexActionButton, QPushButton#DashboardSecondaryButton, QPushButton#AboutSecondaryButton, QPushButton#TemplateManagerButton {{ background: {p['secondary_bg']}; color: {p['secondary_text']}; border: 1px solid {p['secondary_border']}; border-radius: 10px; }}
+QPushButton#YandexActionButton:hover, QPushButton#DashboardSecondaryButton:hover, QPushButton#AboutSecondaryButton:hover, QPushButton#TemplateManagerButton:hover {{ background: {p['secondary_hover']}; color: {p['secondary_text']}; border-color: {p['accent']}; }}
 #PremiumTitle {{ color: {p['premium_title']}; background: transparent; }}
 #PremiumText {{ color: {p['premium_text']}; background: transparent; }}
 #DashboardTip {{ background: {p['tip_bg']}; color: {p['tip_text']}; border: 1px solid {p['tip_border']}; border-radius: 10px; padding: 14px; }}
-QPushButton#ThemeChoiceButton {{
-    background: {p['theme_bg']}; color: {p['theme_text']}; border: 1px solid {p['theme_border']};
-    border-radius: 10px; text-align: left; padding: 12px 16px;
-}}
-QPushButton#ThemeChoiceButton:hover {{
-    background: {p['theme_hover']}; color: {p['theme_text']}; border-color: {p['accent']};
-}}
-QPushButton#ThemeChoiceButton:checked {{
-    background: {p['theme_selected']}; color: {p['theme_text']}; border: 2px solid {p['accent']};
-}}
+QPushButton#ThemeChoiceButton {{ background: {p['theme_bg']}; color: {p['theme_text']}; border: 1px solid {p['theme_border']}; border-radius: 10px; text-align: left; padding: 12px 16px; }}
+QPushButton#ThemeChoiceButton:hover {{ background: {p['theme_hover']}; color: {p['theme_text']}; border-color: {p['accent']}; }}
+QPushButton#ThemeChoiceButton:checked {{ background: {p['theme_selected']}; color: {p['theme_text']}; border: 2px solid {p['accent']}; }}
+
+/* Preview cards and list rows must never inherit Windows/system blue. */
+#ThumbnailCard {{ background: {p['dialog_card']}; border: 1px solid {p['theme_border']}; border-radius: 10px; }}
+#ThumbnailCard:hover {{ background: {p['theme_hover']}; border-color: {p['accent']}; }}
+#ThumbnailCard[selected="true"] {{ background: {p['theme_selected']}; border: 2px solid {p['accent']}; }}
+#ThumbnailImage, #ThumbnailName {{ background: transparent; color: {p['dialog_text']}; }}
+#FolderItem:hover, #DownloadOptionCard:hover, #DashboardActionCard:hover, #DashboardWorkflowRow:hover {{ background: {p['theme_hover']}; border-color: {p['accent']}; }}
+QListWidget::item:hover, QTreeWidget::item:hover, QTableWidget::item:hover {{ background: {p['theme_hover']}; color: {p['theme_text']}; }}
+QListWidget::item:selected, QTreeWidget::item:selected, QTableWidget::item:selected {{ background: {p['theme_selected']}; color: {p['theme_text']}; }}
+QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selected {{ background: {p['theme_hover']}; color: {p['theme_text']}; }}
+
 #TemplateDialog, #TemplateContent {{ background: {p['dialog_bg']}; color: {p['dialog_text']}; }}
-#TemplateSidebar, #TemplateEditor {{
-    background: {p['dialog_card']}; color: {p['dialog_text']};
-    border: 1px solid {p['theme_border']}; border-radius: 12px;
-}}
+#TemplateSidebar, #TemplateEditor {{ background: {p['dialog_card']}; color: {p['dialog_text']}; border: 1px solid {p['theme_border']}; border-radius: 12px; }}
 #TemplateDialog QLabel {{ background: transparent; color: {p['dialog_text']}; border: none; border-radius: 0; padding: 0; }}
-#TemplateDialog QLineEdit, #TemplateDialog QTextEdit, #TemplateDialog QListWidget {{
-    background: {p['secondary_bg']}; color: {p['secondary_text']};
-    border: 1px solid {p['secondary_border']}; border-radius: 9px;
-}}
+#TemplateDialog QLineEdit, #TemplateDialog QTextEdit, #TemplateDialog QListWidget {{ background: {p['secondary_bg']}; color: {p['secondary_text']}; border: 1px solid {p['secondary_border']}; border-radius: 9px; }}
 #TemplateDialog QPushButton {{ min-height: 36px; padding: 0 14px; border-radius: 9px; }}
-#TemplateDialog #TemplateManagerButton, #TemplateDialog #AboutSecondaryButton {{
-    background: {p['secondary_bg']}; color: {p['secondary_text']}; border: 1px solid {p['secondary_border']};
-}}
-#TemplateDialog #TemplateManagerButton:hover, #TemplateDialog #AboutSecondaryButton:hover {{
-    background: {p['secondary_hover']}; border-color: {p['accent']};
-}}
+#TemplateDialog #TemplateManagerButton, #TemplateDialog #AboutSecondaryButton {{ background: {p['secondary_bg']}; color: {p['secondary_text']}; border: 1px solid {p['secondary_border']}; }}
+#TemplateDialog #TemplateManagerButton:hover, #TemplateDialog #AboutSecondaryButton:hover {{ background: {p['secondary_hover']}; color: {p['secondary_text']}; border-color: {p['accent']}; }}
 #TemplateDialog #TemplatePrimaryButton {{ background: {p['accent']}; color: #FFFFFF; border: 1px solid {p['accent']}; }}
 #TemplateDialog #TemplateDangerButton {{ background: transparent; color: #D94B64; border: 1px solid #D94B64; }}
 #TemplateDialog QSplitter::handle {{ background: {p['topbar_border']}; width: 1px; }}
@@ -182,7 +155,6 @@ QPushButton#ThemeChoiceButton:checked {{
         if not theme_folder.is_dir() or theme_name not in self.THEME_ORDER:
             theme_folder = default_folder
             theme_name = "default"
-
         qss_parts = self._read_theme_parts(default_folder)
         if theme_name != "default":
             overlay = theme_folder / "theme.qss"
