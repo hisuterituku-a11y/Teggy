@@ -53,7 +53,7 @@ class TaggingPage(BaseTaggingPage):
 
         def update_card_state(state: int) -> None:
             selected = state == Qt.CheckState.Checked.value
-            card.setProperty("selected", selected)
+            card.setProperty("selected", "true" if selected else "false")
             card.style().unpolish(card)
             card.style().polish(card)
             card.update()

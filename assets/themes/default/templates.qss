@@ -1,3 +1,45 @@
+/* Delete originals checkbox */
+
+QCheckBox#DownloadOptionCheck {
+    spacing: 0px;
+    background: transparent;
+}
+
+QCheckBox#DownloadOptionCheck::indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: #11182D;
+    border: 1px solid #303B68;
+}
+
+QCheckBox#DownloadOptionCheck::indicator:hover {
+    border-color: #915CFF;
+}
+
+QCheckBox#DownloadOptionCheck::indicator:checked {
+    background: #915CFF;
+    border-color: #B68CFF;
+}
+
+QCheckBox#DownloadOptionCheck::indicator:checked:hover {
+    background: #A778FF;
+    border-color: #FFFFFF;
+}
+/* Delete originals selected card */
+
+QFrame#DownloadOptionCard[selected="true"] {
+    border: 2px solid #915CFF;
+    background-color: #1A1233;
+}
+
+QFrame#DownloadOptionCard[selected="true"] QLabel#DownloadOptionTitle {
+    color: #FFFFFF;
+}
+
+QFrame#DownloadOptionCard[selected="true"] QLabel#DownloadOptionDescription {
+    color: #CFC3FF;
+}
 /* Metadata template controls */
 
 QPushButton#TemplateProminentButton {

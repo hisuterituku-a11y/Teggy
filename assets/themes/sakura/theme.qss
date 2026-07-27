@@ -78,7 +78,8 @@ QPushButton#DashboardActionButton:hover { background: #E58CA0; }
     background: #FFF8F5; border: 1px solid #E9C9CC;
 }
 #DownloadOptionCard[selected="true"] {
-    background: #F7DCE0; border: 1px solid #D9798D;
+    background: #FBE7EC;
+    border: 2px solid #D9798D;
 }
 
 QPushButton#ThemeChoiceButton {
@@ -165,4 +166,11 @@ QDialog QPushButton#DashboardActionButton, QMessageBox QPushButton:default {
 }
 #GalleryContent, #PhotoGallery, #GalleryViewport, #EmptyGallery, #YandexDownloadLog {
     background: #FFF8F5; color: #8C6971; border-color: #E9C9CC;
+}
+#PageScroll #DownloadOptionCard[selected="true"] #DownloadOptionTitle {
+    color: #6A3340;
+}
+
+#PageScroll #DownloadOptionCard[selected="true"] #DownloadOptionDescription {
+    color: #8C6971;
 }

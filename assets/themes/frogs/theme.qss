@@ -57,7 +57,7 @@ QDialog QListWidget, QDialog QTreeWidget, QDialog QTableWidget, QDialog QLineEdi
 QDialog QPushButton, QMessageBox QPushButton { min-height: 34px; padding: 0 14px; background: #185E4F; color: #F2FAF4; border: 1px solid #4D8B78; border-radius: 10px; }
 QDialog QPushButton:hover, QMessageBox QPushButton:hover { background: #206C5A; border-color: #A9D9BC; }
 QDialog QPushButton#TemplatePrimaryButton, QDialog QPushButton#AboutPrimaryButton, QMessageBox QPushButton:default { background: #A9D9BC; color: #10372E; border-color: #D2E8D5; }
-#TemplateDialog #TemplateDangerButton { background: #2A1420; color: #FF9BAD; border: 1px solid #6A2A3A; }
+#TemplateDialog #TemplateDangerButton { background: #2A1420; color: #185E4F; border: 1px solid #6A2A3A; }
 #TemplateDialog #TemplateList::item:selected { background: #D9E9CF; color: #123F33; }
 
 #SettingsPage QCheckBox#SettingsCheckBox { background: transparent; color: #EAF6EE; }
@@ -74,3 +74,16 @@ QDialog QPushButton#TemplatePrimaryButton, QDialog QPushButton#AboutPrimaryButto
 QMessageBox#ThemedMessageBox, QMessageBox#ThemedMessageBox QWidget { background: #105447; color: #EAF6EE; }
 QMessageBox#ThemedMessageBox QLabel { color: #F3FBF5; background: transparent; }
 QMessageBox#ThemedMessageBox QPushButton { min-width: 110px; min-height: 36px; background: #A9D9BC; color: #10372E; border: 1px solid #D2E8D5; border-radius: 10px; }
+/* Download option selected state override */
+#PageScroll #DownloadOptionCard[selected="true"] {
+    background: #D9E9CF;
+    border: 1px solid #A9D9BC;
+}
+
+#PageScroll #DownloadOptionCard[selected="true"] #DownloadOptionTitle {
+    color: #123F33;
+}
+
+#PageScroll #DownloadOptionCard[selected="true"] #DownloadOptionDescription {
+    color: #476B5C;
+}

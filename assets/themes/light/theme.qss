@@ -76,3 +76,8 @@ QDialog QPushButton#TemplatePrimaryButton, QDialog QPushButton#AboutPrimaryButto
 QMessageBox#ThemedMessageBox, QMessageBox#ThemedMessageBox QWidget { background: #FFFFFF; color: #172033; }
 QMessageBox#ThemedMessageBox QLabel { color: #172033; background: transparent; }
 QMessageBox#ThemedMessageBox QPushButton { min-width: 110px; min-height: 36px; background: #7C4DDE; color: #FFFFFF; border: 1px solid #8B5CF6; border-radius: 9px; }
+/* Download option selected state override */
+#PageScroll #DownloadOptionCard[selected="true"] {
+    background: #F0EAFF;
+    border: 1px solid #8B5CF6;
+}

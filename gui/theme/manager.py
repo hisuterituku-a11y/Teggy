@@ -176,6 +176,9 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {{
 #ThumbnailCard {{ background: {p['dialog_card']}; border: 1px solid {p['theme_border']}; border-radius: 10px; }}
 #ThumbnailCard:hover {{ background: {p['theme_hover']}; border-color: {p['accent']}; }}
 #ThumbnailCard[selected="true"] {{ background: {p['theme_selected']}; border: 2px solid {p['accent']}; }}
+#DownloadOptionCard[selected="true"] {{ background: {p['theme_selected']}; border: 2px solid {p['accent']}; }}
+#DownloadOptionCard[selected="true"] #DownloadOptionTitle {{ color: {p['theme_text']}; }}
+#DownloadOptionCard[selected="true"] #DownloadOptionDescription {{ color: {p['dialog_text']}; }}
 #ThumbnailImage, #ThumbnailName {{ background: transparent; color: {p['dialog_text']}; }}
 #FolderItem:hover, #DownloadOptionCard:hover, #DashboardActionCard:hover, #DashboardWorkflowRow:hover {{ background: {p['theme_hover']}; border-color: {p['accent']}; }}
 QListWidget::item:hover, QTreeWidget::item:hover, QTableWidget::item:hover {{ background: {p['theme_hover']}; color: {p['theme_text']}; }}
