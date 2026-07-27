@@ -44,6 +44,8 @@ class MainWindow(QMainWindow):
     RESIZE_MARGIN = 7
     SAFE_MINIMUM_WIDTH = 1024
     SAFE_MINIMUM_HEIGHT = 680
+    DEFAULT_WIDTH = 1180
+    DEFAULT_HEIGHT = 860
 
     def __init__(self, theme_manager=None):
         super().__init__()
@@ -176,8 +178,8 @@ class MainWindow(QMainWindow):
             return
 
         available = screen.availableGeometry()
-        width = min(max(self.SAFE_MINIMUM_WIDTH, 1180), available.width())
-        height = min(max(self.SAFE_MINIMUM_HEIGHT, 760), available.height())
+        width = min(max(self.SAFE_MINIMUM_WIDTH, self.DEFAULT_WIDTH), available.width())
+        height = min(max(self.SAFE_MINIMUM_HEIGHT, self.DEFAULT_HEIGHT), available.height())
         self.resize(width, height)
         self.move(available.center() - self.rect().center())
 
