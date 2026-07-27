@@ -25,7 +25,7 @@ class SettingsPage(QWidget):
         "light": ("☀️ Светлая", "Чистый светлый интерфейс с мягкими тенями"),
         "corporate": ("💼 Корпоративная", "Графит, строгая геометрия и оранжевый акцент"),
         "frogs": ("🐸 Лягушки", "Глубокий зелёный, мята и уютная болотная палитра"),
-        "sakura": ("🌸 Сакура", "Тёплая светлая тема с пудрово-розовыми акцентами"),
+        "sakura": ("🌸 Сакура", "Тёплая тема с ветвями, веерами, цветами и облаками"),
     }
 
     def __init__(self, available_themes: list[str] | None = None, parent=None):
@@ -68,9 +68,7 @@ class SettingsPage(QWidget):
         title.setObjectName("CardTitle")
         layout.addWidget(title)
 
-        description = QLabel(
-            "Тема меняет весь интерфейс: окно, шапку, боковую панель, карточки, поля, меню и диалоги."
-        )
+        description = QLabel("Нажмите на любую часть карточки темы. Изменения применяются сразу.")
         description.setObjectName("CardSubtitle")
         description.setWordWrap(True)
         layout.addWidget(description)
@@ -85,13 +83,15 @@ class SettingsPage(QWidget):
         for index, theme_name in enumerate(self._available_themes):
             label, details = self.THEME_LABELS.get(theme_name, (theme_name, "Тема Teggy"))
             option = QFrame()
-            option.setObjectName("DownloadOptionCard")
+            option.setObjectName("ThemeOptionCard")
+            option.setCursor(Qt.CursorShape.PointingHandCursor)
             option_layout = QHBoxLayout(option)
             option_layout.setContentsMargins(16, 14, 16, 14)
             option_layout.setSpacing(12)
 
             radio = QRadioButton()
             radio.setObjectName("DownloadOptionCheck")
+            radio.setCursor(Qt.CursorShape.PointingHandCursor)
             group.addButton(radio)
             self._theme_buttons[theme_name] = radio
             option_layout.addWidget(radio)
@@ -99,9 +99,11 @@ class SettingsPage(QWidget):
             text_layout = QVBoxLayout()
             name_label = QLabel(label)
             name_label.setObjectName("DownloadOptionTitle")
+            name_label.setCursor(Qt.CursorShape.PointingHandCursor)
             details_label = QLabel(details)
             details_label.setObjectName("DownloadOptionDescription")
             details_label.setWordWrap(True)
+            details_label.setCursor(Qt.CursorShape.PointingHandCursor)
             text_layout.addWidget(name_label)
             text_layout.addWidget(details_label)
             option_layout.addLayout(text_layout, 1)
@@ -115,7 +117,15 @@ class SettingsPage(QWidget):
                     self._settings.setValue("appearance/theme", name)
                     self.theme_changed.emit(name)
 
+            def select_card(event, button=radio) -> None:
+                if event.button() == Qt.MouseButton.LeftButton:
+                    button.setChecked(True)
+                    event.accept()
+
             radio.toggled.connect(choose_theme)
+            option.mousePressEvent = select_card
+            name_label.mousePressEvent = select_card
+            details_label.mousePressEvent = select_card
             selected = theme_name == current_theme
             option.setProperty("selected", selected)
             radio.setChecked(selected)
@@ -132,29 +142,20 @@ class SettingsPage(QWidget):
         layout = QVBoxLayout(card)
         layout.setContentsMargins(24, 22, 24, 24)
         layout.setSpacing(12)
-
         title = QLabel("Обновления и уведомления")
         title.setObjectName("CardTitle")
         layout.addWidget(title)
 
         self.auto_updates_checkbox = QCheckBox("Проверять обновления при запуске")
         self.auto_updates_checkbox.setObjectName("SettingsCheckBox")
-        self.auto_updates_checkbox.setChecked(
-            self._settings.value("updates/check_on_startup", True, type=bool)
-        )
-        self.auto_updates_checkbox.toggled.connect(
-            lambda enabled: self._settings.setValue("updates/check_on_startup", enabled)
-        )
+        self.auto_updates_checkbox.setChecked(self._settings.value("updates/check_on_startup", True, type=bool))
+        self.auto_updates_checkbox.toggled.connect(lambda enabled: self._settings.setValue("updates/check_on_startup", enabled))
         layout.addWidget(self.auto_updates_checkbox)
 
         self.release_notifications_checkbox = QCheckBox("Показывать уведомления о новых версиях")
         self.release_notifications_checkbox.setObjectName("SettingsCheckBox")
-        self.release_notifications_checkbox.setChecked(
-            self._settings.value("updates/show_notifications", True, type=bool)
-        )
-        self.release_notifications_checkbox.toggled.connect(
-            lambda enabled: self._settings.setValue("updates/show_notifications", enabled)
-        )
+        self.release_notifications_checkbox.setChecked(self._settings.value("updates/show_notifications", True, type=bool))
+        self.release_notifications_checkbox.toggled.connect(lambda enabled: self._settings.setValue("updates/show_notifications", enabled))
         layout.addWidget(self.release_notifications_checkbox)
 
         row = QHBoxLayout()
@@ -172,15 +173,12 @@ class SettingsPage(QWidget):
         layout = QVBoxLayout(card)
         layout.setContentsMargins(24, 22, 24, 24)
         layout.setSpacing(12)
-
         title = QLabel("Интерфейс")
         title.setObjectName("CardTitle")
         layout.addWidget(title)
-
         description = QLabel("Вернуть окно к безопасному размеру и расположить его по центру экрана.")
         description.setObjectName("CardSubtitle")
         layout.addWidget(description)
-
         row = QHBoxLayout()
         reset_button = QPushButton("Сбросить размер и положение окна")
         reset_button.setObjectName("YandexActionButton")
