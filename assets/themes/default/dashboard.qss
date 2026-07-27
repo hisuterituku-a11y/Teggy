@@ -1,0 +1,30 @@
+#DashboardPage { background: #070B18; }
+#DashboardWelcome { color: #F7F5FF; font-size: 28px; font-weight: 800; }
+#DashboardSubtitle { color: #9DA5C1; font-size: 14px; }
+#DashboardHero {
+    background: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #171D46,stop:0.55 #25206A,stop:1 #4A1F67);
+    border: 1px solid #6942B5;
+    border-radius: 22px;
+}
+#DashboardPanel { background: #0E1428; border: 1px solid #27335A; border-radius: 18px; }
+#DashboardPanelTitle { color: #F7F5FF; font-size: 17px; font-weight: 700; }
+#DashboardPanelText { color: #9DA5C1; font-size: 12px; }
+#DashboardActionCard { background: rgba(8,13,28,0.72); border: 1px solid #3A4674; border-radius: 15px; }
+#DashboardActionCard:hover { background: #171F3A; border-color: #A778FF; }
+#DashboardActionIcon { color: #A778FF; font-size: 25px; }
+#DashboardActionTitle { color: #F7F5FF; font-size: 14px; font-weight: 700; }
+#DashboardActionButton {
+    min-height: 34px; background: #915CFF; color: white; border: 1px solid #A778FF;
+    border-radius: 10px; font-weight: 700;
+}
+#DashboardActionButton:hover { background: #A778FF; }
+#DashboardSecondaryButton {
+    min-height: 36px; background: #171F3A; color: #F7F5FF; border: 1px solid #39456D;
+    border-radius: 10px; font-weight: 600;
+}
+#DashboardSecondaryButton:hover { border-color: #915CFF; background: #21194A; }
+#DashboardVersion { color: #FFFFFF; font-size: 27px; font-weight: 800; }
+#DashboardSuccessText { color: #4DE0A3; font-size: 12px; font-weight: 600; }
+#DashboardWorkflowRow { background: #11182D; border: 1px solid #242D50; border-radius: 12px; }
+#DashboardStepBadge { background: #39206B; color: #FFFFFF; border: 1px solid #915CFF; border-radius: 15px; font-weight: 800; }
+#DashboardTip { background: #171235; color: #D9CCFF; border: 1px solid #53348C; border-radius: 14px; padding: 16px; }
