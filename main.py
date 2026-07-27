@@ -3,7 +3,7 @@ import sys
 from PySide6.QtWidgets import QApplication
 
 from core.paths import resource_path
-from gui.main_window import MainWindow
+from gui.main_window_templates import MainWindow
 from gui.theme.manager import ThemeManager
 
 
