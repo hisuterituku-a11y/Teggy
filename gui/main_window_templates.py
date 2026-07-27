@@ -13,11 +13,19 @@ class MainWindow(base_main_window.MainWindow):
         base_main_window.YandexMapsPage = YandexMapsPage
         super().__init__(theme_manager)
 
-        self.topbar.theme_button.setToolTip("Настройки темы")
-        self.topbar.notify_button.setToolTip("Настройки уведомлений")
+        self.topbar.theme_button.setToolTip("Тема оформления")
+        self.topbar.notify_button.setToolTip("Уведомления и обновления Teggy")
+        self.topbar.settings_button.setToolTip("Настройки")
+
         self.topbar.theme_button.clicked.connect(self._open_settings)
-        self.topbar.notify_button.clicked.connect(self._open_settings)
+        self.topbar.settings_button.clicked.connect(self._open_settings)
+        self.topbar.notify_button.clicked.connect(self._open_updates)
 
     def _open_settings(self) -> None:
         self._switch_page(3, "Настройки")
         self.topbar.title.setText("Настройки")
+
+    def _open_updates(self) -> None:
+        self._switch_page(0, "Главная")
+        self.topbar.title.setText("Главная")
+        self._start_manual_update_check()
