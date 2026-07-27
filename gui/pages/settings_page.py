@@ -21,9 +21,10 @@ class SettingsPage(QWidget):
     check_updates_requested = Signal()
 
     THEME_LABELS = {
-        "default": ("Neon", "Фирменная тёмная тема Teggy с фиолетовыми акцентами"),
-        "midnight": ("Midnight", "Глубокий синий фон и холодные голубые акценты"),
-        "graphite": ("Graphite", "Нейтральная графитовая тема без лишней цветовой истерики"),
+        "default": ("Тёмная", "Основная тёмная тема Teggy с фиолетовым акцентом"),
+        "blue": ("Синяя", "Тёмная синяя тема с голубыми акцентами"),
+        "purple": ("Фиолетовая", "Насыщенная сливово-фиолетовая тема"),
+        "light": ("Светлая", "Светлый интерфейс с фирменным фиолетовым акцентом"),
     }
 
     def __init__(self, available_themes: list[str] | None = None, parent=None):
@@ -41,18 +42,19 @@ class SettingsPage(QWidget):
         title.setObjectName("SectionTitle")
         root.addWidget(title)
 
-        subtitle = QLabel(
-            "Оформление, обновления и поведение приложения. Всё служебное теперь живёт здесь, "
-            "а не расползается по боковому меню как сорняк."
-        )
+        subtitle = QLabel("Оформление, обновления и параметры интерфейса Teggy.")
         subtitle.setObjectName("CardSubtitle")
-        subtitle.setWordWrap(True)
         root.addWidget(subtitle)
 
         root.addWidget(self._build_theme_card())
         root.addWidget(self._build_updates_card())
         root.addWidget(self._build_interface_card())
         root.addStretch(1)
+
+    def set_selected_theme(self, theme_name: str) -> None:
+        button = self._theme_buttons.get(theme_name)
+        if button is not None and not button.isChecked():
+            button.setChecked(True)
 
     def _build_theme_card(self) -> QFrame:
         card = QFrame()
@@ -65,7 +67,9 @@ class SettingsPage(QWidget):
         title.setObjectName("CardTitle")
         layout.addWidget(title)
 
-        description = QLabel("Выберите тему. Изменения применяются сразу и сохраняются между запусками.")
+        description = QLabel(
+            "Тема меняет весь интерфейс, включая фон, боковую панель, верхнюю панель, карточки и поля."
+        )
         description.setObjectName("CardSubtitle")
         description.setWordWrap(True)
         layout.addWidget(description)
@@ -78,10 +82,7 @@ class SettingsPage(QWidget):
 
         current_theme = str(self._settings.value("appearance/theme", "default"))
         for index, theme_name in enumerate(self._available_themes):
-            label, details = self.THEME_LABELS.get(
-                theme_name,
-                (theme_name.replace("_", " ").title(), "Пользовательская тема Teggy"),
-            )
+            label, details = self.THEME_LABELS.get(theme_name, (theme_name, "Тема Teggy"))
             option = QFrame()
             option.setObjectName("DownloadOptionCard")
             option_layout = QHBoxLayout(option)
@@ -90,13 +91,11 @@ class SettingsPage(QWidget):
 
             radio = QRadioButton()
             radio.setObjectName("DownloadOptionCheck")
-            radio.setProperty("themeName", theme_name)
             group.addButton(radio)
             self._theme_buttons[theme_name] = radio
             option_layout.addWidget(radio)
 
             text_layout = QVBoxLayout()
-            text_layout.setSpacing(3)
             name_label = QLabel(label)
             name_label.setObjectName("DownloadOptionTitle")
             details_label = QLabel(details)
@@ -123,7 +122,6 @@ class SettingsPage(QWidget):
 
         if current_theme not in self._theme_buttons and "default" in self._theme_buttons:
             self._theme_buttons["default"].setChecked(True)
-
         layout.addLayout(grid)
         return card
 
@@ -179,10 +177,9 @@ class SettingsPage(QWidget):
         layout.addWidget(title)
 
         description = QLabel(
-            "Вернуть окно к безопасному размеру и расположить его по центру доступной области экрана."
+            "Вернуть окно к безопасному размеру и расположить его по центру экрана."
         )
         description.setObjectName("CardSubtitle")
-        description.setWordWrap(True)
         layout.addWidget(description)
 
         row = QHBoxLayout()
