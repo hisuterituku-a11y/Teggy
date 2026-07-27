@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QSettings, Qt, Signal
+from PySide6.QtCore import QSettings, Signal
 from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
-    QRadioButton,
     QVBoxLayout,
     QWidget,
 )
@@ -33,7 +32,7 @@ class SettingsPage(QWidget):
         self.setObjectName("SettingsPage")
         self._settings = QSettings("Teggy", "Teggy")
         self._available_themes = available_themes or ["default"]
-        self._theme_buttons: dict[str, QRadioButton] = {}
+        self._theme_buttons: dict[str, QPushButton] = {}
 
         root = QVBoxLayout(self)
         root.setContentsMargins(32, 24, 32, 28)
@@ -68,7 +67,7 @@ class SettingsPage(QWidget):
         title.setObjectName("CardTitle")
         layout.addWidget(title)
 
-        description = QLabel("Нажмите на любую часть карточки темы. Изменения применяются сразу.")
+        description = QLabel("Выберите тему. Карточки ниже являются обычными кнопками и нажимаются целиком.")
         description.setObjectName("CardSubtitle")
         description.setWordWrap(True)
         layout.addWidget(description)
@@ -82,57 +81,26 @@ class SettingsPage(QWidget):
         current_theme = str(self._settings.value("appearance/theme", "default"))
         for index, theme_name in enumerate(self._available_themes):
             label, details = self.THEME_LABELS.get(theme_name, (theme_name, "Тема Teggy"))
-            option = QFrame()
-            option.setObjectName("ThemeOptionCard")
-            option.setCursor(Qt.CursorShape.PointingHandCursor)
-            option_layout = QHBoxLayout(option)
-            option_layout.setContentsMargins(16, 14, 16, 14)
-            option_layout.setSpacing(12)
+            button = QPushButton(f"{label}\n{details}")
+            button.setObjectName("ThemeChoiceButton")
+            button.setCheckable(True)
+            button.setMinimumHeight(72)
+            button.setProperty("themeName", theme_name)
+            group.addButton(button)
+            self._theme_buttons[theme_name] = button
 
-            radio = QRadioButton()
-            radio.setObjectName("DownloadOptionCheck")
-            radio.setCursor(Qt.CursorShape.PointingHandCursor)
-            group.addButton(radio)
-            self._theme_buttons[theme_name] = radio
-            option_layout.addWidget(radio)
-
-            text_layout = QVBoxLayout()
-            name_label = QLabel(label)
-            name_label.setObjectName("DownloadOptionTitle")
-            name_label.setCursor(Qt.CursorShape.PointingHandCursor)
-            details_label = QLabel(details)
-            details_label.setObjectName("DownloadOptionDescription")
-            details_label.setWordWrap(True)
-            details_label.setCursor(Qt.CursorShape.PointingHandCursor)
-            text_layout.addWidget(name_label)
-            text_layout.addWidget(details_label)
-            option_layout.addLayout(text_layout, 1)
-
-            def choose_theme(checked: bool, name=theme_name, frame=option) -> None:
-                frame.setProperty("selected", checked)
-                frame.style().unpolish(frame)
-                frame.style().polish(frame)
-                frame.update()
+            def choose_theme(checked: bool, name=theme_name) -> None:
                 if checked:
                     self._settings.setValue("appearance/theme", name)
                     self.theme_changed.emit(name)
 
-            def select_card(event, button=radio) -> None:
-                if event.button() == Qt.MouseButton.LeftButton:
-                    button.setChecked(True)
-                    event.accept()
-
-            radio.toggled.connect(choose_theme)
-            option.mousePressEvent = select_card
-            name_label.mousePressEvent = select_card
-            details_label.mousePressEvent = select_card
-            selected = theme_name == current_theme
-            option.setProperty("selected", selected)
-            radio.setChecked(selected)
-            grid.addWidget(option, index // 2, index % 2)
+            button.toggled.connect(choose_theme)
+            button.setChecked(theme_name == current_theme)
+            grid.addWidget(button, index // 2, index % 2)
 
         if current_theme not in self._theme_buttons and "default" in self._theme_buttons:
             self._theme_buttons["default"].setChecked(True)
+
         layout.addLayout(grid)
         return card
 
@@ -142,6 +110,7 @@ class SettingsPage(QWidget):
         layout = QVBoxLayout(card)
         layout.setContentsMargins(24, 22, 24, 24)
         layout.setSpacing(12)
+
         title = QLabel("Обновления и уведомления")
         title.setObjectName("CardTitle")
         layout.addWidget(title)
@@ -173,12 +142,15 @@ class SettingsPage(QWidget):
         layout = QVBoxLayout(card)
         layout.setContentsMargins(24, 22, 24, 24)
         layout.setSpacing(12)
+
         title = QLabel("Интерфейс")
         title.setObjectName("CardTitle")
         layout.addWidget(title)
+
         description = QLabel("Вернуть окно к безопасному размеру и расположить его по центру экрана.")
         description.setObjectName("CardSubtitle")
         layout.addWidget(description)
+
         row = QHBoxLayout()
         reset_button = QPushButton("Сбросить размер и положение окна")
         reset_button.setObjectName("YandexActionButton")
