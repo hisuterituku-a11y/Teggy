@@ -36,6 +36,7 @@ class ThemeManager:
             "theme_bg": "#11182D", "theme_text": "#F4F6FF", "theme_selected": "#39206B",
             "theme_hover": "#1A2340", "theme_border": "#303B68", "accent": "#915CFF",
             "dialog_bg": "#0B1022", "dialog_card": "#11182D", "dialog_text": "#F4F6FF",
+            "step_bg": "#2C1B52", "step_text": "#FFFFFF", "step_border": "#915CFF",
         },
         "light": {
             "topbar_border": "#D8DEEA", "chrome_bg": "#FFFFFF", "chrome_text": "#667085",
@@ -46,6 +47,7 @@ class ThemeManager:
             "theme_bg": "#FFFFFF", "theme_text": "#172033", "theme_selected": "#E9E1FF",
             "theme_hover": "#F4F0FF", "theme_border": "#D9DFEA", "accent": "#8B5CF6",
             "dialog_bg": "#F6F8FC", "dialog_card": "#FFFFFF", "dialog_text": "#172033",
+            "step_bg": "#EEE9FF", "step_text": "#4C347E", "step_border": "#8B5CF6",
         },
         "corporate": {
             "topbar_border": "#353A44", "chrome_bg": "#1D2027", "chrome_text": "#C8CDD6",
@@ -56,16 +58,18 @@ class ThemeManager:
             "theme_bg": "#22262E", "theme_text": "#F0F2F5", "theme_selected": "#332A1B",
             "theme_hover": "#292E37", "theme_border": "#3A404B", "accent": "#F59E0B",
             "dialog_bg": "#171A20", "dialog_card": "#22262E", "dialog_text": "#F0F2F5",
+            "step_bg": "#3A2D18", "step_text": "#FFD38A", "step_border": "#F59E0B",
         },
         "frogs": {
             "topbar_border": "#28695A", "chrome_bg": "#0D5144", "chrome_text": "#D8EEE4",
             "chrome_hover": "#206C5A", "secondary_bg": "#185E4F", "secondary_hover": "#206C5A",
             "secondary_text": "#F2FAF4", "secondary_border": "#4D8B78",
             "premium_title": "#F3FBF5", "premium_text": "#CBE3D6",
-            "tip_bg": "#D9E9CF", "tip_text": "#244C3D", "tip_border": "#A9D9BC",
+            "tip_bg": "#D9E9CF", "tip_text": "#173C31", "tip_border": "#A9D9BC",
             "theme_bg": "#105447", "theme_text": "#F3FBF5", "theme_selected": "#D9E9CF",
             "theme_hover": "#176253", "theme_border": "#347565", "accent": "#A9D9BC",
             "dialog_bg": "#083D33", "dialog_card": "#105447", "dialog_text": "#F3FBF5",
+            "step_bg": "#D9E9CF", "step_text": "#173C31", "step_border": "#A9D9BC",
         },
         "sakura": {
             "topbar_border": "#E6BFC4", "chrome_bg": "#FBEDEE", "chrome_text": "#8C6971",
@@ -76,6 +80,7 @@ class ThemeManager:
             "theme_bg": "#FFF8F5", "theme_text": "#563640", "theme_selected": "#F2C9CF",
             "theme_hover": "#FBE5E8", "theme_border": "#E9C9CC", "accent": "#D9798D",
             "dialog_bg": "#F4D9DB", "dialog_card": "#FFF8F5", "dialog_text": "#563640",
+            "step_bg": "#F4CCD2", "step_text": "#753A47", "step_border": "#D9798D",
         },
     }
 
@@ -91,7 +96,9 @@ class ThemeManager:
         return parts
 
     def _scrollbar_postlude(self, theme_name: str) -> str:
-        track, handle, hover = self.SCROLLBAR_PALETTES.get(theme_name, self.SCROLLBAR_PALETTES["default"])
+        track, handle, hover = self.SCROLLBAR_PALETTES.get(
+            theme_name, self.SCROLLBAR_PALETTES["default"]
+        )
         return f"""
 QScrollBar:vertical, #PageScroll QScrollBar:vertical, QAbstractScrollArea QScrollBar:vertical {{ background: {track}; width: 10px; margin: 0; border: none; }}
 QScrollBar::handle:vertical, #PageScroll QScrollBar::handle:vertical, QAbstractScrollArea QScrollBar::handle:vertical {{ background: {handle}; min-height: 28px; border-radius: 5px; border: none; }}
@@ -113,18 +120,20 @@ QScrollBar::add-page, QScrollBar::sub-page {{ background: transparent; }}
 #WindowHelpButton, #WindowControlButton, #WindowCloseButton {{ background: transparent; color: {p['chrome_text']}; border: none; border-radius: 0; }}
 #WindowHelpButton:hover, #WindowControlButton:hover {{ background: {p['chrome_hover']}; color: {p['accent']}; }}
 #WindowCloseButton:hover {{ background: #D94B64; color: #FFFFFF; }}
-#ThemeButton, #NotifyButton, #SettingsButton {{ background: {p['chrome_bg']}; color: {p['accent']}; border: 1px solid {p['topbar_border']}; border-radius: 18px; }}
-#ThemeButton:hover, #NotifyButton:hover, #SettingsButton:hover {{ background: {p['chrome_hover']}; color: {p['accent']}; border-color: {p['accent']}; }}
+QPushButton#ThemeButton, QPushButton#NotifyButton {{ background: {p['chrome_bg']}; color: {p['accent']}; border: 1px solid {p['topbar_border']}; border-radius: 18px; }}
+QPushButton#ThemeButton:hover, QPushButton#NotifyButton:hover {{ background: {p['chrome_hover']}; color: {p['accent']}; border-color: {p['accent']}; }}
+QPushButton#SettingsButton {{ background: {p['theme_selected']}; border: 1px solid {p['accent']}; border-radius: 18px; }}
+QPushButton#SettingsButton:hover {{ background: {p['theme_hover']}; border-color: {p['accent']}; }}
 QPushButton#YandexActionButton, QPushButton#DashboardSecondaryButton, QPushButton#AboutSecondaryButton, QPushButton#TemplateManagerButton {{ background: {p['secondary_bg']}; color: {p['secondary_text']}; border: 1px solid {p['secondary_border']}; border-radius: 10px; }}
 QPushButton#YandexActionButton:hover, QPushButton#DashboardSecondaryButton:hover, QPushButton#AboutSecondaryButton:hover, QPushButton#TemplateManagerButton:hover {{ background: {p['secondary_hover']}; color: {p['secondary_text']}; border-color: {p['accent']}; }}
 #PremiumTitle {{ color: {p['premium_title']}; background: transparent; }}
 #PremiumText {{ color: {p['premium_text']}; background: transparent; }}
-#DashboardTip {{ background: {p['tip_bg']}; color: {p['tip_text']}; border: 1px solid {p['tip_border']}; border-radius: 10px; padding: 14px; }}
+QLabel#DashboardTip {{ background: {p['tip_bg']}; color: {p['tip_text']}; border: 1px solid {p['tip_border']}; border-radius: 10px; padding: 14px; min-height: 70px; }}
+QLabel#DashboardStepBadge {{ background: {p['step_bg']}; color: {p['step_text']}; border: 1px solid {p['step_border']}; border-radius: 15px; font-weight: 700; }}
 QPushButton#ThemeChoiceButton {{ background: {p['theme_bg']}; color: {p['theme_text']}; border: 1px solid {p['theme_border']}; border-radius: 10px; text-align: left; padding: 12px 16px; }}
 QPushButton#ThemeChoiceButton:hover {{ background: {p['theme_hover']}; color: {p['theme_text']}; border-color: {p['accent']}; }}
 QPushButton#ThemeChoiceButton:checked {{ background: {p['theme_selected']}; color: {p['theme_text']}; border: 2px solid {p['accent']}; }}
 
-/* Preview cards and list rows must never inherit Windows/system blue. */
 #ThumbnailCard {{ background: {p['dialog_card']}; border: 1px solid {p['theme_border']}; border-radius: 10px; }}
 #ThumbnailCard:hover {{ background: {p['theme_hover']}; border-color: {p['accent']}; }}
 #ThumbnailCard[selected="true"] {{ background: {p['theme_selected']}; border: 2px solid {p['accent']}; }}
@@ -165,4 +174,8 @@ QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selec
         return ThemeData("\n\n".join(qss_parts))
 
     def list_themes(self) -> list[str]:
-        return [name for name in self.THEME_ORDER if name == "default" or (self.themes_path / name / "theme.qss").is_file()]
+        return [
+            name
+            for name in self.THEME_ORDER
+            if name == "default" or (self.themes_path / name / "theme.qss").is_file()
+        ]
