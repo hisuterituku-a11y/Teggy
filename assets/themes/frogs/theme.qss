@@ -5,7 +5,7 @@ QMainWindow, QDialog, QStackedWidget, QScrollArea, QScrollArea > QWidget > QWidg
 #Sidebar, #TopBar, #WindowTitleBar { background: #0A4A3E; border-color: #28695A; }
 #PhotoPanel, #DashboardPanel, #TemplateDialog, #TemplateSidebar, #TemplateEditor,
 #DownloadOptionCard, #FolderItem, #ThumbnailCard, #PremiumCard { background: #105447; border-color: #347565; }
-#DashboardHero { background: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #155C4D,stop:0.55 #1D6B58,stop:1 #6E8F70); border: 1px solid #86C7A0; }
+#DashboardHero { background-color: #155C4D; background-image: url(assets/themes/frogs/pattern.svg); border: 1px solid #86C7A0; }
 #DashboardActionCard, #DashboardWorkflowRow { background: #0C493D; border-color: #337665; border-radius: 16px; }
 #DashboardActionCard:hover, #DashboardWorkflowRow:hover { background: #145A4B; border-color: #A9D9BC; }
 #SideButton { color: #D5EADF; }
@@ -14,29 +14,19 @@ QMainWindow, QDialog, QStackedWidget, QScrollArea, QScrollArea > QWidget > QWidg
 #Logo, #PageTitle, #SectionTitle, #CardTitle, #DashboardWelcome, #DashboardPanelTitle,
 #DashboardActionTitle, #DownloadOptionTitle { color: #F3FBF5; }
 #LogoSub, #CardSubtitle, #DashboardSubtitle, #DashboardPanelText, #DownloadOptionDescription { color: #B6D2C4; }
-QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QListWidget, QTreeWidget, QTableWidget {
-    background: #0B4439; color: #F1FAF4; border: 1px solid #438071; border-radius: 12px;
-}
+QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QListWidget, QTreeWidget, QTableWidget { background: #0B4439; color: #F1FAF4; border: 1px solid #438071; border-radius: 12px; }
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QListWidget:focus { border-color: #A9D9BC; }
-QPushButton#PrimaryButton, QPushButton#TemplateProminentButton, QPushButton#DashboardActionButton {
-    background: #A9D9BC; color: #10372E; border: 1px solid #D2E8D5; border-radius: 12px; font-weight: 700;
-}
+QPushButton#PrimaryButton, QPushButton#TemplateProminentButton, QPushButton#DashboardActionButton { background: #A9D9BC; color: #10372E; border: 1px solid #D2E8D5; border-radius: 12px; font-weight: 700; }
 QPushButton#PrimaryButton:hover, QPushButton#TemplateProminentButton:hover, QPushButton#DashboardActionButton:hover { background: #C2E5CC; }
-#YandexActionButton, #AboutSecondaryButton, #DashboardSecondaryButton, #TemplateManagerButton {
-    background: #185E4F; color: #F2FAF4; border: 1px solid #4D8B78; border-radius: 12px;
-}
+#YandexActionButton, #AboutSecondaryButton, #DashboardSecondaryButton, #TemplateManagerButton { background: #185E4F; color: #F2FAF4; border: 1px solid #4D8B78; border-radius: 12px; }
 #YandexActionButton:hover, #AboutSecondaryButton:hover, #DashboardSecondaryButton:hover, #TemplateManagerButton:hover { border-color: #BCE2C7; background: #206C5A; }
 #ThemeButton, #NotifyButton, #SettingsButton { background: #14594B; border-color: #3D7C6B; border-radius: 18px; }
 #ThemeButton:hover, #NotifyButton:hover, #SettingsButton:hover { background: #D9E9CF; border-color: #A9D9BC; }
 #DownloadOptionCard[selected="true"] { background: #D9E9CF; border-color: #A9D9BC; }
 #DownloadOptionCard[selected="true"] #DownloadOptionTitle { color: #123F33; }
 #DownloadOptionCard[selected="true"] #DownloadOptionDescription { color: #476B5C; }
-QCheckBox#DownloadOptionCheck::indicator, QRadioButton#DownloadOptionCheck::indicator, QCheckBox#SettingsCheckBox::indicator {
-    background: #0A4136; border: 1px solid #6CA28F; border-radius: 6px;
-}
-QCheckBox#DownloadOptionCheck::indicator:checked, QRadioButton#DownloadOptionCheck::indicator:checked, QCheckBox#SettingsCheckBox::indicator:checked {
-    background: #A9D9BC; border-color: #D2E8D5;
-}
+QCheckBox#DownloadOptionCheck::indicator, QRadioButton#DownloadOptionCheck::indicator, QCheckBox#SettingsCheckBox::indicator { background: #0A4136; border: 1px solid #6CA28F; border-radius: 6px; }
+QCheckBox#DownloadOptionCheck::indicator:checked, QRadioButton#DownloadOptionCheck::indicator:checked, QCheckBox#SettingsCheckBox::indicator:checked { background: #A9D9BC; border-color: #D2E8D5; }
 #DashboardActionIcon, #DashboardVersion { color: #CBE6CF; }
 #DashboardStepBadge { background: #D9E9CF; color: #123F33; border-color: #A9D9BC; }
 #DashboardTip { background: #D9E9CF; color: #244C3D; border-color: #A9D9BC; }
