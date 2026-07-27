@@ -71,6 +71,7 @@
     margin: 0;
 }
 
+#ThumbnailPreviewBox,
 #ThumbnailImage {
     background: #0A1020;
     border: 1px solid #29345B;
@@ -78,19 +79,30 @@
     padding: 0;
 }
 
+#ThumbnailPreviewBox #ThumbnailImage {
+    border: none;
+}
+
 #ThumbnailRemoveButton {
-    background: rgba(8, 12, 24, 220);
-    color: #FFFFFF;
-    border: 1px solid #48557F;
-    border-radius: 13px;
+    background: #FF5F57;
+    color: #6B1715;
+    border: 1px solid #E0443E;
+    border-radius: 12px;
     padding: 0;
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 800;
 }
 
 #ThumbnailRemoveButton:hover {
-    background: #D43C55;
-    border-color: #FF7188;
+    background: #FF736D;
+    color: #4A0D0B;
+    border-color: #FF8A85;
+}
+
+#ThumbnailRemoveButton:pressed {
+    background: #E24B45;
+    color: #330706;
+    border-color: #C93B36;
 }
 
 #WindowTitleBar {
