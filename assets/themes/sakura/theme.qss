@@ -99,11 +99,24 @@ QCheckBox#SettingsCheckBox::indicator {
     width: 18px; height: 18px; background: #FFFDFC;
     border: 1px solid #CFAAB1; border-radius: 6px;
 }
+QCheckBox::indicator:hover, QRadioButton::indicator:hover,
+QCheckBox#DownloadOptionCheck::indicator:hover,
+QRadioButton#DownloadOptionCheck::indicator:hover,
+QCheckBox#SettingsCheckBox::indicator:hover {
+    background: #FBE5E8; border: 1px solid #D9798D;
+}
 QCheckBox::indicator:checked, QRadioButton::indicator:checked,
 QCheckBox#DownloadOptionCheck::indicator:checked,
 QRadioButton#DownloadOptionCheck::indicator:checked,
 QCheckBox#SettingsCheckBox::indicator:checked {
     background: #D9798D; border-color: #E8A4B1;
+    image: url(assets/icons/teggy/check.svg);
+}
+QCheckBox::indicator:checked:hover, QRadioButton::indicator:checked:hover,
+QCheckBox#DownloadOptionCheck::indicator:checked:hover,
+QRadioButton#DownloadOptionCheck::indicator:checked:hover,
+QCheckBox#SettingsCheckBox::indicator:checked:hover {
+    background: #E58CA0; border-color: #D9798D;
     image: url(assets/icons/teggy/check.svg);
 }
 
