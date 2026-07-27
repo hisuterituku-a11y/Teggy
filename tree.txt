@@ -1,0 +1,3595 @@
+﻿╤ЄЁєъЄєЁр яряюъ
+╤хЁшщэ√щ эюьхЁ Єюьр: 000000D8 FC76:A6CF
+X:.
+|   .gitignore
+|   CHANGELOG.md
+|   check_metadata.py
+|   check_null_bytes.py
+|   duplicates_report.txt
+|   fix_styles.ps1
+|   INTEGRATION.txt
+|   main.py
+|   PROJECT_SNAPSHOT.md
+|   pytest.ini
+|   README.md
+|   requirements.txt
+|   reviews_urls.json
+|   run_smoke_tests.py
+|   run_stories_only.bat
+|   run_stories_only.py
+|   structure.txt
+|   tatus -sb
+|   teggy_2_full_gui.zip
+|   Teggy_source.zip
+|   tree.txt
+|   
++---.pytest_cache
+|   |   .gitignore
+|   |   CACHEDIR.TAG
+|   |   README.md
+|   |   
+|   \---v
+|       \---cache
+|               lastfailed
+|               nodeids
+|               
++---assets
+|   |   __init__.py
+|   |   
+|   +---icons
+|   |   |   auto_awesome_mosaic.svg
+|   |   |   bot.svg
+|   |   |   briefcase-business.svg
+|   |   |   building-2.svg
+|   |   |   check.svg
+|   |   |   chevron-down.svg
+|   |   |   circle-check.svg
+|   |   |   circle-x.svg
+|   |   |   cloud_download.svg
+|   |   |   copy.svg
+|   |   |   database.svg
+|   |   |   download.svg
+|   |   |   earth.svg
+|   |   |   edit note.svg
+|   |   |   eraser.svg
+|   |   |   file-image.svg
+|   |   |   file-pen.svg
+|   |   |   file.svg
+|   |   |   files.svg
+|   |   |   flower-2.svg
+|   |   |   folder-open.svg
+|   |   |   folder_copy.svg
+|   |   |   funnel.svg
+|   |   |   help.svg
+|   |   |   home.svg
+|   |   |   image-down.svg
+|   |   |   image.svg
+|   |   |   images.svg
+|   |   |   info.svg
+|   |   |   language.svg
+|   |   |   layers.svg
+|   |   |   loader-circle.svg
+|   |   |   manage_search.svg
+|   |   |   map-pin.svg
+|   |   |   moon.svg
+|   |   |   palette.svg
+|   |   |   pencil.svg
+|   |   |   photo_library.svg
+|   |   |   play.svg
+|   |   |   preview.svg
+|   |   |   refresh-cw.svg
+|   |   |   robot_2.svg
+|   |   |   save.svg
+|   |   |   scan-search.svg
+|   |   |   search.svg
+|   |   |   settings.svg
+|   |   |   sparkles.svg
+|   |   |   sprout.svg
+|   |   |   square.svg
+|   |   |   sun.svg
+|   |   |   tags.svg
+|   |   |   trash-2.svg
+|   |   |   travel_explore.svg
+|   |   |   triangle-alert.svg
+|   |   |   
+|   |   +---teggy
+|   |   |       bell.svg
+|   |   |       ChatGPT Image 26 ш■ы. 2026 у., 02_14_34.png
+|   |   |       check.svg
+|   |   |       chevron-down.svg
+|   |   |       chevron-up.svg
+|   |   |       cloud.svg
+|   |   |       dialog-error.svg
+|   |   |       dialog-info.svg
+|   |   |       dialog-question.svg
+|   |   |       dialog-success.svg
+|   |   |       dialog-warning.svg
+|   |   |       folder-open.svg
+|   |   |       folder.svg
+|   |   |       home-filled.svg
+|   |   |       home.svg
+|   |   |       logo.png
+|   |   |       map-filled.svg
+|   |   |       map.svg
+|   |   |       moon.svg
+|   |   |       photo-filled.svg
+|   |   |       photo.svg
+|   |   |       settings-filled.svg
+|   |   |       settings.svg
+|   |   |       sun.svg
+|   |   |       tag.svg
+|   |   |       templates.svg
+|   |   |       
+|   |   \---v2
+|   |           bell.svg
+|   |           cloud.svg
+|   |           home.svg
+|   |           moon.svg
+|   |           search.svg
+|   |           settings.svg
+|   |           tag.svg
+|   |           templates.svg
+|   |           
+|   +---themes
+|   |   +---blue
+|   |   |       theme.qss
+|   |   |       
+|   |   +---corporate
+|   |   |       pattern.svg
+|   |   |       theme.qss
+|   |   |       
+|   |   +---default
+|   |   |       dashboard.qss
+|   |   |       settings.qss
+|   |   |       style.qss
+|   |   |       templates.qss
+|   |   |       theme.json
+|   |   |       window.qss
+|   |   |       
+|   |   +---frogs
+|   |   |       pattern.svg
+|   |   |       theme.qss
+|   |   |       
+|   |   +---graphite
+|   |   |       style.qss
+|   |   |       
+|   |   +---light
+|   |   |       theme.qss
+|   |   |       
+|   |   +---midnight
+|   |   |       style.qss
+|   |   |       
+|   |   +---purple
+|   |   |       theme.qss
+|   |   |       
+|   |   \---sakura
+|   |           pattern.svg
+|   |           theme.qss
+|   |           
+|   \---__pycache__
+|           __init__.cpython-314.pyc
+|           
++---core
+|   |   converter.py
+|   |   dashboard_data.py
+|   |   exceptions.py
+|   |   exif_cleaner.py
+|   |   paths.py
+|   |   settings.py
+|   |   svg_loader.py
+|   |   tag_generator.py
+|   |   tag_template_store.py
+|   |   template_manager.py
+|   |   update_checker.py
+|   |   version.py
+|   |   worker.py
+|   |   worker_thread.py
+|   |   __init__.py
+|   |   
+|   +---files
+|   |   |   file_service.py
+|   |   |   
+|   |   \---__pycache__
+|   |           file_service.cpython-314.pyc
+|   |           
+|   +---metadata
+|   |   |   metadata.py
+|   |   |   metadata_service.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           metadata.cpython-314.pyc
+|   |           metadata_service.cpython-314.pyc
+|   |           __init__.cpython-314.pyc
+|   |           
+|   +---yandex
+|   |   |   diagnostics.py
+|   |   |   photo_compare.py
+|   |   |   service.py
+|   |   |   worker.py
+|   |   |   yandex_downloader.py
+|   |   |   yandex_reviews.py
+|   |   |   yandex_router.py
+|   |   |   yandex_stories.py
+|   |   |   
+|   |   \---__pycache__
+|   |           diagnostics.cpython-314.pyc
+|   |           photo_compare.cpython-314.pyc
+|   |           service.cpython-314.pyc
+|   |           worker.cpython-314.pyc
+|   |           yandex_downloader.cpython-314.pyc
+|   |           yandex_reviews.cpython-314.pyc
+|   |           yandex_router.cpython-314.pyc
+|   |           yandex_stories.cpython-314.pyc
+|   |           
+|   \---__pycache__
+|           converter.cpython-314.pyc
+|           dashboard_data.cpython-314.pyc
+|           exceptions.cpython-314.pyc
+|           exif_cleaner.cpython-314.pyc
+|           paths.cpython-314.pyc
+|           settings.cpython-314.pyc
+|           svg_loader.cpython-314.pyc
+|           tag_generator.cpython-314.pyc
+|           tag_template_store.cpython-314.pyc
+|           template_manager.cpython-314.pyc
+|           update_checker.cpython-314.pyc
+|           version.cpython-314.pyc
+|           worker.cpython-314.pyc
+|           worker_thread.cpython-314.pyc
+|           __init__.cpython-314.pyc
+|           
++---dist
+|   |   Teggy.zip
+|   |   
+|   \---Teggy
+|       +---passports
+|       |       I_D_Clinic_passport.json
+|       |       ╫?ёъ√Є_ъхЁъє_passport.json
+|       |       
+|       \---_internal
+|           |   ada92cb5d92a588d1b93__mypyc.cp314-win_amd64.pyd
+|           |   brotlicommon.dll
+|           |   brotlidec.dll
+|           |   brotlienc.dll
+|           |   chrome_elf.dll
+|           |   CoreMessagingXP.dll
+|           |   crypto-57.dll
+|           |   gkcodecs.dll
+|           |   harfbuzz-icu.dll
+|           |   harfbuzz.dll
+|           |   icudt77.dll
+|           |   icuin77.dll
+|           |   icutu77.dll
+|           |   icuuc77.dll
+|           |   JavaScriptCore.dll
+|           |   jpeg62.dll
+|           |   jxl.dll
+|           |   jxl_cms.dll
+|           |   lcms2-2.dll
+|           |   lgpllibs.dll
+|           |   libcurl.dll
+|           |   libEGL.dll
+|           |   libffi-8.dll
+|           |   libGLESv2.dll
+|           |   libpng16.dll
+|           |   libsharpyuv.dll
+|           |   libwebp.dll
+|           |   libwebpdemux.dll
+|           |   libwebpmux.dll
+|           |   libxml2.dll
+|           |   libxslt.dll
+|           |   marshal.dll
+|           |   Microsoft.InputStateManager.dll
+|           |   Microsoft.Internal.FrameworkUdk.dll
+|           |   Microsoft.UI.Composition.OSSupport.dll
+|           |   Microsoft.UI.Input.dll
+|           |   Microsoft.UI.Windowing.Core.dll
+|           |   mozavutil.dll
+|           |   mozglue.dll
+|           |   MSVCP140.dll
+|           |   MSVCP140_2.dll
+|           |   nghttp2.dll
+|           |   nghttp3.dll
+|           |   ngtcp2.dll
+|           |   ngtcp2_crypto_quictls.dll
+|           |   nss3.dll
+|           |   psl-5.dll
+|           |   sqlite3.dll
+|           |   ssl-60.dll
+|           |   WebCore.dll
+|           |   WebKit2.dll
+|           |   zlib1.dll
+|           |   _asyncio.pyd
+|           |   _ctypes.pyd
+|           |   _multiprocessing.pyd
+|           |   _overlapped.pyd
+|           |   _queue.pyd
+|           |   _uuid.pyd
+|           |   _wmi.pyd
+|           |   
+|           +---assets
+|           |   \---themes
+|           |       \---sakura
+|           |               background.svg
+|           |               high-level-description-a-seamless-tileab_QDwKKoK_Vk6TrKHE35_g3g_KZSv4KSbT9Wo8BZPW_sK5A.svg
+|           |               high-level-description-a-seamless-tileab_wlHO2TG7UXu_8ZS4hXY_mg_GBzGUSLnQSKWsx8FP63yUQ.svg
+|           |               
+|           +---certifi
+|           |       cacert.pem
+|           |       py.typed
+|           |       
+|           +---charset_normalizer
+|           |       cd.cp314-win_amd64.pyd
+|           |       md.cp314-win_amd64.pyd
+|           |       
+|           +---greenlet
+|           |       _greenlet.cp314-win_amd64.pyd
+|           |       
+|           +---ms-playwright
+|           |   +---.links
+|           |   |       f7bec3d26b3f2add4884023fabb8209f70d503fe
+|           |   |       
+|           |   +---chromium-1228
+|           |   |   |   DEPENDENCIES_VALIDATED
+|           |   |   |   INSTALLATION_COMPLETE
+|           |   |   |   
+|           |   |   \---chrome-win64
+|           |   |       |   149.0.7827.55.manifest
+|           |   |       |   ABOUT
+|           |   |       |   chrome.dll
+|           |   |       |   chrome.exe
+|           |   |       |   chrome_100_percent.pak
+|           |   |       |   chrome_200_percent.pak
+|           |   |       |   chrome_elf.dll
+|           |   |       |   chrome_proxy.exe
+|           |   |       |   chrome_pwa_launcher.exe
+|           |   |       |   chrome_wer.dll
+|           |   |       |   D3DCompiler_47.dll
+|           |   |       |   dxcompiler.dll
+|           |   |       |   dxil.dll
+|           |   |       |   elevated_tracing_service.exe
+|           |   |       |   elevation_service.exe
+|           |   |       |   First Run
+|           |   |       |   icudtl.dat
+|           |   |       |   libEGL.dll
+|           |   |       |   libGLESv2.dll
+|           |   |       |   notification_helper.exe
+|           |   |       |   resources.pak
+|           |   |       |   setup.exe
+|           |   |       |   v8_context_snapshot.bin
+|           |   |       |   vk_swiftshader.dll
+|           |   |       |   vk_swiftshader_icd.json
+|           |   |       |   vulkan-1.dll
+|           |   |       |   
+|           |   |       +---hyphen-data
+|           |   |       |       hyph-af.hyb
+|           |   |       |       hyph-as.hyb
+|           |   |       |       hyph-be.hyb
+|           |   |       |       hyph-bg.hyb
+|           |   |       |       hyph-bn.hyb
+|           |   |       |       hyph-cs.hyb
+|           |   |       |       hyph-cu.hyb
+|           |   |       |       hyph-cy.hyb
+|           |   |       |       hyph-da.hyb
+|           |   |       |       hyph-de-1901.hyb
+|           |   |       |       hyph-de-1996.hyb
+|           |   |       |       hyph-de-ch-1901.hyb
+|           |   |       |       hyph-el.hyb
+|           |   |       |       hyph-en-gb.hyb
+|           |   |       |       hyph-en-us.hyb
+|           |   |       |       hyph-es.hyb
+|           |   |       |       hyph-et.hyb
+|           |   |       |       hyph-eu.hyb
+|           |   |       |       hyph-fr.hyb
+|           |   |       |       hyph-ga.hyb
+|           |   |       |       hyph-gl.hyb
+|           |   |       |       hyph-gu.hyb
+|           |   |       |       hyph-hi.hyb
+|           |   |       |       hyph-hr.hyb
+|           |   |       |       hyph-hu.hyb
+|           |   |       |       hyph-hy.hyb
+|           |   |       |       hyph-it.hyb
+|           |   |       |       hyph-ka.hyb
+|           |   |       |       hyph-kn.hyb
+|           |   |       |       hyph-la.hyb
+|           |   |       |       hyph-lt.hyb
+|           |   |       |       hyph-lv.hyb
+|           |   |       |       hyph-ml.hyb
+|           |   |       |       hyph-mn-cyrl.hyb
+|           |   |       |       hyph-mr.hyb
+|           |   |       |       hyph-mul-ethi.hyb
+|           |   |       |       hyph-nb.hyb
+|           |   |       |       hyph-nl.hyb
+|           |   |       |       hyph-nn.hyb
+|           |   |       |       hyph-or.hyb
+|           |   |       |       hyph-pa.hyb
+|           |   |       |       hyph-pt.hyb
+|           |   |       |       hyph-ru.hyb
+|           |   |       |       hyph-sk.hyb
+|           |   |       |       hyph-sl.hyb
+|           |   |       |       hyph-sq.hyb
+|           |   |       |       hyph-sv.hyb
+|           |   |       |       hyph-ta.hyb
+|           |   |       |       hyph-te.hyb
+|           |   |       |       hyph-tk.hyb
+|           |   |       |       hyph-uk.hyb
+|           |   |       |       hyph-und-ethi.hyb
+|           |   |       |       manifest.json
+|           |   |       |       
+|           |   |       +---IwaKeyDistribution
+|           |   |       |       iwa-key-distribution.pb
+|           |   |       |       manifest.json
+|           |   |       |       
+|           |   |       +---locales
+|           |   |       |       af.pak
+|           |   |       |       af_FEMININE.pak
+|           |   |       |       af_MASCULINE.pak
+|           |   |       |       af_NEUTER.pak
+|           |   |       |       am.pak
+|           |   |       |       am_FEMININE.pak
+|           |   |       |       am_MASCULINE.pak
+|           |   |       |       am_NEUTER.pak
+|           |   |       |       ar.pak
+|           |   |       |       ar_FEMININE.pak
+|           |   |       |       ar_MASCULINE.pak
+|           |   |       |       ar_NEUTER.pak
+|           |   |       |       bg.pak
+|           |   |       |       bg_FEMININE.pak
+|           |   |       |       bg_MASCULINE.pak
+|           |   |       |       bg_NEUTER.pak
+|           |   |       |       bn.pak
+|           |   |       |       bn_FEMININE.pak
+|           |   |       |       bn_MASCULINE.pak
+|           |   |       |       bn_NEUTER.pak
+|           |   |       |       ca.pak
+|           |   |       |       ca_FEMININE.pak
+|           |   |       |       ca_MASCULINE.pak
+|           |   |       |       ca_NEUTER.pak
+|           |   |       |       cs.pak
+|           |   |       |       cs_FEMININE.pak
+|           |   |       |       cs_MASCULINE.pak
+|           |   |       |       cs_NEUTER.pak
+|           |   |       |       da.pak
+|           |   |       |       da_FEMININE.pak
+|           |   |       |       da_MASCULINE.pak
+|           |   |       |       da_NEUTER.pak
+|           |   |       |       de.pak
+|           |   |       |       de_FEMININE.pak
+|           |   |       |       de_MASCULINE.pak
+|           |   |       |       de_NEUTER.pak
+|           |   |       |       el.pak
+|           |   |       |       el_FEMININE.pak
+|           |   |       |       el_MASCULINE.pak
+|           |   |       |       el_NEUTER.pak
+|           |   |       |       en-GB.pak
+|           |   |       |       en-GB_FEMININE.pak
+|           |   |       |       en-GB_MASCULINE.pak
+|           |   |       |       en-GB_NEUTER.pak
+|           |   |       |       en-US.pak
+|           |   |       |       en-US_FEMININE.pak
+|           |   |       |       en-US_MASCULINE.pak
+|           |   |       |       en-US_NEUTER.pak
+|           |   |       |       es-419.pak
+|           |   |       |       es-419_FEMININE.pak
+|           |   |       |       es-419_MASCULINE.pak
+|           |   |       |       es-419_NEUTER.pak
+|           |   |       |       es.pak
+|           |   |       |       es_FEMININE.pak
+|           |   |       |       es_MASCULINE.pak
+|           |   |       |       es_NEUTER.pak
+|           |   |       |       et.pak
+|           |   |       |       et_FEMININE.pak
+|           |   |       |       et_MASCULINE.pak
+|           |   |       |       et_NEUTER.pak
+|           |   |       |       fa.pak
+|           |   |       |       fa_FEMININE.pak
+|           |   |       |       fa_MASCULINE.pak
+|           |   |       |       fa_NEUTER.pak
+|           |   |       |       fi.pak
+|           |   |       |       fil.pak
+|           |   |       |       fil_FEMININE.pak
+|           |   |       |       fil_MASCULINE.pak
+|           |   |       |       fil_NEUTER.pak
+|           |   |       |       fi_FEMININE.pak
+|           |   |       |       fi_MASCULINE.pak
+|           |   |       |       fi_NEUTER.pak
+|           |   |       |       fr.pak
+|           |   |       |       fr_FEMININE.pak
+|           |   |       |       fr_MASCULINE.pak
+|           |   |       |       fr_NEUTER.pak
+|           |   |       |       gu.pak
+|           |   |       |       gu_FEMININE.pak
+|           |   |       |       gu_MASCULINE.pak
+|           |   |       |       gu_NEUTER.pak
+|           |   |       |       he.pak
+|           |   |       |       he_FEMININE.pak
+|           |   |       |       he_MASCULINE.pak
+|           |   |       |       he_NEUTER.pak
+|           |   |       |       hi.pak
+|           |   |       |       hi_FEMININE.pak
+|           |   |       |       hi_MASCULINE.pak
+|           |   |       |       hi_NEUTER.pak
+|           |   |       |       hr.pak
+|           |   |       |       hr_FEMININE.pak
+|           |   |       |       hr_MASCULINE.pak
+|           |   |       |       hr_NEUTER.pak
+|           |   |       |       hu.pak
+|           |   |       |       hu_FEMININE.pak
+|           |   |       |       hu_MASCULINE.pak
+|           |   |       |       hu_NEUTER.pak
+|           |   |       |       id.pak
+|           |   |       |       id_FEMININE.pak
+|           |   |       |       id_MASCULINE.pak
+|           |   |       |       id_NEUTER.pak
+|           |   |       |       it.pak
+|           |   |       |       it_FEMININE.pak
+|           |   |       |       it_MASCULINE.pak
+|           |   |       |       it_NEUTER.pak
+|           |   |       |       ja.pak
+|           |   |       |       ja_FEMININE.pak
+|           |   |       |       ja_MASCULINE.pak
+|           |   |       |       ja_NEUTER.pak
+|           |   |       |       kn.pak
+|           |   |       |       kn_FEMININE.pak
+|           |   |       |       kn_MASCULINE.pak
+|           |   |       |       kn_NEUTER.pak
+|           |   |       |       ko.pak
+|           |   |       |       ko_FEMININE.pak
+|           |   |       |       ko_MASCULINE.pak
+|           |   |       |       ko_NEUTER.pak
+|           |   |       |       lt.pak
+|           |   |       |       lt_FEMININE.pak
+|           |   |       |       lt_MASCULINE.pak
+|           |   |       |       lt_NEUTER.pak
+|           |   |       |       lv.pak
+|           |   |       |       lv_FEMININE.pak
+|           |   |       |       lv_MASCULINE.pak
+|           |   |       |       lv_NEUTER.pak
+|           |   |       |       ml.pak
+|           |   |       |       ml_FEMININE.pak
+|           |   |       |       ml_MASCULINE.pak
+|           |   |       |       ml_NEUTER.pak
+|           |   |       |       mr.pak
+|           |   |       |       mr_FEMININE.pak
+|           |   |       |       mr_MASCULINE.pak
+|           |   |       |       mr_NEUTER.pak
+|           |   |       |       ms.pak
+|           |   |       |       ms_FEMININE.pak
+|           |   |       |       ms_MASCULINE.pak
+|           |   |       |       ms_NEUTER.pak
+|           |   |       |       nb.pak
+|           |   |       |       nb_FEMININE.pak
+|           |   |       |       nb_MASCULINE.pak
+|           |   |       |       nb_NEUTER.pak
+|           |   |       |       nl.pak
+|           |   |       |       nl_FEMININE.pak
+|           |   |       |       nl_MASCULINE.pak
+|           |   |       |       nl_NEUTER.pak
+|           |   |       |       pl.pak
+|           |   |       |       pl_FEMININE.pak
+|           |   |       |       pl_MASCULINE.pak
+|           |   |       |       pl_NEUTER.pak
+|           |   |       |       pt-BR.pak
+|           |   |       |       pt-BR_FEMININE.pak
+|           |   |       |       pt-BR_MASCULINE.pak
+|           |   |       |       pt-BR_NEUTER.pak
+|           |   |       |       pt-PT.pak
+|           |   |       |       pt-PT_FEMININE.pak
+|           |   |       |       pt-PT_MASCULINE.pak
+|           |   |       |       pt-PT_NEUTER.pak
+|           |   |       |       ro.pak
+|           |   |       |       ro_FEMININE.pak
+|           |   |       |       ro_MASCULINE.pak
+|           |   |       |       ro_NEUTER.pak
+|           |   |       |       ru.pak
+|           |   |       |       ru_FEMININE.pak
+|           |   |       |       ru_MASCULINE.pak
+|           |   |       |       ru_NEUTER.pak
+|           |   |       |       sk.pak
+|           |   |       |       sk_FEMININE.pak
+|           |   |       |       sk_MASCULINE.pak
+|           |   |       |       sk_NEUTER.pak
+|           |   |       |       sl.pak
+|           |   |       |       sl_FEMININE.pak
+|           |   |       |       sl_MASCULINE.pak
+|           |   |       |       sl_NEUTER.pak
+|           |   |       |       sr.pak
+|           |   |       |       sr_FEMININE.pak
+|           |   |       |       sr_MASCULINE.pak
+|           |   |       |       sr_NEUTER.pak
+|           |   |       |       sv.pak
+|           |   |       |       sv_FEMININE.pak
+|           |   |       |       sv_MASCULINE.pak
+|           |   |       |       sv_NEUTER.pak
+|           |   |       |       sw.pak
+|           |   |       |       sw_FEMININE.pak
+|           |   |       |       sw_MASCULINE.pak
+|           |   |       |       sw_NEUTER.pak
+|           |   |       |       ta.pak
+|           |   |       |       ta_FEMININE.pak
+|           |   |       |       ta_MASCULINE.pak
+|           |   |       |       ta_NEUTER.pak
+|           |   |       |       te.pak
+|           |   |       |       te_FEMININE.pak
+|           |   |       |       te_MASCULINE.pak
+|           |   |       |       te_NEUTER.pak
+|           |   |       |       th.pak
+|           |   |       |       th_FEMININE.pak
+|           |   |       |       th_MASCULINE.pak
+|           |   |       |       th_NEUTER.pak
+|           |   |       |       tr.pak
+|           |   |       |       tr_FEMININE.pak
+|           |   |       |       tr_MASCULINE.pak
+|           |   |       |       tr_NEUTER.pak
+|           |   |       |       uk.pak
+|           |   |       |       uk_FEMININE.pak
+|           |   |       |       uk_MASCULINE.pak
+|           |   |       |       uk_NEUTER.pak
+|           |   |       |       ur.pak
+|           |   |       |       ur_FEMININE.pak
+|           |   |       |       ur_MASCULINE.pak
+|           |   |       |       ur_NEUTER.pak
+|           |   |       |       vi.pak
+|           |   |       |       vi_FEMININE.pak
+|           |   |       |       vi_MASCULINE.pak
+|           |   |       |       vi_NEUTER.pak
+|           |   |       |       zh-CN.pak
+|           |   |       |       zh-CN_FEMININE.pak
+|           |   |       |       zh-CN_MASCULINE.pak
+|           |   |       |       zh-CN_NEUTER.pak
+|           |   |       |       zh-TW.pak
+|           |   |       |       zh-TW_FEMININE.pak
+|           |   |       |       zh-TW_MASCULINE.pak
+|           |   |       |       zh-TW_NEUTER.pak
+|           |   |       |       
+|           |   |       +---MEIPreload
+|           |   |       |       manifest.json
+|           |   |       |       preloaded_data.pb
+|           |   |       |       
+|           |   |       +---PrivacySandboxAttestationsPreloaded
+|           |   |       |       manifest.json
+|           |   |       |       privacy-sandbox-attestations.dat
+|           |   |       |       
+|           |   |       \---resources
+|           |   |           \---accessibility
+|           |   |               |   reading_mode_gdocs_helper_manifest.json
+|           |   |               |   
+|           |   |               \---reading_mode_gdocs_helper
+|           |   |                       content.js
+|           |   |                       gdocs_script.js
+|           |   |                       
+|           |   +---chromium_headless_shell-1228
+|           |   |   |   DEPENDENCIES_VALIDATED
+|           |   |   |   INSTALLATION_COMPLETE
+|           |   |   |   
+|           |   |   \---chrome-headless-shell-win64
+|           |   |       |   ABOUT
+|           |   |       |   chrome-headless-shell.exe
+|           |   |       |   debug.log
+|           |   |       |   headless_command_resources.pak
+|           |   |       |   headless_lib_data.pak
+|           |   |       |   headless_lib_strings.pak
+|           |   |       |   icudtl.dat
+|           |   |       |   libEGL.dll
+|           |   |       |   libGLESv2.dll
+|           |   |       |   LICENSE.headless_shell
+|           |   |       |   v8_context_snapshot.bin
+|           |   |       |   vk_swiftshader.dll
+|           |   |       |   vk_swiftshader_icd.json
+|           |   |       |   vulkan-1.dll
+|           |   |       |   
+|           |   |       +---hyphen-data
+|           |   |       |       hyph-af.hyb
+|           |   |       |       hyph-as.hyb
+|           |   |       |       hyph-be.hyb
+|           |   |       |       hyph-bg.hyb
+|           |   |       |       hyph-bn.hyb
+|           |   |       |       hyph-cs.hyb
+|           |   |       |       hyph-cu.hyb
+|           |   |       |       hyph-cy.hyb
+|           |   |       |       hyph-da.hyb
+|           |   |       |       hyph-de-1901.hyb
+|           |   |       |       hyph-de-1996.hyb
+|           |   |       |       hyph-de-ch-1901.hyb
+|           |   |       |       hyph-el.hyb
+|           |   |       |       hyph-en-gb.hyb
+|           |   |       |       hyph-en-us.hyb
+|           |   |       |       hyph-es.hyb
+|           |   |       |       hyph-et.hyb
+|           |   |       |       hyph-eu.hyb
+|           |   |       |       hyph-fr.hyb
+|           |   |       |       hyph-ga.hyb
+|           |   |       |       hyph-gl.hyb
+|           |   |       |       hyph-gu.hyb
+|           |   |       |       hyph-hi.hyb
+|           |   |       |       hyph-hr.hyb
+|           |   |       |       hyph-hu.hyb
+|           |   |       |       hyph-hy.hyb
+|           |   |       |       hyph-it.hyb
+|           |   |       |       hyph-ka.hyb
+|           |   |       |       hyph-kn.hyb
+|           |   |       |       hyph-la.hyb
+|           |   |       |       hyph-lt.hyb
+|           |   |       |       hyph-lv.hyb
+|           |   |       |       hyph-ml.hyb
+|           |   |       |       hyph-mn-cyrl.hyb
+|           |   |       |       hyph-mr.hyb
+|           |   |       |       hyph-mul-ethi.hyb
+|           |   |       |       hyph-nb.hyb
+|           |   |       |       hyph-nl.hyb
+|           |   |       |       hyph-nn.hyb
+|           |   |       |       hyph-or.hyb
+|           |   |       |       hyph-pa.hyb
+|           |   |       |       hyph-pt.hyb
+|           |   |       |       hyph-ru.hyb
+|           |   |       |       hyph-sk.hyb
+|           |   |       |       hyph-sl.hyb
+|           |   |       |       hyph-sq.hyb
+|           |   |       |       hyph-sv.hyb
+|           |   |       |       hyph-ta.hyb
+|           |   |       |       hyph-te.hyb
+|           |   |       |       hyph-tk.hyb
+|           |   |       |       hyph-uk.hyb
+|           |   |       |       hyph-und-ethi.hyb
+|           |   |       |       
+|           |   |       +---locales
+|           |   |       |       af.pak
+|           |   |       |       af_FEMININE.pak
+|           |   |       |       af_MASCULINE.pak
+|           |   |       |       af_NEUTER.pak
+|           |   |       |       am.pak
+|           |   |       |       am_FEMININE.pak
+|           |   |       |       am_MASCULINE.pak
+|           |   |       |       am_NEUTER.pak
+|           |   |       |       ar.pak
+|           |   |       |       ar_FEMININE.pak
+|           |   |       |       ar_MASCULINE.pak
+|           |   |       |       ar_NEUTER.pak
+|           |   |       |       bg.pak
+|           |   |       |       bg_FEMININE.pak
+|           |   |       |       bg_MASCULINE.pak
+|           |   |       |       bg_NEUTER.pak
+|           |   |       |       bn.pak
+|           |   |       |       bn_FEMININE.pak
+|           |   |       |       bn_MASCULINE.pak
+|           |   |       |       bn_NEUTER.pak
+|           |   |       |       ca.pak
+|           |   |       |       ca_FEMININE.pak
+|           |   |       |       ca_MASCULINE.pak
+|           |   |       |       ca_NEUTER.pak
+|           |   |       |       cs.pak
+|           |   |       |       cs_FEMININE.pak
+|           |   |       |       cs_MASCULINE.pak
+|           |   |       |       cs_NEUTER.pak
+|           |   |       |       da.pak
+|           |   |       |       da_FEMININE.pak
+|           |   |       |       da_MASCULINE.pak
+|           |   |       |       da_NEUTER.pak
+|           |   |       |       de.pak
+|           |   |       |       de_FEMININE.pak
+|           |   |       |       de_MASCULINE.pak
+|           |   |       |       de_NEUTER.pak
+|           |   |       |       el.pak
+|           |   |       |       el_FEMININE.pak
+|           |   |       |       el_MASCULINE.pak
+|           |   |       |       el_NEUTER.pak
+|           |   |       |       en-GB.pak
+|           |   |       |       en-GB_FEMININE.pak
+|           |   |       |       en-GB_MASCULINE.pak
+|           |   |       |       en-GB_NEUTER.pak
+|           |   |       |       en-US.pak
+|           |   |       |       en-US_FEMININE.pak
+|           |   |       |       en-US_MASCULINE.pak
+|           |   |       |       en-US_NEUTER.pak
+|           |   |       |       es-419.pak
+|           |   |       |       es-419_FEMININE.pak
+|           |   |       |       es-419_MASCULINE.pak
+|           |   |       |       es-419_NEUTER.pak
+|           |   |       |       es.pak
+|           |   |       |       es_FEMININE.pak
+|           |   |       |       es_MASCULINE.pak
+|           |   |       |       es_NEUTER.pak
+|           |   |       |       et.pak
+|           |   |       |       et_FEMININE.pak
+|           |   |       |       et_MASCULINE.pak
+|           |   |       |       et_NEUTER.pak
+|           |   |       |       fa.pak
+|           |   |       |       fa_FEMININE.pak
+|           |   |       |       fa_MASCULINE.pak
+|           |   |       |       fa_NEUTER.pak
+|           |   |       |       fi.pak
+|           |   |       |       fil.pak
+|           |   |       |       fil_FEMININE.pak
+|           |   |       |       fil_MASCULINE.pak
+|           |   |       |       fil_NEUTER.pak
+|           |   |       |       fi_FEMININE.pak
+|           |   |       |       fi_MASCULINE.pak
+|           |   |       |       fi_NEUTER.pak
+|           |   |       |       fr.pak
+|           |   |       |       fr_FEMININE.pak
+|           |   |       |       fr_MASCULINE.pak
+|           |   |       |       fr_NEUTER.pak
+|           |   |       |       gu.pak
+|           |   |       |       gu_FEMININE.pak
+|           |   |       |       gu_MASCULINE.pak
+|           |   |       |       gu_NEUTER.pak
+|           |   |       |       he.pak
+|           |   |       |       he_FEMININE.pak
+|           |   |       |       he_MASCULINE.pak
+|           |   |       |       he_NEUTER.pak
+|           |   |       |       hi.pak
+|           |   |       |       hi_FEMININE.pak
+|           |   |       |       hi_MASCULINE.pak
+|           |   |       |       hi_NEUTER.pak
+|           |   |       |       hr.pak
+|           |   |       |       hr_FEMININE.pak
+|           |   |       |       hr_MASCULINE.pak
+|           |   |       |       hr_NEUTER.pak
+|           |   |       |       hu.pak
+|           |   |       |       hu_FEMININE.pak
+|           |   |       |       hu_MASCULINE.pak
+|           |   |       |       hu_NEUTER.pak
+|           |   |       |       id.pak
+|           |   |       |       id_FEMININE.pak
+|           |   |       |       id_MASCULINE.pak
+|           |   |       |       id_NEUTER.pak
+|           |   |       |       it.pak
+|           |   |       |       it_FEMININE.pak
+|           |   |       |       it_MASCULINE.pak
+|           |   |       |       it_NEUTER.pak
+|           |   |       |       ja.pak
+|           |   |       |       ja_FEMININE.pak
+|           |   |       |       ja_MASCULINE.pak
+|           |   |       |       ja_NEUTER.pak
+|           |   |       |       kn.pak
+|           |   |       |       kn_FEMININE.pak
+|           |   |       |       kn_MASCULINE.pak
+|           |   |       |       kn_NEUTER.pak
+|           |   |       |       ko.pak
+|           |   |       |       ko_FEMININE.pak
+|           |   |       |       ko_MASCULINE.pak
+|           |   |       |       ko_NEUTER.pak
+|           |   |       |       lt.pak
+|           |   |       |       lt_FEMININE.pak
+|           |   |       |       lt_MASCULINE.pak
+|           |   |       |       lt_NEUTER.pak
+|           |   |       |       lv.pak
+|           |   |       |       lv_FEMININE.pak
+|           |   |       |       lv_MASCULINE.pak
+|           |   |       |       lv_NEUTER.pak
+|           |   |       |       ml.pak
+|           |   |       |       ml_FEMININE.pak
+|           |   |       |       ml_MASCULINE.pak
+|           |   |       |       ml_NEUTER.pak
+|           |   |       |       mr.pak
+|           |   |       |       mr_FEMININE.pak
+|           |   |       |       mr_MASCULINE.pak
+|           |   |       |       mr_NEUTER.pak
+|           |   |       |       ms.pak
+|           |   |       |       ms_FEMININE.pak
+|           |   |       |       ms_MASCULINE.pak
+|           |   |       |       ms_NEUTER.pak
+|           |   |       |       nb.pak
+|           |   |       |       nb_FEMININE.pak
+|           |   |       |       nb_MASCULINE.pak
+|           |   |       |       nb_NEUTER.pak
+|           |   |       |       nl.pak
+|           |   |       |       nl_FEMININE.pak
+|           |   |       |       nl_MASCULINE.pak
+|           |   |       |       nl_NEUTER.pak
+|           |   |       |       pl.pak
+|           |   |       |       pl_FEMININE.pak
+|           |   |       |       pl_MASCULINE.pak
+|           |   |       |       pl_NEUTER.pak
+|           |   |       |       pt-BR.pak
+|           |   |       |       pt-BR_FEMININE.pak
+|           |   |       |       pt-BR_MASCULINE.pak
+|           |   |       |       pt-BR_NEUTER.pak
+|           |   |       |       pt-PT.pak
+|           |   |       |       pt-PT_FEMININE.pak
+|           |   |       |       pt-PT_MASCULINE.pak
+|           |   |       |       pt-PT_NEUTER.pak
+|           |   |       |       ro.pak
+|           |   |       |       ro_FEMININE.pak
+|           |   |       |       ro_MASCULINE.pak
+|           |   |       |       ro_NEUTER.pak
+|           |   |       |       ru.pak
+|           |   |       |       ru_FEMININE.pak
+|           |   |       |       ru_MASCULINE.pak
+|           |   |       |       ru_NEUTER.pak
+|           |   |       |       sk.pak
+|           |   |       |       sk_FEMININE.pak
+|           |   |       |       sk_MASCULINE.pak
+|           |   |       |       sk_NEUTER.pak
+|           |   |       |       sl.pak
+|           |   |       |       sl_FEMININE.pak
+|           |   |       |       sl_MASCULINE.pak
+|           |   |       |       sl_NEUTER.pak
+|           |   |       |       sr.pak
+|           |   |       |       sr_FEMININE.pak
+|           |   |       |       sr_MASCULINE.pak
+|           |   |       |       sr_NEUTER.pak
+|           |   |       |       sv.pak
+|           |   |       |       sv_FEMININE.pak
+|           |   |       |       sv_MASCULINE.pak
+|           |   |       |       sv_NEUTER.pak
+|           |   |       |       sw.pak
+|           |   |       |       sw_FEMININE.pak
+|           |   |       |       sw_MASCULINE.pak
+|           |   |       |       sw_NEUTER.pak
+|           |   |       |       ta.pak
+|           |   |       |       ta_FEMININE.pak
+|           |   |       |       ta_MASCULINE.pak
+|           |   |       |       ta_NEUTER.pak
+|           |   |       |       te.pak
+|           |   |       |       te_FEMININE.pak
+|           |   |       |       te_MASCULINE.pak
+|           |   |       |       te_NEUTER.pak
+|           |   |       |       th.pak
+|           |   |       |       th_FEMININE.pak
+|           |   |       |       th_MASCULINE.pak
+|           |   |       |       th_NEUTER.pak
+|           |   |       |       tr.pak
+|           |   |       |       tr_FEMININE.pak
+|           |   |       |       tr_MASCULINE.pak
+|           |   |       |       tr_NEUTER.pak
+|           |   |       |       uk.pak
+|           |   |       |       uk_FEMININE.pak
+|           |   |       |       uk_MASCULINE.pak
+|           |   |       |       uk_NEUTER.pak
+|           |   |       |       ur.pak
+|           |   |       |       ur_FEMININE.pak
+|           |   |       |       ur_MASCULINE.pak
+|           |   |       |       ur_NEUTER.pak
+|           |   |       |       vi.pak
+|           |   |       |       vi_FEMININE.pak
+|           |   |       |       vi_MASCULINE.pak
+|           |   |       |       vi_NEUTER.pak
+|           |   |       |       zh-CN.pak
+|           |   |       |       zh-CN_FEMININE.pak
+|           |   |       |       zh-CN_MASCULINE.pak
+|           |   |       |       zh-CN_NEUTER.pak
+|           |   |       |       zh-TW.pak
+|           |   |       |       zh-TW_FEMININE.pak
+|           |   |       |       zh-TW_MASCULINE.pak
+|           |   |       |       zh-TW_NEUTER.pak
+|           |   |       |       
+|           |   |       +---PrivacySandboxAttestationsPreloaded
+|           |   |       |       manifest.json
+|           |   |       |       privacy-sandbox-attestations.dat
+|           |   |       |       
+|           |   |       \---resources
+|           |   |           \---accessibility
+|           |   |               |   reading_mode_gdocs_helper_manifest.json
+|           |   |               |   
+|           |   |               \---reading_mode_gdocs_helper
+|           |   |                       content.js
+|           |   |                       gdocs_script.js
+|           |   |                       
+|           |   +---ffmpeg-1011
+|           |   |       COPYING.LGPLv2.1
+|           |   |       DEPENDENCIES_VALIDATED
+|           |   |       ffmpeg-win64.exe
+|           |   |       INSTALLATION_COMPLETE
+|           |   |       
+|           |   +---firefox-1532
+|           |   |   |   DEPENDENCIES_VALIDATED
+|           |   |   |   INSTALLATION_COMPLETE
+|           |   |   |   
+|           |   |   \---firefox
+|           |   |       |   AccessibleMarshal.dll
+|           |   |       |   application.ini
+|           |   |       |   CoreMessagingXP.dll
+|           |   |       |   dependentlibs.list
+|           |   |       |   dxcompiler.dll
+|           |   |       |   firefox.exe
+|           |   |       |   firefox.VisualElementsManifest.xml
+|           |   |       |   freebl3.dll
+|           |   |       |   gkcodecs.dll
+|           |   |       |   InstallationDirLayout.dll
+|           |   |       |   lgpllibs.dll
+|           |   |       |   libEGL.dll
+|           |   |       |   libGLESv2.dll
+|           |   |       |   marshal.dll
+|           |   |       |   Microsoft.InputStateManager.dll
+|           |   |       |   Microsoft.Internal.FrameworkUdk.dll
+|           |   |       |   Microsoft.UI.Composition.OSSupport.dll
+|           |   |       |   Microsoft.UI.Input.dll
+|           |   |       |   Microsoft.UI.Windowing.Core.dll
+|           |   |       |   Microsoft.UI.Windowing.dll
+|           |   |       |   mozavcodec.dll
+|           |   |       |   mozavutil.dll
+|           |   |       |   mozglue.dll
+|           |   |       |   mozinference.dll
+|           |   |       |   msvcp140.dll
+|           |   |       |   msvcp140_atomic_wait.dll
+|           |   |       |   nmhproxy.exe
+|           |   |       |   notificationserver.dll
+|           |   |       |   nss3.dll
+|           |   |       |   omni.ja
+|           |   |       |   onnxruntime.dll
+|           |   |       |   pingsender.exe
+|           |   |       |   platform.ini
+|           |   |       |   playwright.cfg
+|           |   |       |   plugin-container.exe
+|           |   |       |   precomplete
+|           |   |       |   private_browsing.exe
+|           |   |       |   private_browsing.VisualElementsManifest.xml
+|           |   |       |   removed-files
+|           |   |       |   softokn3.dll
+|           |   |       |   update-settings.ini
+|           |   |       |   updater.exe
+|           |   |       |   updater.ini
+|           |   |       |   vcruntime140.dll
+|           |   |       |   vcruntime140_1.dll
+|           |   |       |   xul.dll
+|           |   |       |   
+|           |   |       +---browser
+|           |   |       |   |   omni.ja
+|           |   |       |   |   
+|           |   |       |   \---VisualElements
+|           |   |       |           PrivateBrowsing_150.png
+|           |   |       |           PrivateBrowsing_70.png
+|           |   |       |           VisualElements_150.png
+|           |   |       |           VisualElements_70.png
+|           |   |       |           
+|           |   |       +---defaults
+|           |   |       |   \---pref
+|           |   |       |           00-playwright-prefs.js
+|           |   |       |           channel-prefs.js
+|           |   |       |           
+|           |   |       +---desktop-launcher
+|           |   |       |       desktop-launcher.exe
+|           |   |       |       
+|           |   |       +---fonts
+|           |   |       |       TwemojiMozilla.ttf
+|           |   |       |       
+|           |   |       +---gmp-clearkey
+|           |   |       |   \---0.1
+|           |   |       |           clearkey.dll
+|           |   |       |           manifest.json
+|           |   |       |           
+|           |   |       +---installation_dir_layout
+|           |   |       |   \---versioned
+|           |   |       |           InstallationDirLayout.dll
+|           |   |       |           
+|           |   |       \---uninstall
+|           |   |               helper.exe
+|           |   |               
+|           |   +---webkit-2311
+|           |   |   |   brotlicommon.dll
+|           |   |   |   brotlidec.dll
+|           |   |   |   brotlienc.dll
+|           |   |   |   crypto-57.dll
+|           |   |   |   DEPENDENCIES_VALIDATED
+|           |   |   |   harfbuzz-icu.dll
+|           |   |   |   harfbuzz-subset.dll
+|           |   |   |   harfbuzz.dll
+|           |   |   |   icudt77.dll
+|           |   |   |   icuin77.dll
+|           |   |   |   icuio77.dll
+|           |   |   |   icutest77.dll
+|           |   |   |   icutu77.dll
+|           |   |   |   icuuc77.dll
+|           |   |   |   INSTALLATION_COMPLETE
+|           |   |   |   JavaScriptCore.dll
+|           |   |   |   jpeg62.dll
+|           |   |   |   jxl.dll
+|           |   |   |   jxl_cms.dll
+|           |   |   |   jxl_threads.dll
+|           |   |   |   lcms2-2.dll
+|           |   |   |   libcurl.dll
+|           |   |   |   libEGL.dll
+|           |   |   |   libexslt.dll
+|           |   |   |   libGLESv2.dll
+|           |   |   |   libpng16.dll
+|           |   |   |   libsharpyuv.dll
+|           |   |   |   libwebp.dll
+|           |   |   |   libwebpdecoder.dll
+|           |   |   |   libwebpdemux.dll
+|           |   |   |   libwebpmux.dll
+|           |   |   |   libxml2.dll
+|           |   |   |   libxslt.dll
+|           |   |   |   msvcp140.dll
+|           |   |   |   msvcp140_2.dll
+|           |   |   |   nghttp2.dll
+|           |   |   |   nghttp3.dll
+|           |   |   |   ngtcp2.dll
+|           |   |   |   ngtcp2_crypto_quictls.dll
+|           |   |   |   Playwright.exe
+|           |   |   |   protocol.json
+|           |   |   |   psl-5.dll
+|           |   |   |   sqlite3.dll
+|           |   |   |   ssl-60.dll
+|           |   |   |   tls-33.dll
+|           |   |   |   turbojpeg.dll
+|           |   |   |   vcruntime140.dll
+|           |   |   |   vcruntime140_1.dll
+|           |   |   |   WebCore.dll
+|           |   |   |   WebKit2.dll
+|           |   |   |   WebKitGPUProcess.exe
+|           |   |   |   WebKitNetworkProcess.exe
+|           |   |   |   WebKitWebProcess.exe
+|           |   |   |   zlib1.dll
+|           |   |   |   
+|           |   |   \---WebKit.resources
+|           |   |       +---icons
+|           |   |       |       missingImage.png
+|           |   |       |       missingImage@2x.png
+|           |   |       |       missingImage@3x.png
+|           |   |       |       panIcon.png
+|           |   |       |       textAreaResizeCorner.png
+|           |   |       |       textAreaResizeCorner@2x.png
+|           |   |       |       
+|           |   |       +---media-controls
+|           |   |       |       EnterFullscreen.svg
+|           |   |       |       ExitFullscreen.svg
+|           |   |       |       Forward.svg
+|           |   |       |       invalid-placard@1x.png
+|           |   |       |       invalid-placard@2x.png
+|           |   |       |       MediaSelector-fullscreen.svg
+|           |   |       |       MediaSelector.svg
+|           |   |       |       Overflow.svg
+|           |   |       |       Pause.svg
+|           |   |       |       PipIn-fullscreen.svg
+|           |   |       |       PipIn.svg
+|           |   |       |       PipOut.svg
+|           |   |       |       Play.svg
+|           |   |       |       Rewind.svg
+|           |   |       |       SkipBack10.svg
+|           |   |       |       SkipBack15.svg
+|           |   |       |       SkipForward10.svg
+|           |   |       |       SkipForward15.svg
+|           |   |       |       Volume0-RTL.svg
+|           |   |       |       Volume0.svg
+|           |   |       |       Volume1-RTL.svg
+|           |   |       |       Volume1.svg
+|           |   |       |       Volume2-RTL.svg
+|           |   |       |       Volume2.svg
+|           |   |       |       Volume3-RTL.svg
+|           |   |       |       Volume3.svg
+|           |   |       |       VolumeMuted-RTL.svg
+|           |   |       |       VolumeMuted.svg
+|           |   |       |       X.svg
+|           |   |       |       
+|           |   |       \---WebInspectorUI
+|           |   |           |   CodeMirror.css
+|           |   |           |   CodeMirror.js
+|           |   |           |   CSSDocumentation.js
+|           |   |           |   Esprima.js
+|           |   |           |   localizedStrings.js
+|           |   |           |   Main.css
+|           |   |           |   Main.html
+|           |   |           |   Main.js
+|           |   |           |   Three.js
+|           |   |           |   
+|           |   |           +---Images
+|           |   |           |       ActiveCallFrame.svg
+|           |   |           |       AlignContentCenter.svg
+|           |   |           |       AlignContentEnd.svg
+|           |   |           |       AlignContentSpaceAround.svg
+|           |   |           |       AlignContentSpaceBetween.svg
+|           |   |           |       AlignContentSpaceEvenly.svg
+|           |   |           |       AlignContentStart.svg
+|           |   |           |       AlignContentStretch.svg
+|           |   |           |       AlignItemsCenter.svg
+|           |   |           |       AlignItemsEnd.svg
+|           |   |           |       AlignItemsStart.svg
+|           |   |           |       AlignItemsStretch.svg
+|           |   |           |       AlignmentUnknown.svg
+|           |   |           |       AppearanceOverride.svg
+|           |   |           |       ApplicationCacheManifest.svg
+|           |   |           |       ArrowUp.svg
+|           |   |           |       Audit.svg
+|           |   |           |       AuditStart.svg
+|           |   |           |       AuditStop.svg
+|           |   |           |       AuditTestError.svg
+|           |   |           |       AuditTestFail.svg
+|           |   |           |       AuditTestNoResult.svg
+|           |   |           |       AuditTestPass.svg
+|           |   |           |       AuditTestUnsupported.svg
+|           |   |           |       AuditTestWarn.svg
+|           |   |           |       BackForwardArrows.svg
+|           |   |           |       Beacon.svg
+|           |   |           |       BoxShadow.svg
+|           |   |           |       Breakpoint.svg
+|           |   |           |       BreakpointButton.svg
+|           |   |           |       BreakpointInactiveButton.svg
+|           |   |           |       Breakpoints.svg
+|           |   |           |       CallStack.svg
+|           |   |           |       Camera.svg
+|           |   |           |       Canvas2D.svg
+|           |   |           |       Canvas3D.svg
+|           |   |           |       CanvasOverview.svg
+|           |   |           |       Checkers.svg
+|           |   |           |       Circle.svg
+|           |   |           |       Clip.svg
+|           |   |           |       ClippingIcons.svg
+|           |   |           |       Close.svg
+|           |   |           |       CloseLarge.svg
+|           |   |           |       CloseWhite.svg
+|           |   |           |       ColorIcon.png
+|           |   |           |       ColorIcon@2x.png
+|           |   |           |       Compare.svg
+|           |   |           |       Composite.svg
+|           |   |           |       Computer.svg
+|           |   |           |       Console.svg
+|           |   |           |       ConsoleImage.svg
+|           |   |           |       Cookie.svg
+|           |   |           |       Crosshair.svg
+|           |   |           |       CSSVariable.svg
+|           |   |           |       CubicBezier.svg
+|           |   |           |       Database.svg
+|           |   |           |       Debug.svg
+|           |   |           |       Debugger.svg
+|           |   |           |       Device.svg
+|           |   |           |       DisclosureTriangles.svg
+|           |   |           |       Disk.svg
+|           |   |           |       DockBottom.svg
+|           |   |           |       DockLeft.svg
+|           |   |           |       DockRight.svg
+|           |   |           |       DocumentIcons.svg
+|           |   |           |       DOMBreakpoint.svg
+|           |   |           |       Dominator.svg
+|           |   |           |       DownloadArrow.svg
+|           |   |           |       Elements.svg
+|           |   |           |       Error.svg
+|           |   |           |       Errors.svg
+|           |   |           |       ErrorsEnabled.svg
+|           |   |           |       EventCancel.svg
+|           |   |           |       EventIteration.svg
+|           |   |           |       EventPause.svg
+|           |   |           |       EventPlay.svg
+|           |   |           |       EventProcessing.svg
+|           |   |           |       EventStop.svg
+|           |   |           |       Export.svg
+|           |   |           |       Fill.svg
+|           |   |           |       Filter.svg
+|           |   |           |       FilterFieldGlyph.svg
+|           |   |           |       FolderGeneric.svg
+|           |   |           |       Gear.svg
+|           |   |           |       GoToArrow.svg
+|           |   |           |       GradientStop.png
+|           |   |           |       GradientStop@2x.png
+|           |   |           |       GradientStopSelected.png
+|           |   |           |       GradientStopSelected@2x.png
+|           |   |           |       Graphics.svg
+|           |   |           |       Hide.svg
+|           |   |           |       HideConsoleDrawer.svg
+|           |   |           |       HierarchicalNavigationItemChevron.svg
+|           |   |           |       HoverMenuButton.png
+|           |   |           |       HoverMenuButton@2x.png
+|           |   |           |       IdentifierIcons.svg
+|           |   |           |       Image.svg
+|           |   |           |       Import.svg
+|           |   |           |       IndeterminateProgressSpinner1.svg
+|           |   |           |       IndeterminateProgressSpinner10.svg
+|           |   |           |       IndeterminateProgressSpinner11.svg
+|           |   |           |       IndeterminateProgressSpinner12.svg
+|           |   |           |       IndeterminateProgressSpinner2.svg
+|           |   |           |       IndeterminateProgressSpinner3.svg
+|           |   |           |       IndeterminateProgressSpinner4.svg
+|           |   |           |       IndeterminateProgressSpinner5.svg
+|           |   |           |       IndeterminateProgressSpinner6.svg
+|           |   |           |       IndeterminateProgressSpinner7.svg
+|           |   |           |       IndeterminateProgressSpinner8.svg
+|           |   |           |       IndeterminateProgressSpinner9.svg
+|           |   |           |       Info.svg
+|           |   |           |       InfoIcon.svg
+|           |   |           |       InstructionPointer.png
+|           |   |           |       InstructionPointer@2x.png
+|           |   |           |       Issues.svg
+|           |   |           |       IssuesEnabled.svg
+|           |   |           |       LayerBorders.svg
+|           |   |           |       Layers.svg
+|           |   |           |       LineStyle.svg
+|           |   |           |       Locked.svg
+|           |   |           |       Log.svg
+|           |   |           |       Logs.svg
+|           |   |           |       Markup.svg
+|           |   |           |       Minus.svg
+|           |   |           |       NavigationItemCheckers.svg
+|           |   |           |       NavigationItemCodeCoverage.svg
+|           |   |           |       NavigationItemCurleyBraces.svg
+|           |   |           |       NavigationItemGarbageCollect.svg
+|           |   |           |       NavigationItemNetworkOverride.svg
+|           |   |           |       NavigationItemTrash.svg
+|           |   |           |       NavigationItemTypes.svg
+|           |   |           |       Network.svg
+|           |   |           |       NetworkHAR.svg
+|           |   |           |       NetworkOverview.svg
+|           |   |           |       Origin.svg
+|           |   |           |       Overflow.svg
+|           |   |           |       Paint.svg
+|           |   |           |       Palette.svg
+|           |   |           |       Path.svg
+|           |   |           |       PathArc.svg
+|           |   |           |       PathCurve.svg
+|           |   |           |       PathEllipse.svg
+|           |   |           |       PathLineTo.svg
+|           |   |           |       PathMoveTo.svg
+|           |   |           |       PathRect.svg
+|           |   |           |       Pause.svg
+|           |   |           |       Pencil.svg
+|           |   |           |       Pipette.svg
+|           |   |           |       Pixels.svg
+|           |   |           |       Plus13.svg
+|           |   |           |       Plus15.svg
+|           |   |           |       PointInPath.svg
+|           |   |           |       PointInStroke.svg
+|           |   |           |       Printer.svg
+|           |   |           |       Receiving.svg
+|           |   |           |       Record.svg
+|           |   |           |       Recording.svg
+|           |   |           |       ReloadFull.svg
+|           |   |           |       ReloadToolbar.svg
+|           |   |           |       Resources.svg
+|           |   |           |       ResultLine.svg
+|           |   |           |       Resume.svg
+|           |   |           |       Rulers.svg
+|           |   |           |       Search.svg
+|           |   |           |       Sending.svg
+|           |   |           |       Shadow.svg
+|           |   |           |       Show.svg
+|           |   |           |       ShowConsoleDrawer.svg
+|           |   |           |       SkipNetwork.svg
+|           |   |           |       SliderThumb.png
+|           |   |           |       SliderThumb@2x.png
+|           |   |           |       SliderThumbPressed.png
+|           |   |           |       SliderThumbPressed@2x.png
+|           |   |           |       SortIndicatorArrows.svg
+|           |   |           |       Sources.svg
+|           |   |           |       SourcesPaused.svg
+|           |   |           |       SplitToggleUp.svg
+|           |   |           |       Start.svg
+|           |   |           |       StepInto.svg
+|           |   |           |       StepNext.svg
+|           |   |           |       StepOut.svg
+|           |   |           |       StepOver.svg
+|           |   |           |       Stop.svg
+|           |   |           |       Stopwatch.svg
+|           |   |           |       Storage.svg
+|           |   |           |       Stroke.svg
+|           |   |           |       StyleRule.svg
+|           |   |           |       StyleRulePseudo.svg
+|           |   |           |       TableIcons.svg
+|           |   |           |       Text.svg
+|           |   |           |       Time.svg
+|           |   |           |       Timeline.svg
+|           |   |           |       ToggleBottomSidebar.svg
+|           |   |           |       ToggleLeftSidebar.svg
+|           |   |           |       ToggleRightSidebar.svg
+|           |   |           |       Transform.svg
+|           |   |           |       TypeIcons.svg
+|           |   |           |       Undock.svg
+|           |   |           |       UpDownArrows.svg
+|           |   |           |       UserInputPrompt.svg
+|           |   |           |       UserInputPromptPrevious.svg
+|           |   |           |       UserInputResult.svg
+|           |   |           |       Warning.svg
+|           |   |           |       Weight.svg
+|           |   |           |       ZoomIn.svg
+|           |   |           |       ZoomOut.svg
+|           |   |           |       
+|           |   |           +---Protocol
+|           |   |           |   |   InspectorBackendCommands.js
+|           |   |           |   |   
+|           |   |           |   \---Legacy
+|           |   |           |       +---iOS
+|           |   |           |       |   +---13.0
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---13.4
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---14.0
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---14.5
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---15.0
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---15.4
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---16.0
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---16.4
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---17.0
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---17.2
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---17.4
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---18.0
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---18.2
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---18.4
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---26.0
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   +---26.2
+|           |   |           |       |   |       InspectorBackendCommands.js
+|           |   |           |       |   |       
+|           |   |           |       |   \---26.4
+|           |   |           |       |           InspectorBackendCommands.js
+|           |   |           |       |           
+|           |   |           |       \---macOS
+|           |   |           |           +---13.0
+|           |   |           |           |       InspectorBackendCommands.js
+|           |   |           |           |       
+|           |   |           |           +---13.3
+|           |   |           |           |       InspectorBackendCommands.js
+|           |   |           |           |       
+|           |   |           |           +---14.0
+|           |   |           |           |       InspectorBackendCommands.js
+|           |   |           |           |       
+|           |   |           |           +---14.2
+|           |   |           |           |       InspectorBackendCommands.js
+|           |   |           |           |       
+|           |   |           |           +---14.4
+|           |   |           |           |       InspectorBackendCommands.js
+|           |   |           |           |       
+|           |   |           |           +---15.0
+|           |   |           |           |       InspectorBackendCommands.js
+|           |   |           |           |       
+|           |   |           |           +---15.2
+|           |   |           |           |       InspectorBackendCommands.js
+|           |   |           |           |       
+|           |   |           |           +---15.4
+|           |   |           |           |       InspectorBackendCommands.js
+|           |   |           |           |       
+|           |   |           |           +---26.0
+|           |   |           |           |       InspectorBackendCommands.js
+|           |   |           |           |       
+|           |   |           |           +---26.2
+|           |   |           |           |       InspectorBackendCommands.js
+|           |   |           |           |       
+|           |   |           |           \---26.4
+|           |   |           |                   InspectorBackendCommands.js
+|           |   |           |                   
+|           |   |           \---Workers
+|           |   |               +---Formatter
+|           |   |               |       CSSFormatter.js
+|           |   |               |       ESTreeWalker.js
+|           |   |               |       FormatterContentBuilder.js
+|           |   |               |       FormatterUtilities.js
+|           |   |               |       FormatterWorker.js
+|           |   |               |       HTMLFormatter.js
+|           |   |               |       HTMLParser.js
+|           |   |               |       HTMLTreeBuilderFormatter.js
+|           |   |               |       JSFormatter.js
+|           |   |               |       
+|           |   |               \---HeapSnapshot
+|           |   |                       HeapSnapshot.js
+|           |   |                       HeapSnapshotWorker.js
+|           |   |                       
+|           |   \---winldd-1007
+|           |           DEPENDENCIES_VALIDATED
+|           |           INSTALLATION_COMPLETE
+|           |           PrintDeps.exe
+|           |           
+|           +---playwright
+|           |   |   py.typed
+|           |   |   
+|           |   \---driver
+|           |       |   LICENSE
+|           |       |   node.exe
+|           |       |   README.md
+|           |       |   
+|           |       \---package
+|           |           |   browsers.json
+|           |           |   cli.js
+|           |           |   index.d.ts
+|           |           |   index.js
+|           |           |   index.mjs
+|           |           |   LICENSE
+|           |           |   NOTICE
+|           |           |   package.json
+|           |           |   README.md
+|           |           |   ThirdPartyNotices.txt
+|           |           |   
+|           |           +---bin
+|           |           |       install_media_pack.ps1
+|           |           |       install_webkit_wsl.ps1
+|           |           |       reinstall_chrome_beta_linux.sh
+|           |           |       reinstall_chrome_beta_mac.sh
+|           |           |       reinstall_chrome_beta_win.ps1
+|           |           |       reinstall_chrome_stable_linux.sh
+|           |           |       reinstall_chrome_stable_mac.sh
+|           |           |       reinstall_chrome_stable_win.ps1
+|           |           |       reinstall_msedge_beta_linux.sh
+|           |           |       reinstall_msedge_beta_mac.sh
+|           |           |       reinstall_msedge_beta_win.ps1
+|           |           |       reinstall_msedge_dev_linux.sh
+|           |           |       reinstall_msedge_dev_mac.sh
+|           |           |       reinstall_msedge_dev_win.ps1
+|           |           |       reinstall_msedge_stable_linux.sh
+|           |           |       reinstall_msedge_stable_mac.sh
+|           |           |       reinstall_msedge_stable_win.ps1
+|           |           |       
+|           |           +---lib
+|           |           |   |   bootstrap.js
+|           |           |   |   coreBundle.js
+|           |           |   |   package.js
+|           |           |   |   serverRegistry.js
+|           |           |   |   serverRegistry.js.LICENSE
+|           |           |   |   utilsBundle.js
+|           |           |   |   utilsBundle.js.LICENSE
+|           |           |   |   xdg-open
+|           |           |   |   
+|           |           |   +---entry
+|           |           |   |       cliDaemon.js
+|           |           |   |       dashboardApp.js
+|           |           |   |       mcp.js
+|           |           |   |       oopBrowserDownload.js
+|           |           |   |       
+|           |           |   +---server
+|           |           |   |   |   deviceDescriptorsSource.json
+|           |           |   |   |   
+|           |           |   |   +---chromium
+|           |           |   |   |       appIcon.png
+|           |           |   |   |       
+|           |           |   |   \---electron
+|           |           |   |           loader.js
+|           |           |   |           
+|           |           |   +---tools
+|           |           |   |   +---cli-client
+|           |           |   |   |   |   channelSessions.js
+|           |           |   |   |   |   cli.js
+|           |           |   |   |   |   help.json
+|           |           |   |   |   |   minimist.js
+|           |           |   |   |   |   output.js
+|           |           |   |   |   |   program.js
+|           |           |   |   |   |   registry.js
+|           |           |   |   |   |   session.js
+|           |           |   |   |   |   
+|           |           |   |   |   \---skill
+|           |           |   |   |       |   SKILL.md
+|           |           |   |   |       |   
+|           |           |   |   |       \---references
+|           |           |   |   |               element-attributes.md
+|           |           |   |   |               playwright-tests.md
+|           |           |   |   |               request-mocking.md
+|           |           |   |   |               running-code.md
+|           |           |   |   |               session-management.md
+|           |           |   |   |               spec-driven-testing.md
+|           |           |   |   |               storage-state.md
+|           |           |   |   |               test-generation.md
+|           |           |   |   |               tracing.md
+|           |           |   |   |               video-recording.md
+|           |           |   |   |               
+|           |           |   |   +---dashboard
+|           |           |   |   |       appIcon.png
+|           |           |   |   |       
+|           |           |   |   +---trace
+|           |           |   |   |       SKILL.md
+|           |           |   |   |       
+|           |           |   |   \---utils
+|           |           |   |           extension.js
+|           |           |   |           socketConnection.js
+|           |           |   |           
+|           |           |   \---vite
+|           |           |       +---dashboard
+|           |           |       |   |   index.html
+|           |           |       |   |   playwright-logo.svg
+|           |           |       |   |   
+|           |           |       |   \---assets
+|           |           |       |           codicon-DCmgc-ay.ttf
+|           |           |       |           firefox-1bWoP6pv.svg
+|           |           |       |           firefox-beta-k3eOH_eK.svg
+|           |           |       |           firefox-nightly-Cp5nfeDT.svg
+|           |           |       |           index-BY2S1tHT.css
+|           |           |       |           index-C_5TMfeg.js
+|           |           |       |           safari-na3_-uQk.svg
+|           |           |       |           
+|           |           |       +---htmlReport
+|           |           |       |       index.html
+|           |           |       |       report.css
+|           |           |       |       report.js
+|           |           |       |       
+|           |           |       +---recorder
+|           |           |       |   |   index.html
+|           |           |       |   |   playwright-logo.svg
+|           |           |       |   |   
+|           |           |       |   \---assets
+|           |           |       |           codeMirrorModule-DeBYQozu.js
+|           |           |       |           codeMirrorModule-DYBRYzYX.css
+|           |           |       |           codicon-DCmgc-ay.ttf
+|           |           |       |           index-4ZiSSCmn.css
+|           |           |       |           index-Bq-mQf8S.js
+|           |           |       |           
+|           |           |       \---traceViewer
+|           |           |           |   codeMirrorModule.DYBRYzYX.css
+|           |           |           |   codicon.DCmgc-ay.ttf
+|           |           |           |   defaultSettingsView.CjdS-WJx.css
+|           |           |           |   index.CzXZzn5A.css
+|           |           |           |   index.DMMX1gXU.js
+|           |           |           |   index.html
+|           |           |           |   manifest.webmanifest
+|           |           |           |   playwright-logo.svg
+|           |           |           |   snapshot.html
+|           |           |           |   snapshot.v8KI4P3m.js
+|           |           |           |   sw.bundle.js
+|           |           |           |   uiMode.BZQ54Kgt.css
+|           |           |           |   uiMode.html
+|           |           |           |   uiMode.Ut8wwJNp.js
+|           |           |           |   xtermModule.DYP7pi_n.css
+|           |           |           |   
+|           |           |           \---assets
+|           |           |                   codeMirrorModule-LEHpjmcn.js
+|           |           |                   defaultSettingsView-BNmKHKpQ.js
+|           |           |                   urlMatch-BYQrIQwR.js
+|           |           |                   xtermModule-CsJ4vdCR.js
+|           |           |                   
+|           |           \---types
+|           |                   protocol.d.ts
+|           |                   structs.d.ts
+|           |                   types.d.ts
+|           |                   
+|           +---PySide6
+|           |       QtSvg.pyd
+|           |       
+|           +---setuptools
+|           |   \---_vendor
+|           |       \---jaraco
+|           |           \---text
+|           |                   Lorem ipsum.txt
+|           |                   
+|           \---shiboken6
+|                   MSVCP140_1.dll
+|                   
++---gui
+|   |   main_window.py
+|   |   main_window_templates.py
+|   |   
+|   +---components
+|   |   |   application_shell.py
+|   |   |   cards.py
+|   |   |   sidebar.py
+|   |   |   topbar.py
+|   |   |   window_title_bar.py
+|   |   |   
+|   |   \---__pycache__
+|   |           application_shell.cpython-314.pyc
+|   |           cards.cpython-314.pyc
+|   |           sidebar.cpython-314.pyc
+|   |           topbar.cpython-314.pyc
+|   |           window_title_bar.cpython-314.pyc
+|   |           
+|   +---dialogs
+|   |   |   about_dialog.py
+|   |   |   image_viewer.py
+|   |   |   processing_result_dialog.py
+|   |   |   tag_template_dialog.py
+|   |   |   themed_message_box.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           about_dialog.cpython-314.pyc
+|   |           image_viewer.cpython-314.pyc
+|   |           processing_result_dialog.cpython-314.pyc
+|   |           tag_template_dialog.cpython-314.pyc
+|   |           themed_message_box.cpython-314.pyc
+|   |           __init__.cpython-314.pyc
+|   |           
+|   +---pages
+|   |   |   dashboard.py
+|   |   |   settings_page.py
+|   |   |   tagging.py
+|   |   |   tagging_fixed.py
+|   |   |   tagging_templates.py
+|   |   |   yandex_maps.py
+|   |   |   yandex_maps_templates.py
+|   |   |   
+|   |   \---__pycache__
+|   |           dashboard.cpython-314.pyc
+|   |           photo.cpython-314.pyc
+|   |           settings_page.cpython-314.pyc
+|   |           tagging.cpython-314.pyc
+|   |           tagging_fixed.cpython-314.pyc
+|   |           tagging_templates.cpython-314.pyc
+|   |           yandex_maps.cpython-314.pyc
+|   |           yandex_maps_templates.cpython-314.pyc
+|   |           
+|   +---services
+|   |   |   update_service.py
+|   |   |   
+|   |   \---__pycache__
+|   |           update_service.cpython-314.pyc
+|   |           
+|   +---theme
+|   |   |   default.qss
+|   |   |   manager.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           manager.cpython-314.pyc
+|   |           __init__.cpython-314.pyc
+|   |           
+|   +---utils
+|   |   |   plain_paste_filter.py
+|   |   |   
+|   |   \---__pycache__
+|   |           plain_paste_filter.cpython-314.pyc
+|   |           
+|   \---__pycache__
+|           main_window.cpython-314.pyc
+|           main_window_templates.cpython-314.pyc
+|           
++---logs
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           __init__.cpython-314.pyc
+|           
++---ms-playwright
+|   +---.links
+|   |       f7bec3d26b3f2add4884023fabb8209f70d503fe
+|   |       
+|   +---chromium-1228
+|   |   |   DEPENDENCIES_VALIDATED
+|   |   |   INSTALLATION_COMPLETE
+|   |   |   
+|   |   \---chrome-win64
+|   |       |   149.0.7827.55.manifest
+|   |       |   ABOUT
+|   |       |   chrome.dll
+|   |       |   chrome.exe
+|   |       |   chrome_100_percent.pak
+|   |       |   chrome_200_percent.pak
+|   |       |   chrome_elf.dll
+|   |       |   chrome_proxy.exe
+|   |       |   chrome_pwa_launcher.exe
+|   |       |   chrome_wer.dll
+|   |       |   D3DCompiler_47.dll
+|   |       |   dxcompiler.dll
+|   |       |   dxil.dll
+|   |       |   elevated_tracing_service.exe
+|   |       |   elevation_service.exe
+|   |       |   First Run
+|   |       |   icudtl.dat
+|   |       |   libEGL.dll
+|   |       |   libGLESv2.dll
+|   |       |   notification_helper.exe
+|   |       |   resources.pak
+|   |       |   setup.exe
+|   |       |   v8_context_snapshot.bin
+|   |       |   vk_swiftshader.dll
+|   |       |   vk_swiftshader_icd.json
+|   |       |   vulkan-1.dll
+|   |       |   
+|   |       +---hyphen-data
+|   |       |       hyph-af.hyb
+|   |       |       hyph-as.hyb
+|   |       |       hyph-be.hyb
+|   |       |       hyph-bg.hyb
+|   |       |       hyph-bn.hyb
+|   |       |       hyph-cs.hyb
+|   |       |       hyph-cu.hyb
+|   |       |       hyph-cy.hyb
+|   |       |       hyph-da.hyb
+|   |       |       hyph-de-1901.hyb
+|   |       |       hyph-de-1996.hyb
+|   |       |       hyph-de-ch-1901.hyb
+|   |       |       hyph-el.hyb
+|   |       |       hyph-en-gb.hyb
+|   |       |       hyph-en-us.hyb
+|   |       |       hyph-es.hyb
+|   |       |       hyph-et.hyb
+|   |       |       hyph-eu.hyb
+|   |       |       hyph-fr.hyb
+|   |       |       hyph-ga.hyb
+|   |       |       hyph-gl.hyb
+|   |       |       hyph-gu.hyb
+|   |       |       hyph-hi.hyb
+|   |       |       hyph-hr.hyb
+|   |       |       hyph-hu.hyb
+|   |       |       hyph-hy.hyb
+|   |       |       hyph-it.hyb
+|   |       |       hyph-ka.hyb
+|   |       |       hyph-kn.hyb
+|   |       |       hyph-la.hyb
+|   |       |       hyph-lt.hyb
+|   |       |       hyph-lv.hyb
+|   |       |       hyph-ml.hyb
+|   |       |       hyph-mn-cyrl.hyb
+|   |       |       hyph-mr.hyb
+|   |       |       hyph-mul-ethi.hyb
+|   |       |       hyph-nb.hyb
+|   |       |       hyph-nl.hyb
+|   |       |       hyph-nn.hyb
+|   |       |       hyph-or.hyb
+|   |       |       hyph-pa.hyb
+|   |       |       hyph-pt.hyb
+|   |       |       hyph-ru.hyb
+|   |       |       hyph-sk.hyb
+|   |       |       hyph-sl.hyb
+|   |       |       hyph-sq.hyb
+|   |       |       hyph-sv.hyb
+|   |       |       hyph-ta.hyb
+|   |       |       hyph-te.hyb
+|   |       |       hyph-tk.hyb
+|   |       |       hyph-uk.hyb
+|   |       |       hyph-und-ethi.hyb
+|   |       |       manifest.json
+|   |       |       
+|   |       +---IwaKeyDistribution
+|   |       |       iwa-key-distribution.pb
+|   |       |       manifest.json
+|   |       |       
+|   |       +---locales
+|   |       |       af.pak
+|   |       |       af_FEMININE.pak
+|   |       |       af_MASCULINE.pak
+|   |       |       af_NEUTER.pak
+|   |       |       am.pak
+|   |       |       am_FEMININE.pak
+|   |       |       am_MASCULINE.pak
+|   |       |       am_NEUTER.pak
+|   |       |       ar.pak
+|   |       |       ar_FEMININE.pak
+|   |       |       ar_MASCULINE.pak
+|   |       |       ar_NEUTER.pak
+|   |       |       bg.pak
+|   |       |       bg_FEMININE.pak
+|   |       |       bg_MASCULINE.pak
+|   |       |       bg_NEUTER.pak
+|   |       |       bn.pak
+|   |       |       bn_FEMININE.pak
+|   |       |       bn_MASCULINE.pak
+|   |       |       bn_NEUTER.pak
+|   |       |       ca.pak
+|   |       |       ca_FEMININE.pak
+|   |       |       ca_MASCULINE.pak
+|   |       |       ca_NEUTER.pak
+|   |       |       cs.pak
+|   |       |       cs_FEMININE.pak
+|   |       |       cs_MASCULINE.pak
+|   |       |       cs_NEUTER.pak
+|   |       |       da.pak
+|   |       |       da_FEMININE.pak
+|   |       |       da_MASCULINE.pak
+|   |       |       da_NEUTER.pak
+|   |       |       de.pak
+|   |       |       de_FEMININE.pak
+|   |       |       de_MASCULINE.pak
+|   |       |       de_NEUTER.pak
+|   |       |       el.pak
+|   |       |       el_FEMININE.pak
+|   |       |       el_MASCULINE.pak
+|   |       |       el_NEUTER.pak
+|   |       |       en-GB.pak
+|   |       |       en-GB_FEMININE.pak
+|   |       |       en-GB_MASCULINE.pak
+|   |       |       en-GB_NEUTER.pak
+|   |       |       en-US.pak
+|   |       |       en-US_FEMININE.pak
+|   |       |       en-US_MASCULINE.pak
+|   |       |       en-US_NEUTER.pak
+|   |       |       es-419.pak
+|   |       |       es-419_FEMININE.pak
+|   |       |       es-419_MASCULINE.pak
+|   |       |       es-419_NEUTER.pak
+|   |       |       es.pak
+|   |       |       es_FEMININE.pak
+|   |       |       es_MASCULINE.pak
+|   |       |       es_NEUTER.pak
+|   |       |       et.pak
+|   |       |       et_FEMININE.pak
+|   |       |       et_MASCULINE.pak
+|   |       |       et_NEUTER.pak
+|   |       |       fa.pak
+|   |       |       fa_FEMININE.pak
+|   |       |       fa_MASCULINE.pak
+|   |       |       fa_NEUTER.pak
+|   |       |       fi.pak
+|   |       |       fil.pak
+|   |       |       fil_FEMININE.pak
+|   |       |       fil_MASCULINE.pak
+|   |       |       fil_NEUTER.pak
+|   |       |       fi_FEMININE.pak
+|   |       |       fi_MASCULINE.pak
+|   |       |       fi_NEUTER.pak
+|   |       |       fr.pak
+|   |       |       fr_FEMININE.pak
+|   |       |       fr_MASCULINE.pak
+|   |       |       fr_NEUTER.pak
+|   |       |       gu.pak
+|   |       |       gu_FEMININE.pak
+|   |       |       gu_MASCULINE.pak
+|   |       |       gu_NEUTER.pak
+|   |       |       he.pak
+|   |       |       he_FEMININE.pak
+|   |       |       he_MASCULINE.pak
+|   |       |       he_NEUTER.pak
+|   |       |       hi.pak
+|   |       |       hi_FEMININE.pak
+|   |       |       hi_MASCULINE.pak
+|   |       |       hi_NEUTER.pak
+|   |       |       hr.pak
+|   |       |       hr_FEMININE.pak
+|   |       |       hr_MASCULINE.pak
+|   |       |       hr_NEUTER.pak
+|   |       |       hu.pak
+|   |       |       hu_FEMININE.pak
+|   |       |       hu_MASCULINE.pak
+|   |       |       hu_NEUTER.pak
+|   |       |       id.pak
+|   |       |       id_FEMININE.pak
+|   |       |       id_MASCULINE.pak
+|   |       |       id_NEUTER.pak
+|   |       |       it.pak
+|   |       |       it_FEMININE.pak
+|   |       |       it_MASCULINE.pak
+|   |       |       it_NEUTER.pak
+|   |       |       ja.pak
+|   |       |       ja_FEMININE.pak
+|   |       |       ja_MASCULINE.pak
+|   |       |       ja_NEUTER.pak
+|   |       |       kn.pak
+|   |       |       kn_FEMININE.pak
+|   |       |       kn_MASCULINE.pak
+|   |       |       kn_NEUTER.pak
+|   |       |       ko.pak
+|   |       |       ko_FEMININE.pak
+|   |       |       ko_MASCULINE.pak
+|   |       |       ko_NEUTER.pak
+|   |       |       lt.pak
+|   |       |       lt_FEMININE.pak
+|   |       |       lt_MASCULINE.pak
+|   |       |       lt_NEUTER.pak
+|   |       |       lv.pak
+|   |       |       lv_FEMININE.pak
+|   |       |       lv_MASCULINE.pak
+|   |       |       lv_NEUTER.pak
+|   |       |       ml.pak
+|   |       |       ml_FEMININE.pak
+|   |       |       ml_MASCULINE.pak
+|   |       |       ml_NEUTER.pak
+|   |       |       mr.pak
+|   |       |       mr_FEMININE.pak
+|   |       |       mr_MASCULINE.pak
+|   |       |       mr_NEUTER.pak
+|   |       |       ms.pak
+|   |       |       ms_FEMININE.pak
+|   |       |       ms_MASCULINE.pak
+|   |       |       ms_NEUTER.pak
+|   |       |       nb.pak
+|   |       |       nb_FEMININE.pak
+|   |       |       nb_MASCULINE.pak
+|   |       |       nb_NEUTER.pak
+|   |       |       nl.pak
+|   |       |       nl_FEMININE.pak
+|   |       |       nl_MASCULINE.pak
+|   |       |       nl_NEUTER.pak
+|   |       |       pl.pak
+|   |       |       pl_FEMININE.pak
+|   |       |       pl_MASCULINE.pak
+|   |       |       pl_NEUTER.pak
+|   |       |       pt-BR.pak
+|   |       |       pt-BR_FEMININE.pak
+|   |       |       pt-BR_MASCULINE.pak
+|   |       |       pt-BR_NEUTER.pak
+|   |       |       pt-PT.pak
+|   |       |       pt-PT_FEMININE.pak
+|   |       |       pt-PT_MASCULINE.pak
+|   |       |       pt-PT_NEUTER.pak
+|   |       |       ro.pak
+|   |       |       ro_FEMININE.pak
+|   |       |       ro_MASCULINE.pak
+|   |       |       ro_NEUTER.pak
+|   |       |       ru.pak
+|   |       |       ru_FEMININE.pak
+|   |       |       ru_MASCULINE.pak
+|   |       |       ru_NEUTER.pak
+|   |       |       sk.pak
+|   |       |       sk_FEMININE.pak
+|   |       |       sk_MASCULINE.pak
+|   |       |       sk_NEUTER.pak
+|   |       |       sl.pak
+|   |       |       sl_FEMININE.pak
+|   |       |       sl_MASCULINE.pak
+|   |       |       sl_NEUTER.pak
+|   |       |       sr.pak
+|   |       |       sr_FEMININE.pak
+|   |       |       sr_MASCULINE.pak
+|   |       |       sr_NEUTER.pak
+|   |       |       sv.pak
+|   |       |       sv_FEMININE.pak
+|   |       |       sv_MASCULINE.pak
+|   |       |       sv_NEUTER.pak
+|   |       |       sw.pak
+|   |       |       sw_FEMININE.pak
+|   |       |       sw_MASCULINE.pak
+|   |       |       sw_NEUTER.pak
+|   |       |       ta.pak
+|   |       |       ta_FEMININE.pak
+|   |       |       ta_MASCULINE.pak
+|   |       |       ta_NEUTER.pak
+|   |       |       te.pak
+|   |       |       te_FEMININE.pak
+|   |       |       te_MASCULINE.pak
+|   |       |       te_NEUTER.pak
+|   |       |       th.pak
+|   |       |       th_FEMININE.pak
+|   |       |       th_MASCULINE.pak
+|   |       |       th_NEUTER.pak
+|   |       |       tr.pak
+|   |       |       tr_FEMININE.pak
+|   |       |       tr_MASCULINE.pak
+|   |       |       tr_NEUTER.pak
+|   |       |       uk.pak
+|   |       |       uk_FEMININE.pak
+|   |       |       uk_MASCULINE.pak
+|   |       |       uk_NEUTER.pak
+|   |       |       ur.pak
+|   |       |       ur_FEMININE.pak
+|   |       |       ur_MASCULINE.pak
+|   |       |       ur_NEUTER.pak
+|   |       |       vi.pak
+|   |       |       vi_FEMININE.pak
+|   |       |       vi_MASCULINE.pak
+|   |       |       vi_NEUTER.pak
+|   |       |       zh-CN.pak
+|   |       |       zh-CN_FEMININE.pak
+|   |       |       zh-CN_MASCULINE.pak
+|   |       |       zh-CN_NEUTER.pak
+|   |       |       zh-TW.pak
+|   |       |       zh-TW_FEMININE.pak
+|   |       |       zh-TW_MASCULINE.pak
+|   |       |       zh-TW_NEUTER.pak
+|   |       |       
+|   |       +---MEIPreload
+|   |       |       manifest.json
+|   |       |       preloaded_data.pb
+|   |       |       
+|   |       +---PrivacySandboxAttestationsPreloaded
+|   |       |       manifest.json
+|   |       |       privacy-sandbox-attestations.dat
+|   |       |       
+|   |       \---resources
+|   |           \---accessibility
+|   |               |   reading_mode_gdocs_helper_manifest.json
+|   |               |   
+|   |               \---reading_mode_gdocs_helper
+|   |                       content.js
+|   |                       gdocs_script.js
+|   |                       
+|   +---chromium_headless_shell-1228
+|   |   |   DEPENDENCIES_VALIDATED
+|   |   |   INSTALLATION_COMPLETE
+|   |   |   
+|   |   \---chrome-headless-shell-win64
+|   |       |   ABOUT
+|   |       |   chrome-headless-shell.exe
+|   |       |   debug.log
+|   |       |   headless_command_resources.pak
+|   |       |   headless_lib_data.pak
+|   |       |   headless_lib_strings.pak
+|   |       |   icudtl.dat
+|   |       |   libEGL.dll
+|   |       |   libGLESv2.dll
+|   |       |   LICENSE.headless_shell
+|   |       |   v8_context_snapshot.bin
+|   |       |   vk_swiftshader.dll
+|   |       |   vk_swiftshader_icd.json
+|   |       |   vulkan-1.dll
+|   |       |   
+|   |       +---hyphen-data
+|   |       |       hyph-af.hyb
+|   |       |       hyph-as.hyb
+|   |       |       hyph-be.hyb
+|   |       |       hyph-bg.hyb
+|   |       |       hyph-bn.hyb
+|   |       |       hyph-cs.hyb
+|   |       |       hyph-cu.hyb
+|   |       |       hyph-cy.hyb
+|   |       |       hyph-da.hyb
+|   |       |       hyph-de-1901.hyb
+|   |       |       hyph-de-1996.hyb
+|   |       |       hyph-de-ch-1901.hyb
+|   |       |       hyph-el.hyb
+|   |       |       hyph-en-gb.hyb
+|   |       |       hyph-en-us.hyb
+|   |       |       hyph-es.hyb
+|   |       |       hyph-et.hyb
+|   |       |       hyph-eu.hyb
+|   |       |       hyph-fr.hyb
+|   |       |       hyph-ga.hyb
+|   |       |       hyph-gl.hyb
+|   |       |       hyph-gu.hyb
+|   |       |       hyph-hi.hyb
+|   |       |       hyph-hr.hyb
+|   |       |       hyph-hu.hyb
+|   |       |       hyph-hy.hyb
+|   |       |       hyph-it.hyb
+|   |       |       hyph-ka.hyb
+|   |       |       hyph-kn.hyb
+|   |       |       hyph-la.hyb
+|   |       |       hyph-lt.hyb
+|   |       |       hyph-lv.hyb
+|   |       |       hyph-ml.hyb
+|   |       |       hyph-mn-cyrl.hyb
+|   |       |       hyph-mr.hyb
+|   |       |       hyph-mul-ethi.hyb
+|   |       |       hyph-nb.hyb
+|   |       |       hyph-nl.hyb
+|   |       |       hyph-nn.hyb
+|   |       |       hyph-or.hyb
+|   |       |       hyph-pa.hyb
+|   |       |       hyph-pt.hyb
+|   |       |       hyph-ru.hyb
+|   |       |       hyph-sk.hyb
+|   |       |       hyph-sl.hyb
+|   |       |       hyph-sq.hyb
+|   |       |       hyph-sv.hyb
+|   |       |       hyph-ta.hyb
+|   |       |       hyph-te.hyb
+|   |       |       hyph-tk.hyb
+|   |       |       hyph-uk.hyb
+|   |       |       hyph-und-ethi.hyb
+|   |       |       
+|   |       +---locales
+|   |       |       af.pak
+|   |       |       af_FEMININE.pak
+|   |       |       af_MASCULINE.pak
+|   |       |       af_NEUTER.pak
+|   |       |       am.pak
+|   |       |       am_FEMININE.pak
+|   |       |       am_MASCULINE.pak
+|   |       |       am_NEUTER.pak
+|   |       |       ar.pak
+|   |       |       ar_FEMININE.pak
+|   |       |       ar_MASCULINE.pak
+|   |       |       ar_NEUTER.pak
+|   |       |       bg.pak
+|   |       |       bg_FEMININE.pak
+|   |       |       bg_MASCULINE.pak
+|   |       |       bg_NEUTER.pak
+|   |       |       bn.pak
+|   |       |       bn_FEMININE.pak
+|   |       |       bn_MASCULINE.pak
+|   |       |       bn_NEUTER.pak
+|   |       |       ca.pak
+|   |       |       ca_FEMININE.pak
+|   |       |       ca_MASCULINE.pak
+|   |       |       ca_NEUTER.pak
+|   |       |       cs.pak
+|   |       |       cs_FEMININE.pak
+|   |       |       cs_MASCULINE.pak
+|   |       |       cs_NEUTER.pak
+|   |       |       da.pak
+|   |       |       da_FEMININE.pak
+|   |       |       da_MASCULINE.pak
+|   |       |       da_NEUTER.pak
+|   |       |       de.pak
+|   |       |       de_FEMININE.pak
+|   |       |       de_MASCULINE.pak
+|   |       |       de_NEUTER.pak
+|   |       |       el.pak
+|   |       |       el_FEMININE.pak
+|   |       |       el_MASCULINE.pak
+|   |       |       el_NEUTER.pak
+|   |       |       en-GB.pak
+|   |       |       en-GB_FEMININE.pak
+|   |       |       en-GB_MASCULINE.pak
+|   |       |       en-GB_NEUTER.pak
+|   |       |       en-US.pak
+|   |       |       en-US_FEMININE.pak
+|   |       |       en-US_MASCULINE.pak
+|   |       |       en-US_NEUTER.pak
+|   |       |       es-419.pak
+|   |       |       es-419_FEMININE.pak
+|   |       |       es-419_MASCULINE.pak
+|   |       |       es-419_NEUTER.pak
+|   |       |       es.pak
+|   |       |       es_FEMININE.pak
+|   |       |       es_MASCULINE.pak
+|   |       |       es_NEUTER.pak
+|   |       |       et.pak
+|   |       |       et_FEMININE.pak
+|   |       |       et_MASCULINE.pak
+|   |       |       et_NEUTER.pak
+|   |       |       fa.pak
+|   |       |       fa_FEMININE.pak
+|   |       |       fa_MASCULINE.pak
+|   |       |       fa_NEUTER.pak
+|   |       |       fi.pak
+|   |       |       fil.pak
+|   |       |       fil_FEMININE.pak
+|   |       |       fil_MASCULINE.pak
+|   |       |       fil_NEUTER.pak
+|   |       |       fi_FEMININE.pak
+|   |       |       fi_MASCULINE.pak
+|   |       |       fi_NEUTER.pak
+|   |       |       fr.pak
+|   |       |       fr_FEMININE.pak
+|   |       |       fr_MASCULINE.pak
+|   |       |       fr_NEUTER.pak
+|   |       |       gu.pak
+|   |       |       gu_FEMININE.pak
+|   |       |       gu_MASCULINE.pak
+|   |       |       gu_NEUTER.pak
+|   |       |       he.pak
+|   |       |       he_FEMININE.pak
+|   |       |       he_MASCULINE.pak
+|   |       |       he_NEUTER.pak
+|   |       |       hi.pak
+|   |       |       hi_FEMININE.pak
+|   |       |       hi_MASCULINE.pak
+|   |       |       hi_NEUTER.pak
+|   |       |       hr.pak
+|   |       |       hr_FEMININE.pak
+|   |       |       hr_MASCULINE.pak
+|   |       |       hr_NEUTER.pak
+|   |       |       hu.pak
+|   |       |       hu_FEMININE.pak
+|   |       |       hu_MASCULINE.pak
+|   |       |       hu_NEUTER.pak
+|   |       |       id.pak
+|   |       |       id_FEMININE.pak
+|   |       |       id_MASCULINE.pak
+|   |       |       id_NEUTER.pak
+|   |       |       it.pak
+|   |       |       it_FEMININE.pak
+|   |       |       it_MASCULINE.pak
+|   |       |       it_NEUTER.pak
+|   |       |       ja.pak
+|   |       |       ja_FEMININE.pak
+|   |       |       ja_MASCULINE.pak
+|   |       |       ja_NEUTER.pak
+|   |       |       kn.pak
+|   |       |       kn_FEMININE.pak
+|   |       |       kn_MASCULINE.pak
+|   |       |       kn_NEUTER.pak
+|   |       |       ko.pak
+|   |       |       ko_FEMININE.pak
+|   |       |       ko_MASCULINE.pak
+|   |       |       ko_NEUTER.pak
+|   |       |       lt.pak
+|   |       |       lt_FEMININE.pak
+|   |       |       lt_MASCULINE.pak
+|   |       |       lt_NEUTER.pak
+|   |       |       lv.pak
+|   |       |       lv_FEMININE.pak
+|   |       |       lv_MASCULINE.pak
+|   |       |       lv_NEUTER.pak
+|   |       |       ml.pak
+|   |       |       ml_FEMININE.pak
+|   |       |       ml_MASCULINE.pak
+|   |       |       ml_NEUTER.pak
+|   |       |       mr.pak
+|   |       |       mr_FEMININE.pak
+|   |       |       mr_MASCULINE.pak
+|   |       |       mr_NEUTER.pak
+|   |       |       ms.pak
+|   |       |       ms_FEMININE.pak
+|   |       |       ms_MASCULINE.pak
+|   |       |       ms_NEUTER.pak
+|   |       |       nb.pak
+|   |       |       nb_FEMININE.pak
+|   |       |       nb_MASCULINE.pak
+|   |       |       nb_NEUTER.pak
+|   |       |       nl.pak
+|   |       |       nl_FEMININE.pak
+|   |       |       nl_MASCULINE.pak
+|   |       |       nl_NEUTER.pak
+|   |       |       pl.pak
+|   |       |       pl_FEMININE.pak
+|   |       |       pl_MASCULINE.pak
+|   |       |       pl_NEUTER.pak
+|   |       |       pt-BR.pak
+|   |       |       pt-BR_FEMININE.pak
+|   |       |       pt-BR_MASCULINE.pak
+|   |       |       pt-BR_NEUTER.pak
+|   |       |       pt-PT.pak
+|   |       |       pt-PT_FEMININE.pak
+|   |       |       pt-PT_MASCULINE.pak
+|   |       |       pt-PT_NEUTER.pak
+|   |       |       ro.pak
+|   |       |       ro_FEMININE.pak
+|   |       |       ro_MASCULINE.pak
+|   |       |       ro_NEUTER.pak
+|   |       |       ru.pak
+|   |       |       ru_FEMININE.pak
+|   |       |       ru_MASCULINE.pak
+|   |       |       ru_NEUTER.pak
+|   |       |       sk.pak
+|   |       |       sk_FEMININE.pak
+|   |       |       sk_MASCULINE.pak
+|   |       |       sk_NEUTER.pak
+|   |       |       sl.pak
+|   |       |       sl_FEMININE.pak
+|   |       |       sl_MASCULINE.pak
+|   |       |       sl_NEUTER.pak
+|   |       |       sr.pak
+|   |       |       sr_FEMININE.pak
+|   |       |       sr_MASCULINE.pak
+|   |       |       sr_NEUTER.pak
+|   |       |       sv.pak
+|   |       |       sv_FEMININE.pak
+|   |       |       sv_MASCULINE.pak
+|   |       |       sv_NEUTER.pak
+|   |       |       sw.pak
+|   |       |       sw_FEMININE.pak
+|   |       |       sw_MASCULINE.pak
+|   |       |       sw_NEUTER.pak
+|   |       |       ta.pak
+|   |       |       ta_FEMININE.pak
+|   |       |       ta_MASCULINE.pak
+|   |       |       ta_NEUTER.pak
+|   |       |       te.pak
+|   |       |       te_FEMININE.pak
+|   |       |       te_MASCULINE.pak
+|   |       |       te_NEUTER.pak
+|   |       |       th.pak
+|   |       |       th_FEMININE.pak
+|   |       |       th_MASCULINE.pak
+|   |       |       th_NEUTER.pak
+|   |       |       tr.pak
+|   |       |       tr_FEMININE.pak
+|   |       |       tr_MASCULINE.pak
+|   |       |       tr_NEUTER.pak
+|   |       |       uk.pak
+|   |       |       uk_FEMININE.pak
+|   |       |       uk_MASCULINE.pak
+|   |       |       uk_NEUTER.pak
+|   |       |       ur.pak
+|   |       |       ur_FEMININE.pak
+|   |       |       ur_MASCULINE.pak
+|   |       |       ur_NEUTER.pak
+|   |       |       vi.pak
+|   |       |       vi_FEMININE.pak
+|   |       |       vi_MASCULINE.pak
+|   |       |       vi_NEUTER.pak
+|   |       |       zh-CN.pak
+|   |       |       zh-CN_FEMININE.pak
+|   |       |       zh-CN_MASCULINE.pak
+|   |       |       zh-CN_NEUTER.pak
+|   |       |       zh-TW.pak
+|   |       |       zh-TW_FEMININE.pak
+|   |       |       zh-TW_MASCULINE.pak
+|   |       |       zh-TW_NEUTER.pak
+|   |       |       
+|   |       +---PrivacySandboxAttestationsPreloaded
+|   |       |       manifest.json
+|   |       |       privacy-sandbox-attestations.dat
+|   |       |       
+|   |       \---resources
+|   |           \---accessibility
+|   |               |   reading_mode_gdocs_helper_manifest.json
+|   |               |   
+|   |               \---reading_mode_gdocs_helper
+|   |                       content.js
+|   |                       gdocs_script.js
+|   |                       
+|   +---ffmpeg-1011
+|   |       COPYING.LGPLv2.1
+|   |       DEPENDENCIES_VALIDATED
+|   |       ffmpeg-win64.exe
+|   |       INSTALLATION_COMPLETE
+|   |       
+|   +---firefox-1532
+|   |   |   DEPENDENCIES_VALIDATED
+|   |   |   INSTALLATION_COMPLETE
+|   |   |   
+|   |   \---firefox
+|   |       |   AccessibleMarshal.dll
+|   |       |   application.ini
+|   |       |   CoreMessagingXP.dll
+|   |       |   dependentlibs.list
+|   |       |   dxcompiler.dll
+|   |       |   firefox.exe
+|   |       |   firefox.VisualElementsManifest.xml
+|   |       |   freebl3.dll
+|   |       |   gkcodecs.dll
+|   |       |   InstallationDirLayout.dll
+|   |       |   lgpllibs.dll
+|   |       |   libEGL.dll
+|   |       |   libGLESv2.dll
+|   |       |   marshal.dll
+|   |       |   Microsoft.InputStateManager.dll
+|   |       |   Microsoft.Internal.FrameworkUdk.dll
+|   |       |   Microsoft.UI.Composition.OSSupport.dll
+|   |       |   Microsoft.UI.Input.dll
+|   |       |   Microsoft.UI.Windowing.Core.dll
+|   |       |   Microsoft.UI.Windowing.dll
+|   |       |   mozavcodec.dll
+|   |       |   mozavutil.dll
+|   |       |   mozglue.dll
+|   |       |   mozinference.dll
+|   |       |   msvcp140.dll
+|   |       |   msvcp140_atomic_wait.dll
+|   |       |   nmhproxy.exe
+|   |       |   notificationserver.dll
+|   |       |   nss3.dll
+|   |       |   omni.ja
+|   |       |   onnxruntime.dll
+|   |       |   pingsender.exe
+|   |       |   platform.ini
+|   |       |   playwright.cfg
+|   |       |   plugin-container.exe
+|   |       |   precomplete
+|   |       |   private_browsing.exe
+|   |       |   private_browsing.VisualElementsManifest.xml
+|   |       |   removed-files
+|   |       |   softokn3.dll
+|   |       |   update-settings.ini
+|   |       |   updater.exe
+|   |       |   updater.ini
+|   |       |   vcruntime140.dll
+|   |       |   vcruntime140_1.dll
+|   |       |   xul.dll
+|   |       |   
+|   |       +---browser
+|   |       |   |   omni.ja
+|   |       |   |   
+|   |       |   \---VisualElements
+|   |       |           PrivateBrowsing_150.png
+|   |       |           PrivateBrowsing_70.png
+|   |       |           VisualElements_150.png
+|   |       |           VisualElements_70.png
+|   |       |           
+|   |       +---defaults
+|   |       |   \---pref
+|   |       |           00-playwright-prefs.js
+|   |       |           channel-prefs.js
+|   |       |           
+|   |       +---desktop-launcher
+|   |       |       desktop-launcher.exe
+|   |       |       
+|   |       +---fonts
+|   |       |       TwemojiMozilla.ttf
+|   |       |       
+|   |       +---gmp-clearkey
+|   |       |   \---0.1
+|   |       |           clearkey.dll
+|   |       |           manifest.json
+|   |       |           
+|   |       +---installation_dir_layout
+|   |       |   \---versioned
+|   |       |           InstallationDirLayout.dll
+|   |       |           
+|   |       \---uninstall
+|   |               helper.exe
+|   |               
+|   +---webkit-2311
+|   |   |   brotlicommon.dll
+|   |   |   brotlidec.dll
+|   |   |   brotlienc.dll
+|   |   |   crypto-57.dll
+|   |   |   DEPENDENCIES_VALIDATED
+|   |   |   harfbuzz-icu.dll
+|   |   |   harfbuzz-subset.dll
+|   |   |   harfbuzz.dll
+|   |   |   icudt77.dll
+|   |   |   icuin77.dll
+|   |   |   icuio77.dll
+|   |   |   icutest77.dll
+|   |   |   icutu77.dll
+|   |   |   icuuc77.dll
+|   |   |   INSTALLATION_COMPLETE
+|   |   |   JavaScriptCore.dll
+|   |   |   jpeg62.dll
+|   |   |   jxl.dll
+|   |   |   jxl_cms.dll
+|   |   |   jxl_threads.dll
+|   |   |   lcms2-2.dll
+|   |   |   libcurl.dll
+|   |   |   libEGL.dll
+|   |   |   libexslt.dll
+|   |   |   libGLESv2.dll
+|   |   |   libpng16.dll
+|   |   |   libsharpyuv.dll
+|   |   |   libwebp.dll
+|   |   |   libwebpdecoder.dll
+|   |   |   libwebpdemux.dll
+|   |   |   libwebpmux.dll
+|   |   |   libxml2.dll
+|   |   |   libxslt.dll
+|   |   |   msvcp140.dll
+|   |   |   msvcp140_2.dll
+|   |   |   nghttp2.dll
+|   |   |   nghttp3.dll
+|   |   |   ngtcp2.dll
+|   |   |   ngtcp2_crypto_quictls.dll
+|   |   |   Playwright.exe
+|   |   |   protocol.json
+|   |   |   psl-5.dll
+|   |   |   sqlite3.dll
+|   |   |   ssl-60.dll
+|   |   |   tls-33.dll
+|   |   |   turbojpeg.dll
+|   |   |   vcruntime140.dll
+|   |   |   vcruntime140_1.dll
+|   |   |   WebCore.dll
+|   |   |   WebKit2.dll
+|   |   |   WebKitGPUProcess.exe
+|   |   |   WebKitNetworkProcess.exe
+|   |   |   WebKitWebProcess.exe
+|   |   |   zlib1.dll
+|   |   |   
+|   |   \---WebKit.resources
+|   |       +---icons
+|   |       |       missingImage.png
+|   |       |       missingImage@2x.png
+|   |       |       missingImage@3x.png
+|   |       |       panIcon.png
+|   |       |       textAreaResizeCorner.png
+|   |       |       textAreaResizeCorner@2x.png
+|   |       |       
+|   |       +---media-controls
+|   |       |       EnterFullscreen.svg
+|   |       |       ExitFullscreen.svg
+|   |       |       Forward.svg
+|   |       |       invalid-placard@1x.png
+|   |       |       invalid-placard@2x.png
+|   |       |       MediaSelector-fullscreen.svg
+|   |       |       MediaSelector.svg
+|   |       |       Overflow.svg
+|   |       |       Pause.svg
+|   |       |       PipIn-fullscreen.svg
+|   |       |       PipIn.svg
+|   |       |       PipOut.svg
+|   |       |       Play.svg
+|   |       |       Rewind.svg
+|   |       |       SkipBack10.svg
+|   |       |       SkipBack15.svg
+|   |       |       SkipForward10.svg
+|   |       |       SkipForward15.svg
+|   |       |       Volume0-RTL.svg
+|   |       |       Volume0.svg
+|   |       |       Volume1-RTL.svg
+|   |       |       Volume1.svg
+|   |       |       Volume2-RTL.svg
+|   |       |       Volume2.svg
+|   |       |       Volume3-RTL.svg
+|   |       |       Volume3.svg
+|   |       |       VolumeMuted-RTL.svg
+|   |       |       VolumeMuted.svg
+|   |       |       X.svg
+|   |       |       
+|   |       \---WebInspectorUI
+|   |           |   CodeMirror.css
+|   |           |   CodeMirror.js
+|   |           |   CSSDocumentation.js
+|   |           |   Esprima.js
+|   |           |   localizedStrings.js
+|   |           |   Main.css
+|   |           |   Main.html
+|   |           |   Main.js
+|   |           |   Three.js
+|   |           |   
+|   |           +---Images
+|   |           |       ActiveCallFrame.svg
+|   |           |       AlignContentCenter.svg
+|   |           |       AlignContentEnd.svg
+|   |           |       AlignContentSpaceAround.svg
+|   |           |       AlignContentSpaceBetween.svg
+|   |           |       AlignContentSpaceEvenly.svg
+|   |           |       AlignContentStart.svg
+|   |           |       AlignContentStretch.svg
+|   |           |       AlignItemsCenter.svg
+|   |           |       AlignItemsEnd.svg
+|   |           |       AlignItemsStart.svg
+|   |           |       AlignItemsStretch.svg
+|   |           |       AlignmentUnknown.svg
+|   |           |       AppearanceOverride.svg
+|   |           |       ApplicationCacheManifest.svg
+|   |           |       ArrowUp.svg
+|   |           |       Audit.svg
+|   |           |       AuditStart.svg
+|   |           |       AuditStop.svg
+|   |           |       AuditTestError.svg
+|   |           |       AuditTestFail.svg
+|   |           |       AuditTestNoResult.svg
+|   |           |       AuditTestPass.svg
+|   |           |       AuditTestUnsupported.svg
+|   |           |       AuditTestWarn.svg
+|   |           |       BackForwardArrows.svg
+|   |           |       Beacon.svg
+|   |           |       BoxShadow.svg
+|   |           |       Breakpoint.svg
+|   |           |       BreakpointButton.svg
+|   |           |       BreakpointInactiveButton.svg
+|   |           |       Breakpoints.svg
+|   |           |       CallStack.svg
+|   |           |       Camera.svg
+|   |           |       Canvas2D.svg
+|   |           |       Canvas3D.svg
+|   |           |       CanvasOverview.svg
+|   |           |       Checkers.svg
+|   |           |       Circle.svg
+|   |           |       Clip.svg
+|   |           |       ClippingIcons.svg
+|   |           |       Close.svg
+|   |           |       CloseLarge.svg
+|   |           |       CloseWhite.svg
+|   |           |       ColorIcon.png
+|   |           |       ColorIcon@2x.png
+|   |           |       Compare.svg
+|   |           |       Composite.svg
+|   |           |       Computer.svg
+|   |           |       Console.svg
+|   |           |       ConsoleImage.svg
+|   |           |       Cookie.svg
+|   |           |       Crosshair.svg
+|   |           |       CSSVariable.svg
+|   |           |       CubicBezier.svg
+|   |           |       Database.svg
+|   |           |       Debug.svg
+|   |           |       Debugger.svg
+|   |           |       Device.svg
+|   |           |       DisclosureTriangles.svg
+|   |           |       Disk.svg
+|   |           |       DockBottom.svg
+|   |           |       DockLeft.svg
+|   |           |       DockRight.svg
+|   |           |       DocumentIcons.svg
+|   |           |       DOMBreakpoint.svg
+|   |           |       Dominator.svg
+|   |           |       DownloadArrow.svg
+|   |           |       Elements.svg
+|   |           |       Error.svg
+|   |           |       Errors.svg
+|   |           |       ErrorsEnabled.svg
+|   |           |       EventCancel.svg
+|   |           |       EventIteration.svg
+|   |           |       EventPause.svg
+|   |           |       EventPlay.svg
+|   |           |       EventProcessing.svg
+|   |           |       EventStop.svg
+|   |           |       Export.svg
+|   |           |       Fill.svg
+|   |           |       Filter.svg
+|   |           |       FilterFieldGlyph.svg
+|   |           |       FolderGeneric.svg
+|   |           |       Gear.svg
+|   |           |       GoToArrow.svg
+|   |           |       GradientStop.png
+|   |           |       GradientStop@2x.png
+|   |           |       GradientStopSelected.png
+|   |           |       GradientStopSelected@2x.png
+|   |           |       Graphics.svg
+|   |           |       Hide.svg
+|   |           |       HideConsoleDrawer.svg
+|   |           |       HierarchicalNavigationItemChevron.svg
+|   |           |       HoverMenuButton.png
+|   |           |       HoverMenuButton@2x.png
+|   |           |       IdentifierIcons.svg
+|   |           |       Image.svg
+|   |           |       Import.svg
+|   |           |       IndeterminateProgressSpinner1.svg
+|   |           |       IndeterminateProgressSpinner10.svg
+|   |           |       IndeterminateProgressSpinner11.svg
+|   |           |       IndeterminateProgressSpinner12.svg
+|   |           |       IndeterminateProgressSpinner2.svg
+|   |           |       IndeterminateProgressSpinner3.svg
+|   |           |       IndeterminateProgressSpinner4.svg
+|   |           |       IndeterminateProgressSpinner5.svg
+|   |           |       IndeterminateProgressSpinner6.svg
+|   |           |       IndeterminateProgressSpinner7.svg
+|   |           |       IndeterminateProgressSpinner8.svg
+|   |           |       IndeterminateProgressSpinner9.svg
+|   |           |       Info.svg
+|   |           |       InfoIcon.svg
+|   |           |       InstructionPointer.png
+|   |           |       InstructionPointer@2x.png
+|   |           |       Issues.svg
+|   |           |       IssuesEnabled.svg
+|   |           |       LayerBorders.svg
+|   |           |       Layers.svg
+|   |           |       LineStyle.svg
+|   |           |       Locked.svg
+|   |           |       Log.svg
+|   |           |       Logs.svg
+|   |           |       Markup.svg
+|   |           |       Minus.svg
+|   |           |       NavigationItemCheckers.svg
+|   |           |       NavigationItemCodeCoverage.svg
+|   |           |       NavigationItemCurleyBraces.svg
+|   |           |       NavigationItemGarbageCollect.svg
+|   |           |       NavigationItemNetworkOverride.svg
+|   |           |       NavigationItemTrash.svg
+|   |           |       NavigationItemTypes.svg
+|   |           |       Network.svg
+|   |           |       NetworkHAR.svg
+|   |           |       NetworkOverview.svg
+|   |           |       Origin.svg
+|   |           |       Overflow.svg
+|   |           |       Paint.svg
+|   |           |       Palette.svg
+|   |           |       Path.svg
+|   |           |       PathArc.svg
+|   |           |       PathCurve.svg
+|   |           |       PathEllipse.svg
+|   |           |       PathLineTo.svg
+|   |           |       PathMoveTo.svg
+|   |           |       PathRect.svg
+|   |           |       Pause.svg
+|   |           |       Pencil.svg
+|   |           |       Pipette.svg
+|   |           |       Pixels.svg
+|   |           |       Plus13.svg
+|   |           |       Plus15.svg
+|   |           |       PointInPath.svg
+|   |           |       PointInStroke.svg
+|   |           |       Printer.svg
+|   |           |       Receiving.svg
+|   |           |       Record.svg
+|   |           |       Recording.svg
+|   |           |       ReloadFull.svg
+|   |           |       ReloadToolbar.svg
+|   |           |       Resources.svg
+|   |           |       ResultLine.svg
+|   |           |       Resume.svg
+|   |           |       Rulers.svg
+|   |           |       Search.svg
+|   |           |       Sending.svg
+|   |           |       Shadow.svg
+|   |           |       Show.svg
+|   |           |       ShowConsoleDrawer.svg
+|   |           |       SkipNetwork.svg
+|   |           |       SliderThumb.png
+|   |           |       SliderThumb@2x.png
+|   |           |       SliderThumbPressed.png
+|   |           |       SliderThumbPressed@2x.png
+|   |           |       SortIndicatorArrows.svg
+|   |           |       Sources.svg
+|   |           |       SourcesPaused.svg
+|   |           |       SplitToggleUp.svg
+|   |           |       Start.svg
+|   |           |       StepInto.svg
+|   |           |       StepNext.svg
+|   |           |       StepOut.svg
+|   |           |       StepOver.svg
+|   |           |       Stop.svg
+|   |           |       Stopwatch.svg
+|   |           |       Storage.svg
+|   |           |       Stroke.svg
+|   |           |       StyleRule.svg
+|   |           |       StyleRulePseudo.svg
+|   |           |       TableIcons.svg
+|   |           |       Text.svg
+|   |           |       Time.svg
+|   |           |       Timeline.svg
+|   |           |       ToggleBottomSidebar.svg
+|   |           |       ToggleLeftSidebar.svg
+|   |           |       ToggleRightSidebar.svg
+|   |           |       Transform.svg
+|   |           |       TypeIcons.svg
+|   |           |       Undock.svg
+|   |           |       UpDownArrows.svg
+|   |           |       UserInputPrompt.svg
+|   |           |       UserInputPromptPrevious.svg
+|   |           |       UserInputResult.svg
+|   |           |       Warning.svg
+|   |           |       Weight.svg
+|   |           |       ZoomIn.svg
+|   |           |       ZoomOut.svg
+|   |           |       
+|   |           +---Protocol
+|   |           |   |   InspectorBackendCommands.js
+|   |           |   |   
+|   |           |   \---Legacy
+|   |           |       +---iOS
+|   |           |       |   +---13.0
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---13.4
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---14.0
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---14.5
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---15.0
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---15.4
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---16.0
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---16.4
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---17.0
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---17.2
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---17.4
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---18.0
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---18.2
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---18.4
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---26.0
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   +---26.2
+|   |           |       |   |       InspectorBackendCommands.js
+|   |           |       |   |       
+|   |           |       |   \---26.4
+|   |           |       |           InspectorBackendCommands.js
+|   |           |       |           
+|   |           |       \---macOS
+|   |           |           +---13.0
+|   |           |           |       InspectorBackendCommands.js
+|   |           |           |       
+|   |           |           +---13.3
+|   |           |           |       InspectorBackendCommands.js
+|   |           |           |       
+|   |           |           +---14.0
+|   |           |           |       InspectorBackendCommands.js
+|   |           |           |       
+|   |           |           +---14.2
+|   |           |           |       InspectorBackendCommands.js
+|   |           |           |       
+|   |           |           +---14.4
+|   |           |           |       InspectorBackendCommands.js
+|   |           |           |       
+|   |           |           +---15.0
+|   |           |           |       InspectorBackendCommands.js
+|   |           |           |       
+|   |           |           +---15.2
+|   |           |           |       InspectorBackendCommands.js
+|   |           |           |       
+|   |           |           +---15.4
+|   |           |           |       InspectorBackendCommands.js
+|   |           |           |       
+|   |           |           +---26.0
+|   |           |           |       InspectorBackendCommands.js
+|   |           |           |       
+|   |           |           +---26.2
+|   |           |           |       InspectorBackendCommands.js
+|   |           |           |       
+|   |           |           \---26.4
+|   |           |                   InspectorBackendCommands.js
+|   |           |                   
+|   |           \---Workers
+|   |               +---Formatter
+|   |               |       CSSFormatter.js
+|   |               |       ESTreeWalker.js
+|   |               |       FormatterContentBuilder.js
+|   |               |       FormatterUtilities.js
+|   |               |       FormatterWorker.js
+|   |               |       HTMLFormatter.js
+|   |               |       HTMLParser.js
+|   |               |       HTMLTreeBuilderFormatter.js
+|   |               |       JSFormatter.js
+|   |               |       
+|   |               \---HeapSnapshot
+|   |                       HeapSnapshot.js
+|   |                       HeapSnapshotWorker.js
+|   |                       
+|   \---winldd-1007
+|           DEPENDENCIES_VALIDATED
+|           INSTALLATION_COMPLETE
+|           PrintDeps.exe
+|           
++---passports
+|       I_D_Clinic_passport.json
+|       └тЄю-╠юЄюЁё_passport.json
+|       ├юёЄхт√х_фюьр_Friends_&_Family_passport.json
+|       ╠хфшЎшэёъшщ_ЎхэЄЁ_╨рфєур_чфюЁют№ _passport.json
+|       
++---plugins
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           __init__.cpython-314.pyc
+|           
++---stories_test
+|       story_001.jpg
+|       story_002.jpg
+|       story_003.jpg
+|       story_004.jpg
+|       story_005.jpg
+|       story_006.jpg
+|       story_007.jpg
+|       story_008.jpg
+|       story_009.jpg
+|       story_010.jpg
+|       story_011.jpg
+|       story_012.jpg
+|       story_013.jpg
+|       story_014.jpg
+|       story_015.jpg
+|       story_016.jpg
+|       story_017.jpg
+|       story_018.jpg
+|       story_019.jpg
+|       story_020.jpg
+|       story_021.jpg
+|       story_022.jpg
+|       story_023.jpg
+|       story_024.jpg
+|       story_025.jpg
+|       story_026.jpg
+|       story_027.jpg
+|       story_028.jpg
+|       story_029.jpg
+|       story_030.jpg
+|       story_031.jpg
+|       story_032.jpg
+|       story_033.jpg
+|       story_034.jpg
+|       story_035.jpg
+|       story_036.jpg
+|       story_037.jpg
+|       story_038.jpg
+|       story_039.jpg
+|       story_040.jpg
+|       story_041.jpg
+|       story_042.jpg
+|       story_043.jpg
+|       story_044.jpg
+|       story_045.jpg
+|       story_046.jpg
+|       story_047.jpg
+|       story_048.jpg
+|       story_049.jpg
+|       story_050.jpg
+|       story_051.jpg
+|       story_052.jpg
+|       story_053.jpg
+|       story_054.jpg
+|       story_055.jpg
+|       story_056.jpg
+|       story_057.jpg
+|       story_058.jpg
+|       story_059.jpg
+|       story_060.jpg
+|       story_061.jpg
+|       story_062.jpg
+|       story_063.jpg
+|       story_064.jpg
+|       story_065.jpg
+|       story_066.jpg
+|       story_067.jpg
+|       story_068.jpg
+|       story_069.jpg
+|       story_070.jpg
+|       story_071.jpg
+|       story_072.jpg
+|       story_073.jpg
+|       story_074.jpg
+|       story_075.jpg
+|       story_076.jpg
+|       story_077.jpg
+|       story_078.jpg
+|       story_079.jpg
+|       story_080.jpg
+|       story_081.jpg
+|       story_082.jpg
+|       story_083.jpg
+|       
++---templates
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           __init__.cpython-314.pyc
+|           
++---tests
+|   |   conftest.py
+|   |   test_metadata_service.py
+|   |   test_settings.py
+|   |   test_smoke.py
+|   |   test_tag_generator.py
+|   |   test_update_checker.py
+|   |   test_version.py
+|   |   test_worker.py
+|   |   test_worker_thread.py
+|   |   test_yandex_maps_page.py
+|   |   test_yandex_router.py
+|   |   test_yandex_service.py
+|   |   test_yandex_worker.py
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           conftest.cpython-314-pytest-9.1.1.pyc
+|           test_metadata_service.cpython-314-pytest-9.1.1.pyc
+|           test_settings.cpython-314-pytest-9.1.1.pyc
+|           test_smoke.cpython-314-pytest-9.1.1.pyc
+|           test_tag_generator.cpython-314-pytest-9.1.1.pyc
+|           test_update_checker.cpython-314-pytest-9.1.1.pyc
+|           test_version.cpython-314-pytest-9.1.1.pyc
+|           test_worker.cpython-314-pytest-9.1.1.pyc
+|           test_worker_thread.cpython-314-pytest-9.1.1.pyc
+|           test_yandex_maps_page.cpython-314-pytest-9.1.1.pyc
+|           test_yandex_router.cpython-314-pytest-9.1.1.pyc
+|           test_yandex_service.cpython-314-pytest-9.1.1.pyc
+|           test_yandex_worker.cpython-314-pytest-9.1.1.pyc
+|           __init__.cpython-314.pyc
+|           
++---themes
+|   |   default.json
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           __init__.cpython-314.pyc
+|           
++---utils
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           __init__.cpython-314.pyc
+|           
++---__pycache__
+|       check_metadata.cpython-314.pyc
+|       check_null_bytes.cpython-314.pyc
+|       main.cpython-314.pyc
+|       run_smoke_tests.cpython-314.pyc
+|       run_stories_only.cpython-314.pyc
+|       test_downloader.cpython-314-pytest-9.1.1.pyc
+|       test_downloader.cpython-314.pyc
+|       test_parser.cpython-314-pytest-9.1.1.pyc
+|       test_parser.cpython-314.pyc
+|       test_stories.cpython-314-pytest-9.1.1.pyc
+|       test_stories.cpython-314.pyc
+|       
+\---╥┼╤╥█
+    |   XXXL - 2026-06-08T151104.374.jpg
+    |   XXXL - 2026-06-08T151106.982.jpg
+    |   XXXL - 2026-06-08T151109.472.jpg
+    |   XXXL - 2026-06-08T151112.056.jpg
+    |   
+    +---Teggy
+    |       XXXL - 2026-06-08T151104.374.jpg
+    |       XXXL - 2026-06-08T151106.982.jpg
+    |       XXXL - 2026-06-08T151109.472.jpg
+    |       XXXL - 2026-06-08T151112.056.jpg
+    |       
+    +---└Ёшъюь ЄхёЄ
+    |   +---╤ЄюЁшё
+    |   |       story_001.jpg
+    |   |       story_002.jpg
+    |   |       story_003.jpg
+    |   |       story_004.jpg
+    |   |       story_005.jpg
+    |   |       story_006.jpg
+    |   |       story_007.jpg
+    |   |       story_008.jpg
+    |   |       story_009.jpg
+    |   |       story_010.jpg
+    |   |       story_011.jpg
+    |   |       story_012.jpg
+    |   |       story_013.jpg
+    |   |       story_014.jpg
+    |   |       story_015.jpg
+    |   |       story_016.jpg
+    |   |       story_017.jpg
+    |   |       story_018.jpg
+    |   |       story_019.jpg
+    |   |       story_020.jpg
+    |   |       story_021.jpg
+    |   |       story_022.jpg
+    |   |       story_023.jpg
+    |   |       story_024.jpg
+    |   |       story_025.jpg
+    |   |       story_026.jpg
+    |   |       story_027.jpg
+    |   |       story_028.jpg
+    |   |       story_029.jpg
+    |   |       story_030.jpg
+    |   |       
+    |   +---╘юЄю юЁурэшчрЎшш
+    |   |       001.jpg
+    |   |       002.jpg
+    |   |       003.jpg
+    |   |       004.jpg
+    |   |       005.jpg
+    |   |       006.jpg
+    |   |       007.jpg
+    |   |       008.jpg
+    |   |       009.jpg
+    |   |       010.jpg
+    |   |       011.jpg
+    |   |       012.jpg
+    |   |       013.jpg
+    |   |       014.jpg
+    |   |       015.jpg
+    |   |       016.jpg
+    |   |       017.jpg
+    |   |       018.jpg
+    |   |       019.jpg
+    |   |       020.jpg
+    |   |       021.jpg
+    |   |       022.jpg
+    |   |       023.jpg
+    |   |       024.jpg
+    |   |       025.jpg
+    |   |       026.jpg
+    |   |       027.jpg
+    |   |       028.jpg
+    |   |       029.jpg
+    |   |       030.jpg
+    |   |       031.jpg
+    |   |       032.jpg
+    |   |       033.jpg
+    |   |       034.jpg
+    |   |       035.jpg
+    |   |       036.jpg
+    |   |       037.jpg
+    |   |       038.jpg
+    |   |       039.jpg
+    |   |       040.jpg
+    |   |       041.jpg
+    |   |       042.jpg
+    |   |       043.jpg
+    |   |       044.jpg
+    |   |       045.jpg
+    |   |       046.jpg
+    |   |       047.jpg
+    |   |       048.jpg
+    |   |       049.jpg
+    |   |       050.jpg
+    |   |       051.jpg
+    |   |       052.jpg
+    |   |       053.jpg
+    |   |       054.jpg
+    |   |       055.jpg
+    |   |       056.jpg
+    |   |       057.jpg
+    |   |       058.jpg
+    |   |       059.jpg
+    |   |       060.jpg
+    |   |       061.jpg
+    |   |       062.jpg
+    |   |       063.jpg
+    |   |       064.jpg
+    |   |       065.jpg
+    |   |       066.jpg
+    |   |       067.jpg
+    |   |       068.jpg
+    |   |       069.jpg
+    |   |       070.jpg
+    |   |       071.jpg
+    |   |       
+    |   \---╘юЄю юЄч√т√
+    +---╤ЄюЁшё
+    |   |   story_001.jpg
+    |   |   story_002.jpg
+    |   |   story_003.jpg
+    |   |   story_004.jpg
+    |   |   story_005.jpg
+    |   |   story_006.jpg
+    |   |   story_007.jpg
+    |   |   story_008.jpg
+    |   |   story_009.jpg
+    |   |   story_010.jpg
+    |   |   story_011.jpg
+    |   |   story_012.jpg
+    |   |   story_013.jpg
+    |   |   story_014.jpg
+    |   |   story_015.jpg
+    |   |   story_016.jpg
+    |   |   story_017.jpg
+    |   |   story_018.jpg
+    |   |   story_019.jpg
+    |   |   story_020.jpg
+    |   |   story_021.jpg
+    |   |   story_022.jpg
+    |   |   story_023.jpg
+    |   |   story_024.jpg
+    |   |   story_025.jpg
+    |   |   story_026.jpg
+    |   |   story_027.jpg
+    |   |   story_028.jpg
+    |   |   
+    |   \---Teggy
+    +---╘юЄю юЁурэшчрЎшш
+    |   |   001.jpg
+    |   |   002.jpg
+    |   |   003.jpg
+    |   |   004.jpg
+    |   |   005.jpg
+    |   |   006.jpg
+    |   |   007.jpg
+    |   |   008.jpg
+    |   |   009.jpg
+    |   |   010.jpg
+    |   |   011.jpg
+    |   |   012.jpg
+    |   |   013.jpg
+    |   |   014.jpg
+    |   |   015.jpg
+    |   |   016.jpg
+    |   |   017.jpg
+    |   |   018.jpg
+    |   |   019.jpg
+    |   |   020.jpg
+    |   |   021.jpg
+    |   |   022.jpg
+    |   |   023.jpg
+    |   |   024.jpg
+    |   |   025.jpg
+    |   |   026.jpg
+    |   |   027.jpg
+    |   |   028.jpg
+    |   |   029.jpg
+    |   |   030.jpg
+    |   |   031.jpg
+    |   |   032.jpg
+    |   |   033.jpg
+    |   |   034.jpg
+    |   |   035.jpg
+    |   |   036.jpg
+    |   |   037.jpg
+    |   |   038.jpg
+    |   |   039.jpg
+    |   |   040.jpg
+    |   |   041.jpg
+    |   |   042.jpg
+    |   |   043.jpg
+    |   |   044.jpg
+    |   |   045.jpg
+    |   |   046.jpg
+    |   |   047.jpg
+    |   |   048.jpg
+    |   |   049.jpg
+    |   |   050.jpg
+    |   |   051.jpg
+    |   |   052.jpg
+    |   |   053.jpg
+    |   |   054.jpg
+    |   |   055.jpg
+    |   |   056.jpg
+    |   |   057.jpg
+    |   |   058.jpg
+    |   |   059.jpg
+    |   |   060.jpg
+    |   |   061.jpg
+    |   |   062.jpg
+    |   |   063.jpg
+    |   |   064.jpg
+    |   |   065.jpg
+    |   |   066.jpg
+    |   |   067.jpg
+    |   |   068.jpg
+    |   |   069.jpg
+    |   |   070.jpg
+    |   |   071.jpg
+    |   |   072.jpg
+    |   |   073.jpg
+    |   |   074.jpg
+    |   |   075.jpg
+    |   |   076.jpg
+    |   |   077.jpg
+    |   |   078.jpg
+    |   |   079.jpg
+    |   |   080.jpg
+    |   |   082.jpg
+    |   |   083.jpg
+    |   |   084.jpg
+    |   |   088.jpg
+    |   |   089.jpg
+    |   |   091.jpg
+    |   |   092.jpg
+    |   |   093.jpg
+    |   |   094.jpg
+    |   |   095.jpg
+    |   |   096.jpg
+    |   |   097.jpg
+    |   |   098.jpg
+    |   |   099.jpg
+    |   |   100.jpg
+    |   |   101.jpg
+    |   |   102.jpg
+    |   |   103.jpg
+    |   |   ╥┼╤╥█.lnk
+    |   |   
+    |   \---Teggy
+    \---╘юЄю юЄч√т√
+            001.jpg
+            002.jpg
+            003.jpg
+            004.jpg
+            005.jpg
+            006.jpg
+            007.jpg
+            008.jpg
+            009.jpg
+            010.jpg
+            011.jpg
+            012.jpg
+            013.jpg
+            014.jpg
+            015.jpg
+            016.jpg
+            017.jpg
+            018.jpg
+            019.jpg
+            020.jpg
+            021.jpg
+            022.jpg
+            023.jpg
+            024.jpg
+            025.jpg
+            026.jpg
+            027.jpg
+            028.jpg
+            029.jpg
+            030.jpg
+            031.jpg
+            032.jpg
+            033.jpg
+            034.jpg
+            035.jpg
+            036.jpg
+            037.jpg
+            038.jpg
+            039.jpg
+            040.jpg
+            041.jpg
+            042.jpg
+            043.jpg
+            044.jpg
+            045.jpg
+            046.jpg
+            047.jpg
+            048.jpg
+            049.jpg
+            050.jpg
+            051.jpg
+            052.jpg
+            053.jpg
+            054.jpg
+            055.jpg
+            056.jpg
+            057.jpg
+            058.jpg
+            059.jpg
+            060.jpg
+            061.jpg
+            062.jpg
+            063.jpg
+            064.jpg
+            065.jpg
+            066.jpg
+            067.jpg
+            068.jpg
+            069.jpg
+            070.jpg
+            071.jpg
+            072.jpg
+            073.jpg
+            074.jpg
+            075.jpg
+            076.jpg
+            077.jpg
+            078.jpg
+            079.jpg
+            080.jpg
+            081.jpg
+            082.jpg
+            083.jpg
+            084.jpg
+            085.jpg
+            086.jpg
+            087.jpg
+            088.jpg
+            089.jpg
+            090.jpg
+            091.jpg
+            092.jpg
+            093.jpg
+            094.jpg
+            095.jpg
+            096.jpg
+            097.jpg
+            098.jpg
+            099.jpg
+            100.jpg
+            101.jpg
+            102.jpg
+            103.jpg
+            104.jpg
+            105.jpg
+            106.jpg
+            107.jpg
+            108.jpg
+            109.jpg
+            110.jpg
+            111.jpg
+            112.jpg
+            113.jpg
+            114.jpg
+            115.jpg
+            116.jpg
+            117.jpg
+            118.jpg
+            119.jpg
+            120.jpg
+            121.jpg
+            122.jpg
+            123.jpg
+            124.jpg
+            125.jpg
+            126.jpg
+            127.jpg
+            128.jpg
+            129.jpg
+            130.jpg
+            131.jpg
+            132.jpg
+            133.jpg
+            134.jpg
+            135.jpg
+            136.jpg
+            137.jpg
+            138.jpg
+            139.jpg
+            140.jpg
+            141.jpg
+            142.jpg
+            143.jpg
+            144.jpg
+            145.jpg
+            146.jpg
+            147.jpg
+            148.jpg
+            149.jpg
+            150.jpg
+            151.jpg
+            152.jpg
+            153.jpg
+            154.jpg
+            155.jpg
+            156.jpg
+            157.jpg
+            158.jpg
+            159.jpg
+            160.jpg
+            161.jpg
+            162.jpg
+            163.jpg
+            164.jpg
+            165.jpg
+            166.jpg
+            167.jpg
+            168.jpg
+            169.jpg
+            170.jpg
+            171.jpg
+            172.jpg
+            173.jpg
+            174.jpg
+            175.jpg
+            176.jpg
+            177.jpg
+            178.jpg
+            179.jpg
+            180.jpg
+            181.jpg
+            182.jpg
+            183.jpg
+            184.jpg
+            185.jpg
+            186.jpg
+            187.jpg
+            188.jpg
+            189.jpg
+            190.jpg
+            191.jpg
+            192.jpg
+            193.jpg
+            194.jpg
+            195.jpg
+            196.jpg
+            197.jpg
+            198.jpg
+            199.jpg
+            200.jpg
+            201.jpg
+            202.jpg
+            203.jpg
+            204.jpg
+            205.jpg
+            206.jpg
+            207.jpg
+            208.jpg
+            209.jpg
+            210.jpg
+            211.jpg
+            212.jpg
+            213.jpg
+            214.jpg
+            215.jpg
+            216.jpg
+            217.jpg
+            218.jpg
+            219.jpg
+            220.jpg
+            221.jpg
+            222.jpg
+            223.jpg
+            224.jpg
+            225.jpg
+            226.jpg
+            227.jpg
+            228.jpg
+            229.jpg
+            230.jpg
+            231.jpg
+            232.jpg
+            233.jpg
+            234.jpg
+            235.jpg
+            236.jpg
+            237.jpg
+            238.jpg
+            239.jpg
+            240.jpg
+            241.jpg
+            242.jpg
+            243.jpg
+            244.jpg
+            245.jpg
+            246.jpg
+            247.jpg
+            248.jpg
+            249.jpg
+            250.jpg
+            251.jpg
+            252.jpg
+            253.jpg
+            254.jpg
+            255.jpg
+            256.jpg
+            257.jpg
+            258.jpg
+            259.jpg
+            260.jpg
+            261.jpg
+            262.jpg
+            263.jpg
+            264.jpg
+            265.jpg
+            266.jpg
+            267.jpg
+            268.jpg
+            269.jpg
+            270.jpg
+            271.jpg
+            272.jpg
+            273.jpg
+            274.jpg
+            275.jpg
+            276.jpg
+            277.jpg
+            278.jpg
+            279.jpg
+            280.jpg
+            281.jpg
+            282.jpg
+            283.jpg
+            284.jpg
+            
