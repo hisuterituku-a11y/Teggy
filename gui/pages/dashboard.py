@@ -14,7 +14,7 @@ from core.version import display_version
 
 
 class Dashboard(QWidget):
-    """Функциональная главная без выдуманной статистики и демо-задач."""
+    """Главная страница с реальными быстрыми действиями Teggy."""
 
     navigate_requested = Signal(str)
     check_updates_requested = Signal()
@@ -23,163 +23,207 @@ class Dashboard(QWidget):
         super().__init__(parent)
         self.setObjectName("DashboardPage")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setStyleSheet("#DashboardPage { background: #070B18; }")
         self.setMinimumWidth(900)
 
         root = QVBoxLayout(self)
         root.setContentsMargins(32, 28, 32, 28)
         root.setSpacing(20)
 
-        title = QLabel("Рабочий стол")
-        title.setObjectName("SectionTitle")
-        root.addWidget(title)
+        welcome = QLabel("Добро пожаловать в Teggy")
+        welcome.setObjectName("DashboardWelcome")
+        root.addWidget(welcome)
 
         subtitle = QLabel(
-            "Основные действия Teggy без декоративной статистики и прочих уверенных выдумок."
+            "Подготовьте фотографии, добавьте метаданные и загрузите материалы из Яндекс Карт."
         )
-        subtitle.setObjectName("CardSubtitle")
-        subtitle.setWordWrap(True)
+        subtitle.setObjectName("DashboardSubtitle")
         root.addWidget(subtitle)
 
-        actions = QGridLayout()
-        actions.setHorizontalSpacing(18)
-        actions.setVerticalSpacing(18)
+        content = QGridLayout()
+        content.setHorizontalSpacing(18)
+        content.setVerticalSpacing(18)
+        content.setColumnStretch(0, 3)
+        content.setColumnStretch(1, 2)
 
-        actions.addWidget(
-            self._action_card(
-                title="Тегирование фотографий",
-                description="Выберите папки, заполните метаданные и запустите обработку изображений.",
-                button_text="Открыть тегирование",
-                page_name="Тегирование",
-            ),
-            0,
-            0,
-        )
-        actions.addWidget(
-            self._action_card(
-                title="Яндекс Карты",
-                description="Загрузите фотографии, отзывы и данные карточки организации в папку проекта.",
-                button_text="Открыть Яндекс Карты",
-                page_name="Яндекс Карты",
-            ),
-            0,
-            1,
-        )
-        actions.addWidget(
-            self._action_card(
-                title="Настройки интерфейса",
-                description="Верните безопасный размер окна и управляйте параметрами приложения.",
-                button_text="Открыть настройки",
-                page_name="Настройки",
-            ),
-            1,
-            0,
-        )
-        actions.addWidget(self._status_card(), 1, 1)
-
-        actions.setColumnStretch(0, 1)
-        actions.setColumnStretch(1, 1)
-        root.addLayout(actions)
-
-        scope_card = QFrame()
-        scope_card.setObjectName("PhotoPanel")
-        scope_layout = QVBoxLayout(scope_card)
-        scope_layout.setContentsMargins(24, 22, 24, 22)
-        scope_layout.setSpacing(10)
-
-        scope_title = QLabel("Что уже работает")
-        scope_title.setObjectName("CardTitle")
-        scope_layout.addWidget(scope_title)
-
-        scope_text = QLabel(
-            "• тегирование и запись метаданных\n"
-            "• загрузка данных из Яндекс Карт\n"
-            "• шаблоны и теги в боковой навигации\n"
-            "• проверка обновлений и система версий"
-        )
-        scope_text.setObjectName("CardSubtitle")
-        scope_text.setWordWrap(True)
-        scope_layout.addWidget(scope_text)
-
-        root.addWidget(scope_card)
+        content.addWidget(self._quick_start_panel(), 0, 0)
+        content.addWidget(self._status_panel(), 0, 1)
+        content.addWidget(self._workflow_panel(), 1, 0)
+        content.addWidget(self._tips_panel(), 1, 1)
+        root.addLayout(content)
         root.addStretch(1)
 
-    def _action_card(
-        self,
-        *,
-        title: str,
-        description: str,
-        button_text: str,
-        page_name: str,
-    ) -> QFrame:
-        card = QFrame()
-        card.setObjectName("PhotoPanel")
-        card.setMinimumHeight(190)
-        card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-
-        layout = QVBoxLayout(card)
+    def _quick_start_panel(self) -> QFrame:
+        panel = QFrame()
+        panel.setObjectName("DashboardHero")
+        layout = QVBoxLayout(panel)
         layout.setContentsMargins(24, 22, 24, 22)
-        layout.setSpacing(12)
+        layout.setSpacing(14)
+
+        title = QLabel("Быстрый старт")
+        title.setObjectName("DashboardPanelTitle")
+        layout.addWidget(title)
+
+        hint = QLabel("Выберите действие для начала работы")
+        hint.setObjectName("DashboardPanelText")
+        layout.addWidget(hint)
+
+        cards = QHBoxLayout()
+        cards.setSpacing(12)
+        cards.addWidget(
+            self._quick_action(
+                "Тегирование",
+                "Фото, теги и метаданные",
+                "Тегирование",
+                "🏷",
+            )
+        )
+        cards.addWidget(
+            self._quick_action(
+                "Яндекс Карты",
+                "Фото, сторис и отзывы",
+                "Яндекс Карты",
+                "☁",
+            )
+        )
+        cards.addWidget(
+            self._quick_action(
+                "Шаблоны",
+                "Повторное использование полей",
+                "Тегирование",
+                "✦",
+            )
+        )
+        layout.addLayout(cards)
+        return panel
+
+    def _quick_action(self, title: str, text: str, page: str, icon: str) -> QFrame:
+        card = QFrame()
+        card.setObjectName("DashboardActionCard")
+        card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        box = QVBoxLayout(card)
+        box.setContentsMargins(16, 16, 16, 16)
+        box.setSpacing(7)
+
+        icon_label = QLabel(icon)
+        icon_label.setObjectName("DashboardActionIcon")
+        box.addWidget(icon_label)
 
         heading = QLabel(title)
-        heading.setObjectName("CardTitle")
-        heading.setWordWrap(True)
-        layout.addWidget(heading)
+        heading.setObjectName("DashboardActionTitle")
+        box.addWidget(heading)
 
-        body = QLabel(description)
-        body.setObjectName("CardSubtitle")
-        body.setWordWrap(True)
-        layout.addWidget(body)
-        layout.addStretch(1)
+        description = QLabel(text)
+        description.setObjectName("DashboardPanelText")
+        description.setWordWrap(True)
+        box.addWidget(description)
+        box.addStretch(1)
 
-        button = QPushButton(button_text)
-        button.setObjectName("PrimaryButton")
+        button = QPushButton("Открыть")
+        button.setObjectName("DashboardActionButton")
         button.clicked.connect(
-            lambda checked=False, name=page_name: self.navigate_requested.emit(name)
+            lambda checked=False, name=page: self.navigate_requested.emit(name)
         )
-        layout.addWidget(button)
-
+        box.addWidget(button)
         return card
 
-    def _status_card(self) -> QFrame:
-        card = QFrame()
-        card.setObjectName("PhotoPanel")
-        card.setMinimumHeight(190)
-        card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(24, 22, 24, 22)
+    def _status_panel(self) -> QFrame:
+        panel = QFrame()
+        panel.setObjectName("DashboardPanel")
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(22, 20, 22, 20)
         layout.setSpacing(12)
 
-        heading = QLabel("Состояние приложения")
-        heading.setObjectName("CardTitle")
-        layout.addWidget(heading)
+        title = QLabel("Состояние приложения")
+        title.setObjectName("DashboardPanelTitle")
+        layout.addWidget(title)
 
-        version_row = QHBoxLayout()
-        version_label = QLabel("Текущая версия")
-        version_label.setObjectName("CardSubtitle")
-        version_value = QLabel(display_version())
-        version_value.setObjectName("CardTitle")
-        version_row.addWidget(version_label)
-        version_row.addStretch(1)
-        version_row.addWidget(version_value)
-        layout.addLayout(version_row)
+        version_caption = QLabel("Установленная версия")
+        version_caption.setObjectName("DashboardPanelText")
+        layout.addWidget(version_caption)
 
-        self.update_status_label = QLabel("Готово к проверке")
-        self.update_status_label.setObjectName("CardSubtitle")
+        version = QLabel(display_version())
+        version.setObjectName("DashboardVersion")
+        layout.addWidget(version)
+
+        self.update_status_label = QLabel("Teggy готов к работе")
+        self.update_status_label.setObjectName("DashboardSuccessText")
         self.update_status_label.setWordWrap(True)
         layout.addWidget(self.update_status_label)
         layout.addStretch(1)
 
         self.check_updates_button = QPushButton("Проверить обновления")
-        self.check_updates_button.setObjectName("PrimaryButton")
+        self.check_updates_button.setObjectName("DashboardSecondaryButton")
         self.check_updates_button.clicked.connect(self.check_updates_requested)
         layout.addWidget(self.check_updates_button)
+        return panel
 
-        return card
+    def _workflow_panel(self) -> QFrame:
+        panel = QFrame()
+        panel.setObjectName("DashboardPanel")
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(22, 20, 22, 20)
+        layout.setSpacing(12)
+
+        title = QLabel("Рабочий процесс")
+        title.setObjectName("DashboardPanelTitle")
+        layout.addWidget(title)
+
+        for number, heading, text in (
+            ("1", "Загрузите фотографии", "Выберите папку или отдельные изображения."),
+            ("2", "Примените шаблон", "Заполните метаданные один раз и используйте повторно."),
+            ("3", "Запустите обработку", "Teggy подготовит итоговые файлы в отдельной папке."),
+        ):
+            row = QFrame()
+            row.setObjectName("DashboardWorkflowRow")
+            row_layout = QHBoxLayout(row)
+            row_layout.setContentsMargins(14, 11, 14, 11)
+            badge = QLabel(number)
+            badge.setObjectName("DashboardStepBadge")
+            badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            badge.setFixedSize(30, 30)
+            row_layout.addWidget(badge)
+            text_box = QVBoxLayout()
+            head = QLabel(heading)
+            head.setObjectName("DashboardActionTitle")
+            desc = QLabel(text)
+            desc.setObjectName("DashboardPanelText")
+            desc.setWordWrap(True)
+            text_box.addWidget(head)
+            text_box.addWidget(desc)
+            row_layout.addLayout(text_box, 1)
+            layout.addWidget(row)
+        return panel
+
+    def _tips_panel(self) -> QFrame:
+        panel = QFrame()
+        panel.setObjectName("DashboardPanel")
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(22, 20, 22, 20)
+        layout.setSpacing(12)
+
+        title = QLabel("Полезно знать")
+        title.setObjectName("DashboardPanelTitle")
+        layout.addWidget(title)
+
+        tip = QLabel(
+            "Создайте шаблоны для разных типов бизнеса. После загрузки из Яндекс Карт "
+            "их можно применять автоматически ко всем новым фотографиям."
+        )
+        tip.setObjectName("DashboardTip")
+        tip.setWordWrap(True)
+        layout.addWidget(tip)
+        layout.addStretch(1)
+
+        button = QPushButton("Перейти к тегированию")
+        button.setObjectName("DashboardActionButton")
+        button.clicked.connect(
+            lambda checked=False: self.navigate_requested.emit("Тегирование")
+        )
+        layout.addWidget(button)
+        return panel
 
     def set_update_checking(self) -> None:
-        self.update_status_label.setText("Проверяем GitHub Releases…")
+        self.update_status_label.setText("Проверяем обновления…")
         self.check_updates_button.setEnabled(False)
         self.check_updates_button.setText("Проверка…")
 
