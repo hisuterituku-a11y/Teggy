@@ -21,10 +21,11 @@ class SettingsPage(QWidget):
     check_updates_requested = Signal()
 
     THEME_LABELS = {
-        "default": ("Тёмная", "Основная тёмная тема Teggy с фиолетовым акцентом"),
-        "blue": ("Синяя", "Тёмная синяя тема с голубыми акцентами"),
-        "purple": ("Фиолетовая", "Насыщенная сливово-фиолетовая тема"),
-        "light": ("Светлая", "Светлый интерфейс с фирменным фиолетовым акцентом"),
+        "default": ("🌙 Тёмная", "Фирменная тёмная тема Teggy с фиолетовым акцентом"),
+        "light": ("☀️ Светлая", "Чистый светлый интерфейс с мягкими тенями"),
+        "corporate": ("💼 Корпоративная", "Графит, строгая геометрия и оранжевый акцент"),
+        "frogs": ("🐸 Лягушки", "Глубокий зелёный, мята и уютная болотная палитра"),
+        "sakura": ("🌸 Сакура", "Тёплая светлая тема с пудрово-розовыми акцентами"),
     }
 
     def __init__(self, available_themes: list[str] | None = None, parent=None):
@@ -68,7 +69,7 @@ class SettingsPage(QWidget):
         layout.addWidget(title)
 
         description = QLabel(
-            "Тема меняет весь интерфейс, включая фон, боковую панель, верхнюю панель, карточки и поля."
+            "Тема меняет весь интерфейс: окно, шапку, боковую панель, карточки, поля, меню и диалоги."
         )
         description.setObjectName("CardSubtitle")
         description.setWordWrap(True)
@@ -176,9 +177,7 @@ class SettingsPage(QWidget):
         title.setObjectName("CardTitle")
         layout.addWidget(title)
 
-        description = QLabel(
-            "Вернуть окно к безопасному размеру и расположить его по центру экрана."
-        )
+        description = QLabel("Вернуть окно к безопасному размеру и расположить его по центру экрана.")
         description.setObjectName("CardSubtitle")
         layout.addWidget(description)
 
