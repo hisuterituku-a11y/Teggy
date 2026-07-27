@@ -1,23 +1,28 @@
 /* Light: complete application-wide light palette */
 QWidget { color: #172033; selection-background-color: #8B5CF6; selection-color: #FFFFFF; }
-QMainWindow, QDialog, QStackedWidget, QScrollArea, QScrollArea > QWidget > QWidget,
-#WindowShell, #WindowBody, #ContentShell, #PageStack, #DashboardPage, #SettingsPage { background: #F4F6FB; }
+QMainWindow, QDialog, QStackedWidget, QAbstractScrollArea, QAbstractScrollArea QWidget,
+#WindowShell, #WindowBody, #ContentShell, #PageStack, #DashboardPage, #SettingsPage,
+#GalleryContent, #PageScroll, #PageScroll > QWidget > QWidget { background: #F4F6FB; }
 #Sidebar, #TopBar, #WindowTitleBar { background: #FFFFFF; border-color: #D8DEEA; }
 #PhotoPanel, #DashboardPanel, #TemplateDialog, #TemplateSidebar, #TemplateEditor,
-#DownloadOptionCard, #FolderItem, #ThumbnailCard, #PremiumCard { background: #FFFFFF; border-color: #D9DFEA; }
+#DownloadOptionCard, #ThemeOptionCard, #FolderItem, #ThumbnailCard, #PremiumCard,
+#YandexDownloadLog { background: #FFFFFF; border-color: #D9DFEA; }
 #DashboardHero { background: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #ECE7FF,stop:0.55 #DDD3FF,stop:1 #F3D9EE); border: 1px solid #B49AF4; }
-#DashboardActionCard, #DashboardWorkflowRow { background: rgba(255,255,255,0.82); border-color: #CFC6EA; }
+#DashboardActionCard, #DashboardWorkflowRow { background: rgba(255,255,255,0.92); border-color: #CFC6EA; }
 #DashboardActionCard:hover, #DashboardWorkflowRow:hover { background: #FFFFFF; border-color: #8B5CF6; }
 #SideButton { color: #3B465B; }
 #SideButton:hover { background: #EEF1F8; }
 #SideButton:checked { background: #E9E1FF; border-color: #8B5CF6; color: #39206B; }
-#Logo, #PageTitle, #SectionTitle, #CardTitle, #DashboardWelcome, #DashboardPanelTitle,
-#DashboardActionTitle, #DownloadOptionTitle { color: #172033; }
+QLabel, #Logo, #PageTitle, #SectionTitle, #CardTitle, #DashboardWelcome, #DashboardPanelTitle,
+#DashboardActionTitle, #DownloadOptionTitle, #FolderText { color: #172033; }
 #LogoSub, #CardSubtitle, #DashboardSubtitle, #DashboardPanelText, #DownloadOptionDescription { color: #687389; }
 QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QListWidget, QTreeWidget, QTableWidget {
     background: #F7F8FC; color: #172033; border: 1px solid #CCD4E2; border-radius: 10px;
 }
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QListWidget:focus { border-color: #8B5CF6; }
+QLineEdit:disabled, QTextEdit:disabled, QPlainTextEdit:disabled, QComboBox:disabled { background: #EEF1F6; color: #7B8495; }
+QPushButton { color: #263147; }
+QPushButton:disabled { background: #EEF1F6; color: #9AA3B2; border-color: #D5DBE6; }
 QPushButton#PrimaryButton, QPushButton#TemplateProminentButton, QPushButton#DashboardActionButton {
     background: #7C4DDE; color: #FFFFFF; border: 1px solid #8B5CF6; border-radius: 10px; font-weight: 700;
 }
@@ -28,12 +33,15 @@ QPushButton#PrimaryButton:hover, QPushButton#TemplateProminentButton:hover, QPus
 #YandexActionButton:hover, #AboutSecondaryButton:hover, #DashboardSecondaryButton:hover, #TemplateManagerButton:hover { border-color: #8B5CF6; background: #EEE9FF; }
 #ThemeButton, #NotifyButton, #SettingsButton { background: #F7F8FC; border-color: #CCD4E2; }
 #ThemeButton:hover, #NotifyButton:hover, #SettingsButton:hover { background: #EEE9FF; border-color: #8B5CF6; }
-#DownloadOptionCard[selected="true"] { background: #F0EAFF; border-color: #8B5CF6; }
+#DownloadOptionCard[selected="true"], #ThemeOptionCard[selected="true"] { background: #F0EAFF; border: 1px solid #8B5CF6; }
+#ThemeOptionCard { background: #FFFFFF; border: 1px solid #D9DFEA; border-radius: 10px; }
+#ThemeOptionCard:hover { background: #F4F0FF; border-color: #8B5CF6; }
+QCheckBox, QRadioButton { color: #263147; spacing: 9px; }
 QCheckBox#DownloadOptionCheck::indicator, QRadioButton#DownloadOptionCheck::indicator, QCheckBox#SettingsCheckBox::indicator {
-    background: #FFFFFF; border: 1px solid #AEB8CA; border-radius: 5px;
+    background: #FFFFFF; border: 1px solid #AEB8CA; border-radius: 5px; width: 18px; height: 18px;
 }
 QCheckBox#DownloadOptionCheck::indicator:checked, QRadioButton#DownloadOptionCheck::indicator:checked, QCheckBox#SettingsCheckBox::indicator:checked {
-    background: #7C4DDE; border-color: #8B5CF6;
+    background: #7C4DDE; border-color: #8B5CF6; image: url(assets/icons/teggy/check.svg);
 }
 #DashboardActionIcon, #DashboardVersion { color: #7C4DDE; }
 #DashboardStepBadge { background: #E9E1FF; color: #5B35B0; border-color: #8B5CF6; }
@@ -42,7 +50,7 @@ QMenu, #ThemeMenu { background: #FFFFFF; color: #172033; border: 1px solid #CCD4
 QMenu::item:selected { background: #E9E1FF; color: #39206B; }
 QScrollBar:vertical, QScrollBar:horizontal { background: #E9EDF5; }
 QScrollBar::handle:vertical, QScrollBar::handle:horizontal { background: #AEB8CA; border-radius: 6px; }
-QProgressBar { background: #EEF1F7; border-color: #CCD4E2; }
+QProgressBar { background: #EEF1F7; border-color: #CCD4E2; color: #172033; }
 QProgressBar::chunk { background: #7C4DDE; }
 QMessageBox { background: #FFFFFF; }
 QToolTip { background: #FFFFFF; color: #172033; border: 1px solid #8B5CF6; }
