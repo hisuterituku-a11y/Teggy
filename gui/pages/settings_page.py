@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -20,16 +21,17 @@ class SettingsPage(QWidget):
     check_updates_requested = Signal()
 
     THEME_LABELS = {
-        "default": ("🌙 Тёмная", "Фирменная тёмная тема Teggy с фиолетовым акцентом"),
-        "light": ("☀️ Светлая", "Чистый светлый интерфейс с мягкими тенями"),
-        "corporate": ("💼 Корпоративная", "Графит, строгая геометрия и оранжевый акцент"),
-        "frogs": ("🐸 Лягушки", "Глубокий зелёный, мята и уютная болотная палитра"),
-        "sakura": ("🌸 Сакура", "Тёплая тема с ветвями, веерами, цветами и облаками"),
+        "default": ("🌙  Тёмная", "Фирменная тёмная тема Teggy с фиолетовым акцентом"),
+        "light": ("☀️  Светлая", "Чистый светлый интерфейс с мягкими тенями"),
+        "corporate": ("💼  Корпоративная", "Графит, строгая геометрия и оранжевый акцент"),
+        "frogs": ("🐸  Лягушки", "Глубокий зелёный, мята и уютная болотная палитра"),
+        "sakura": ("🌸  Сакура", "Тёплая тема с ветвями, веерами, цветами и облаками"),
     }
 
     def __init__(self, available_themes: list[str] | None = None, parent=None):
         super().__init__(parent)
         self.setObjectName("SettingsPage")
+        self.setMinimumWidth(760)
         self._settings = QSettings("Teggy", "Teggy")
         self._available_themes = available_themes or ["default"]
         self._theme_buttons: dict[str, QPushButton] = {}
@@ -59,6 +61,8 @@ class SettingsPage(QWidget):
     def _build_theme_card(self) -> QFrame:
         card = QFrame()
         card.setObjectName("PhotoPanel")
+        card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         layout = QVBoxLayout(card)
         layout.setContentsMargins(24, 22, 24, 24)
         layout.setSpacing(14)
@@ -67,14 +71,18 @@ class SettingsPage(QWidget):
         title.setObjectName("CardTitle")
         layout.addWidget(title)
 
-        description = QLabel("Выберите тему. Карточки ниже являются обычными кнопками и нажимаются целиком.")
+        description = QLabel("Выберите тему. Карточка нажимается целиком, изменения применяются сразу.")
         description.setObjectName("CardSubtitle")
         description.setWordWrap(True)
         layout.addWidget(description)
 
         grid = QGridLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
         grid.setHorizontalSpacing(12)
         grid.setVerticalSpacing(12)
+        grid.setColumnStretch(0, 1)
+        grid.setColumnStretch(1, 1)
+
         group = QButtonGroup(self)
         group.setExclusive(True)
 
@@ -84,7 +92,9 @@ class SettingsPage(QWidget):
             button = QPushButton(f"{label}\n{details}")
             button.setObjectName("ThemeChoiceButton")
             button.setCheckable(True)
-            button.setMinimumHeight(72)
+            button.setAutoExclusive(True)
+            button.setFixedHeight(82)
+            button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             button.setProperty("themeName", theme_name)
             group.addButton(button)
             self._theme_buttons[theme_name] = button
@@ -96,7 +106,10 @@ class SettingsPage(QWidget):
 
             button.toggled.connect(choose_theme)
             button.setChecked(theme_name == current_theme)
-            grid.addWidget(button, index // 2, index % 2)
+            row = index // 2
+            column = index % 2
+            grid.setRowMinimumHeight(row, 82)
+            grid.addWidget(button, row, column)
 
         if current_theme not in self._theme_buttons and "default" in self._theme_buttons:
             self._theme_buttons["default"].setChecked(True)
@@ -117,14 +130,22 @@ class SettingsPage(QWidget):
 
         self.auto_updates_checkbox = QCheckBox("Проверять обновления при запуске")
         self.auto_updates_checkbox.setObjectName("SettingsCheckBox")
-        self.auto_updates_checkbox.setChecked(self._settings.value("updates/check_on_startup", True, type=bool))
-        self.auto_updates_checkbox.toggled.connect(lambda enabled: self._settings.setValue("updates/check_on_startup", enabled))
+        self.auto_updates_checkbox.setChecked(
+            self._settings.value("updates/check_on_startup", True, type=bool)
+        )
+        self.auto_updates_checkbox.toggled.connect(
+            lambda enabled: self._settings.setValue("updates/check_on_startup", enabled)
+        )
         layout.addWidget(self.auto_updates_checkbox)
 
         self.release_notifications_checkbox = QCheckBox("Показывать уведомления о новых версиях")
         self.release_notifications_checkbox.setObjectName("SettingsCheckBox")
-        self.release_notifications_checkbox.setChecked(self._settings.value("updates/show_notifications", True, type=bool))
-        self.release_notifications_checkbox.toggled.connect(lambda enabled: self._settings.setValue("updates/show_notifications", enabled))
+        self.release_notifications_checkbox.setChecked(
+            self._settings.value("updates/show_notifications", True, type=bool)
+        )
+        self.release_notifications_checkbox.toggled.connect(
+            lambda enabled: self._settings.setValue("updates/show_notifications", enabled)
+        )
         layout.addWidget(self.release_notifications_checkbox)
 
         row = QHBoxLayout()
@@ -149,6 +170,7 @@ class SettingsPage(QWidget):
 
         description = QLabel("Вернуть окно к безопасному размеру и расположить его по центру экрана.")
         description.setObjectName("CardSubtitle")
+        description.setWordWrap(True)
         layout.addWidget(description)
 
         row = QHBoxLayout()
