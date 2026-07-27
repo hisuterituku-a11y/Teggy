@@ -1,203 +1,262 @@
 from __future__ import annotations
 
-import json
-
-from PySide6.QtCore import QSettings, Qt, Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
-    QDialog,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QListWidget,
-    QMessageBox,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
+    QDialog, QFormLayout, QFrame, QHBoxLayout, QLabel, QLineEdit,
+    QListWidget, QMessageBox, QPushButton, QSplitter, QTextEdit,
+    QVBoxLayout, QWidget,
 )
 
+from core.tag_template_store import TagTemplateStore
 from gui.components.window_title_bar import WindowTitleBar
 
 
 class TagTemplateDialog(QDialog):
     template_applied = Signal(dict)
+    templates_changed = Signal()
 
-    SETTINGS_KEY = "tagging/templates"
+    FIELD_LABELS = (
+        ("title", "Название"), ("subject", "Тема"),
+        ("comment", "Комментарий"), ("artist", "Автор"),
+        ("copyright", "Авторские права"), ("keywords", "Теги"),
+    )
 
-    def __init__(self, current_metadata: dict[str, str], parent=None) -> None:
+    def __init__(self, current_metadata: dict[str, str] | None = None, parent=None) -> None:
         super().__init__(parent)
-        self._current_metadata = dict(current_metadata)
-        self._settings = QSettings("Teggy", "Teggy")
-        self._templates = self._load_templates()
+        self._store = TagTemplateStore()
+        self._templates = self._store.load()
+        self._current_metadata = dict(current_metadata or {})
+        self._fields: dict[str, QWidget] = {}
+        self._loaded_name: str | None = None
 
         self.setModal(True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setFixedSize(560, 430)
+        self.setMinimumSize(820, 580)
+        self.resize(900, 640)
 
         shell = QWidget(self)
         shell.setObjectName("TemplateDialog")
         shell.setStyleSheet(
-            """
-            QWidget#TemplateDialog {
-                background: #0E1428;
-                border: 1px solid #303B68;
-                border-radius: 14px;
-            }
-            QWidget#TemplateContent {
-                background: transparent;
-                border-bottom-left-radius: 13px;
-                border-bottom-right-radius: 13px;
-            }
-            QListWidget#TemplateList {
-                background: #11182D;
-                color: #F7F5FF;
-                border: 1px solid #303B68;
-                border-radius: 10px;
-                padding: 6px;
-                outline: none;
-            }
-            QListWidget#TemplateList::item {
-                min-height: 34px;
-                padding: 4px 8px;
-                border-radius: 7px;
-            }
-            QListWidget#TemplateList::item:hover {
-                background: #1A2343;
-            }
-            QListWidget#TemplateList::item:selected {
-                background: #39206B;
-                color: #FFFFFF;
-            }
-            """
+            "#TemplateDialog{background:#0E1428;border:1px solid #303B68;border-radius:14px;}"
+            "#TemplateSidebar,#TemplateEditor{background:#11182D;border:1px solid #27335A;border-radius:12px;}"
+            "#TemplateList{background:#0B1022;border:1px solid #27335A;border-radius:10px;padding:6px;}"
+            "#TemplateList::item{min-height:34px;padding:4px 8px;border-radius:7px;}"
+            "#TemplateList::item:selected{background:#39206B;color:white;}"
+            "#TemplateManagerButton{min-height:36px;padding:0 14px;border-radius:10px;font-weight:600;}"
+            "#TemplateDangerButton{min-height:36px;padding:0 14px;border-radius:10px;background:#2A1420;color:#FF9BAD;border:1px solid #6A2A3A;}"
+            "#TemplateDangerButton:hover{background:#3A1825;border-color:#D44A62;}"
+            "#TemplatePrimaryButton{min-height:38px;padding:0 18px;border-radius:10px;background:#915CFF;color:white;border:1px solid #A778FF;font-weight:700;}"
+            "#TemplatePrimaryButton:hover{background:#A778FF;}"
         )
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.addWidget(shell)
-
         shell_layout = QVBoxLayout(shell)
         shell_layout.setContentsMargins(1, 1, 1, 1)
         shell_layout.setSpacing(0)
-        shell_layout.addWidget(
-            WindowTitleBar(
-                self,
-                title="Шаблоны метаданных",
-                show_help=False,
-                show_minimize=False,
-                show_maximize=False,
-            )
-        )
+        shell_layout.addWidget(WindowTitleBar(
+            self, title="Управление шаблонами метаданных",
+            show_help=False, show_minimize=False, show_maximize=False,
+        ))
 
         content = QWidget()
-        content.setObjectName("TemplateContent")
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(24, 20, 24, 22)
-        content_layout.setSpacing(12)
-
-        hint = QLabel(
-            "Сохраняйте заполненные метаданные и применяйте их к новым наборам фотографий."
+        content_layout.setContentsMargins(22, 20, 22, 22)
+        content_layout.setSpacing(14)
+        intro = QLabel(
+            "Создавайте, редактируйте и применяйте наборы метаданных. "
+            "Эти же шаблоны доступны при загрузке фотографий из Яндекс Карт."
         )
-        hint.setObjectName("CardSubtitle")
-        hint.setWordWrap(True)
-        content_layout.addWidget(hint)
+        intro.setObjectName("CardSubtitle")
+        intro.setWordWrap(True)
+        content_layout.addWidget(intro)
 
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setChildrenCollapsible(False)
+
+        sidebar = QFrame()
+        sidebar.setObjectName("TemplateSidebar")
+        sidebar_layout = QVBoxLayout(sidebar)
+        sidebar_layout.setContentsMargins(14, 14, 14, 14)
+        sidebar_layout.setSpacing(10)
+        sidebar_title = QLabel("Шаблоны")
+        sidebar_title.setObjectName("CardTitle")
+        sidebar_layout.addWidget(sidebar_title)
         self.template_list = QListWidget()
         self.template_list.setObjectName("TemplateList")
+        self.template_list.currentItemChanged.connect(self._load_selected)
         self.template_list.itemDoubleClicked.connect(lambda _: self.apply_selected())
-        content_layout.addWidget(self.template_list, 1)
+        sidebar_layout.addWidget(self.template_list, 1)
+        for text, handler, object_name in (
+            ("＋ Новый шаблон", self.new_template, "TemplateManagerButton"),
+            ("Дублировать", self.duplicate_selected, "TemplateManagerButton"),
+            ("Удалить шаблон", self.delete_selected, "TemplateDangerButton"),
+        ):
+            button = QPushButton(text)
+            button.setObjectName(object_name)
+            button.clicked.connect(handler)
+            sidebar_layout.addWidget(button)
 
-        name_row = QHBoxLayout()
+        editor = QFrame()
+        editor.setObjectName("TemplateEditor")
+        editor_layout = QVBoxLayout(editor)
+        editor_layout.setContentsMargins(18, 16, 18, 16)
+        editor_layout.setSpacing(12)
+        editor_title = QLabel("Содержимое шаблона")
+        editor_title.setObjectName("CardTitle")
+        editor_layout.addWidget(editor_title)
+        form = QFormLayout()
+        form.setLabelAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        form.setHorizontalSpacing(14)
+        form.setVerticalSpacing(10)
         self.name_edit = QLineEdit()
-        self.name_edit.setPlaceholderText("Название шаблона")
-        save_button = QPushButton("Сохранить текущие поля")
-        save_button.setObjectName("PrimaryButton")
+        self.name_edit.setPlaceholderText("Например: Стоматология, Ресторан, Салон красоты")
+        form.addRow("Название шаблона", self.name_edit)
+        for key, label_text in self.FIELD_LABELS:
+            if key in {"comment", "keywords"}:
+                field = QTextEdit()
+                field.setFixedHeight(76 if key == "keywords" else 64)
+            else:
+                field = QLineEdit()
+            field.setPlaceholderText("По одному тегу в строке" if key == "keywords" else f"Введите: {label_text.lower()}")
+            self._fields[key] = field
+            form.addRow(label_text, field)
+        editor_layout.addLayout(form)
+        use_current_button = QPushButton("Заполнить из текущих полей")
+        use_current_button.setObjectName("TemplateManagerButton")
+        use_current_button.clicked.connect(self.fill_from_current)
+        editor_layout.addWidget(use_current_button, alignment=Qt.AlignmentFlag.AlignLeft)
+        editor_layout.addStretch(1)
+        save_row = QHBoxLayout()
+        save_row.addStretch(1)
+        save_button = QPushButton("Сохранить изменения")
+        save_button.setObjectName("TemplatePrimaryButton")
         save_button.clicked.connect(self.save_template)
-        name_row.addWidget(self.name_edit, 1)
-        name_row.addWidget(save_button)
-        content_layout.addLayout(name_row)
+        save_row.addWidget(save_button)
+        editor_layout.addLayout(save_row)
 
+        splitter.addWidget(sidebar)
+        splitter.addWidget(editor)
+        splitter.setSizes([260, 560])
+        content_layout.addWidget(splitter, 1)
         action_row = QHBoxLayout()
-        delete_button = QPushButton("Удалить")
-        delete_button.setObjectName("AboutSecondaryButton")
-        delete_button.clicked.connect(self.delete_selected)
-        action_row.addWidget(delete_button)
-        action_row.addStretch(1)
-
         close_button = QPushButton("Закрыть")
         close_button.setObjectName("AboutSecondaryButton")
         close_button.clicked.connect(self.reject)
-        apply_button = QPushButton("Применить")
-        apply_button.setObjectName("AboutPrimaryButton")
-        apply_button.clicked.connect(self.apply_selected)
         action_row.addWidget(close_button)
+        action_row.addStretch(1)
+        apply_button = QPushButton("Применить выбранный шаблон")
+        apply_button.setObjectName("TemplatePrimaryButton")
+        apply_button.clicked.connect(self.apply_selected)
         action_row.addWidget(apply_button)
         content_layout.addLayout(action_row)
-
         shell_layout.addWidget(content, 1)
         self._refresh_list()
+        self.new_template()
 
-    def _load_templates(self) -> dict[str, dict[str, str]]:
-        raw = self._settings.value(self.SETTINGS_KEY, "{}")
-        try:
-            data = json.loads(str(raw))
-        except (TypeError, ValueError, json.JSONDecodeError):
-            return {}
-        if not isinstance(data, dict):
-            return {}
+    def _field_values(self) -> dict[str, str]:
         return {
-            str(name): {str(key): str(value) for key, value in values.items()}
-            for name, values in data.items()
-            if isinstance(values, dict)
+            key: widget.toPlainText() if isinstance(widget, QTextEdit) else widget.text()
+            for key, widget in self._fields.items()
         }
 
-    def _save_templates(self) -> None:
-        self._settings.setValue(
-            self.SETTINGS_KEY,
-            json.dumps(self._templates, ensure_ascii=False),
-        )
+    def _set_field_values(self, values: dict[str, str]) -> None:
+        for key, widget in self._fields.items():
+            value = str(values.get(key, ""))
+            if isinstance(widget, QTextEdit):
+                widget.setPlainText(value)
+            else:
+                widget.setText(value)
 
-    def _refresh_list(self) -> None:
-        selected = self.template_list.currentItem()
-        selected_name = selected.text() if selected else None
+    def _refresh_list(self, select_name: str | None = None) -> None:
+        self.template_list.blockSignals(True)
         self.template_list.clear()
         for name in sorted(self._templates, key=str.casefold):
             self.template_list.addItem(name)
-        if selected_name:
-            matches = self.template_list.findItems(
-                selected_name,
-                Qt.MatchFlag.MatchExactly,
-            )
+        self.template_list.blockSignals(False)
+        if select_name:
+            matches = self.template_list.findItems(select_name, Qt.MatchFlag.MatchExactly)
             if matches:
                 self.template_list.setCurrentItem(matches[0])
+
+    def _load_selected(self, current, previous=None) -> None:
+        if current is None:
+            return
+        name = current.text()
+        values = self._templates.get(name)
+        if values is not None:
+            self._loaded_name = name
+            self.name_edit.setText(name)
+            self._set_field_values(values)
+
+    def new_template(self) -> None:
+        self.template_list.clearSelection()
+        self.template_list.setCurrentItem(None)
+        self._loaded_name = None
+        self.name_edit.clear()
+        self._set_field_values({})
+        self.name_edit.setFocus()
+
+    def fill_from_current(self) -> None:
+        self._set_field_values(self._current_metadata)
 
     def save_template(self) -> None:
         name = self.name_edit.text().strip()
         if not name:
             QMessageBox.warning(self, "Нет названия", "Введите название шаблона.")
             return
-        self._templates[name] = dict(self._current_metadata)
-        self._save_templates()
-        self._refresh_list()
-        matches = self.template_list.findItems(name, Qt.MatchFlag.MatchExactly)
-        if matches:
-            self.template_list.setCurrentItem(matches[0])
-        self.name_edit.clear()
+        if self._loaded_name and self._loaded_name != name:
+            self._templates.pop(self._loaded_name, None)
+        self._templates[name] = self._field_values()
+        self._store.save_all(self._templates)
+        self._loaded_name = name
+        self._refresh_list(name)
+        self.templates_changed.emit()
+
+    def duplicate_selected(self) -> None:
+        item = self.template_list.currentItem()
+        if item is None:
+            QMessageBox.warning(self, "Шаблон не выбран", "Сначала выберите шаблон.")
+            return
+        source_name = item.text()
+        candidate = f"{source_name} — копия"
+        index = 2
+        while candidate in self._templates:
+            candidate = f"{source_name} — копия {index}"
+            index += 1
+        self._templates[candidate] = dict(self._templates.get(source_name, {}))
+        self._store.save_all(self._templates)
+        self._refresh_list(candidate)
+        self.templates_changed.emit()
 
     def delete_selected(self) -> None:
         item = self.template_list.currentItem()
         if item is None:
             return
-        self._templates.pop(item.text(), None)
-        self._save_templates()
+        name = item.text()
+        answer = QMessageBox.question(
+            self, "Удалить шаблон", f"Удалить шаблон «{name}»?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        self._templates.pop(name, None)
+        self._store.save_all(self._templates)
+        self.templates_changed.emit()
         self._refresh_list()
+        self.new_template()
 
     def apply_selected(self) -> None:
-        item = self.template_list.currentItem()
-        if item is None:
-            QMessageBox.warning(self, "Шаблон не выбран", "Выберите шаблон из списка.")
-            return
-        values = self._templates.get(item.text())
+        name = self.name_edit.text().strip()
+        values = self._templates.get(name)
         if values is None:
+            item = self.template_list.currentItem()
+            values = self._templates.get(item.text()) if item else None
+        if values is None:
+            QMessageBox.warning(self, "Шаблон не выбран", "Выберите сохранённый шаблон из списка.")
             return
         self.template_applied.emit(dict(values))
         self.accept()
