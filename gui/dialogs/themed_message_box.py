@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QMessageBox, QWidget
 
 
 class ThemedMessageBox:
-    """Application-styled replacement for native QMessageBox helpers."""
+    """Application-styled, non-native QMessageBox helpers."""
 
     @staticmethod
     def _exec(
@@ -18,6 +18,7 @@ class ThemedMessageBox:
     ) -> QMessageBox.StandardButton:
         box = QMessageBox(parent)
         box.setObjectName("ThemedMessageBox")
+        box.setOption(QMessageBox.Option.DontUseNativeDialog, True)
         box.setIcon(icon)
         box.setWindowTitle(title)
         box.setText(text)
@@ -25,9 +26,17 @@ class ThemedMessageBox:
         box.setStandardButtons(buttons)
         if default_button is not None:
             box.setDefaultButton(default_button)
-        box.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
-        box.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        box.setMinimumWidth(390)
+
+        # Keep a real dialog window. Frameless + translucent QMessageBox widgets
+        # briefly created multiple child surfaces on Windows and produced the
+        # floating overlay seen over the page instead of a stable modal dialog.
+        box.setWindowFlags(
+            Qt.WindowType.Dialog
+            | Qt.WindowType.WindowTitleHint
+            | Qt.WindowType.WindowCloseButtonHint
+        )
+        box.setWindowModality(Qt.WindowModality.WindowModal)
+        box.setMinimumWidth(420)
         return QMessageBox.StandardButton(box.exec())
 
     @classmethod
