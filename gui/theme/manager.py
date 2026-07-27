@@ -18,16 +18,25 @@ class ThemeManager:
     def __init__(self, themes_path=None):
         self.themes_path = Path(themes_path) if themes_path else Path(__file__).parent
 
-    def load(self, theme_name: str) -> ThemeData:
-        theme_folder = self.themes_path / theme_name
-        if not theme_folder.is_dir():
-            return ThemeData("")
-
-        qss_parts = []
+    def _read_theme_parts(self, theme_folder: Path) -> list[str]:
+        parts: list[str] = []
         for file_name in self.QSS_FILES:
             qss_file = theme_folder / file_name
             if qss_file.is_file():
-                qss_parts.append(qss_file.read_text(encoding="utf-8"))
+                parts.append(qss_file.read_text(encoding="utf-8"))
+        return parts
+
+    def load(self, theme_name: str) -> ThemeData:
+        default_folder = self.themes_path / "default"
+        theme_folder = self.themes_path / theme_name
+
+        if not theme_folder.is_dir():
+            theme_folder = default_folder
+            theme_name = "default"
+
+        qss_parts = self._read_theme_parts(default_folder)
+        if theme_name != "default":
+            qss_parts.extend(self._read_theme_parts(theme_folder))
 
         return ThemeData("\n\n".join(qss_parts))
 
@@ -35,9 +44,10 @@ class ThemeManager:
         if not self.themes_path.is_dir():
             return []
 
-        return sorted(
+        themes = [
             folder.name
             for folder in self.themes_path.iterdir()
             if folder.is_dir()
             and any((folder / file_name).is_file() for file_name in self.QSS_FILES)
-        )
+        ]
+        return sorted(themes, key=lambda name: (name != "default", name.casefold()))
