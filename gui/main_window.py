@@ -29,54 +29,43 @@ class ResizeHandle(QWidget):
         self._window = window
         self._edges = edges
         self.setCursor(cursor)
-        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
+        self.setMouseTracking(True)
+        self.raise_()
 
-    def mousePressEvent(self, event) -> None:
-        if event.button() == Qt.MouseButton.LeftButton and not self._window.isMaximized():
-            handle = self._window.windowHandle()
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            handle = self.window().windowHandle()
             if handle is not None:
                 handle.startSystemResize(self._edges)
-                event.accept()
-                return
-        super().mousePressEvent(event)
+            event.accept()
 
 
 class MainWindow(QMainWindow):
-    RESIZE_BORDER = 7
-    RESIZE_CORNER = 14
-    MIN_WINDOW_WIDTH = 1180
-    MIN_WINDOW_HEIGHT = 720
-    SAFE_WIDTH = 1440
-    SAFE_HEIGHT = 900
+    RESIZE_MARGIN = 7
+    SAFE_MINIMUM_WIDTH = 1024
+    SAFE_MINIMUM_HEIGHT = 680
 
     def __init__(self, theme_manager=None):
         super().__init__()
-
         self.theme_manager = theme_manager
-        self.update_service = UpdateService(self)
-        self.update_service.update_available.connect(self._show_update_available)
-        self.update_service.no_update.connect(self._handle_no_update)
-        self.update_service.failed.connect(self._handle_update_failure)
         self._manual_update_check = False
-        self._initial_geometry_applied = False
+        self._update_dialog_open = False
 
-        self.setWindowTitle(display_version())
+        self.setWindowTitle(f"Teggy {display_version()}")
+        self.setMinimumSize(self.SAFE_MINIMUM_WIDTH, self.SAFE_MINIMUM_HEIGHT)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
-        self.setAutoFillBackground(True)
-        palette = self.palette()
-        palette.setColor(QPalette.ColorRole.Window, QColor("#070B18"))
-        self.setPalette(palette)
-        self.setMinimumSize(self.MIN_WINDOW_WIDTH, self.MIN_WINDOW_HEIGHT)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
 
-        self._create_menu()
+        self.update_service = UpdateService(self)
+        self.update_service.update_available.connect(self._handle_update_available)
+        self.update_service.no_update.connect(self._handle_no_update)
+        self.update_service.error.connect(self._handle_update_error)
 
-        self.shell = ApplicationShell(self)
+        self.shell = ApplicationShell()
         self.setCentralWidget(self.shell)
-
-        self.window_title_bar = self.shell.title_bar
         self.sidebar = self.shell.sidebar
         self.topbar = self.shell.topbar
+        self.window_title_bar = self.shell.window_title_bar
         self.pages = self.shell.pages
 
         self.window_title_bar.help_button.clicked.connect(self._show_about_dialog)
@@ -94,7 +83,7 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(self._scroll_page(self.dashboard_page))
         self.pages.addWidget(self._scroll_page(self.photo_page))
         self.pages.addWidget(self._scroll_page(self.yandex_maps_page))
-        self.pages.addWidget(self.settings_page)
+        self.pages.addWidget(self._scroll_page(self.settings_page))
 
         self._page_map = {
             "Главная": 0,
@@ -149,172 +138,84 @@ class MainWindow(QMainWindow):
             self.dashboard_page.set_update_result("Установлена актуальная версия Teggy.")
         self._manual_update_check = False
 
-    def _handle_update_failure(self, message: str) -> None:
+    def _handle_update_error(self, message: str) -> None:
         if self._manual_update_check:
             self.dashboard_page.set_update_result(f"Не удалось проверить обновления: {message}")
         self._manual_update_check = False
 
-    def reset_interface_geometry(self) -> None:
-        screen = self.screen() or QGuiApplication.primaryScreen()
-        self.showNormal()
+    def _handle_update_available(self, release: ReleaseInfo) -> None:
+        self.dashboard_page.set_update_result(f"Доступна версия {release.version}")
+        self._manual_update_check = False
 
-        if screen is None:
-            self.resize(self.SAFE_WIDTH, self.SAFE_HEIGHT)
+        if self._update_dialog_open:
             return
+        self._update_dialog_open = True
 
-        available = screen.availableGeometry()
-        width = min(self.SAFE_WIDTH, available.width() - 40)
-        height = min(self.SAFE_HEIGHT, available.height() - 40)
-        width = max(self.minimumWidth(), width)
-        height = max(self.minimumHeight(), height)
-        x = available.x() + (available.width() - width) // 2
-        y = available.y() + (available.height() - height) // 2
+        box = QMessageBox(self)
+        box.setWindowTitle("Доступно обновление")
+        box.setIcon(QMessageBox.Icon.Information)
+        box.setText(f"Доступна новая версия Teggy {release.version}.")
+        if release.notes:
+            box.setInformativeText(release.notes[:500])
+        download_button = box.addButton("Открыть страницу релиза", QMessageBox.ButtonRole.AcceptRole)
+        box.addButton("Позже", QMessageBox.ButtonRole.RejectRole)
+        box.exec()
+        self._update_dialog_open = False
 
-        self.setGeometry(x, y, width, height)
-        self._apply_rounded_mask()
-        self._layout_resize_handles()
-
-    def _create_resize_handles(self) -> dict[str, ResizeHandle]:
-        return {
-            "left": ResizeHandle(self, Qt.Edge.LeftEdge, Qt.CursorShape.SizeHorCursor),
-            "right": ResizeHandle(self, Qt.Edge.RightEdge, Qt.CursorShape.SizeHorCursor),
-            "top": ResizeHandle(self, Qt.Edge.TopEdge, Qt.CursorShape.SizeVerCursor),
-            "bottom": ResizeHandle(self, Qt.Edge.BottomEdge, Qt.CursorShape.SizeVerCursor),
-            "top_left": ResizeHandle(
-                self,
-                Qt.Edge.TopEdge | Qt.Edge.LeftEdge,
-                Qt.CursorShape.SizeFDiagCursor,
-            ),
-            "top_right": ResizeHandle(
-                self,
-                Qt.Edge.TopEdge | Qt.Edge.RightEdge,
-                Qt.CursorShape.SizeBDiagCursor,
-            ),
-            "bottom_left": ResizeHandle(
-                self,
-                Qt.Edge.BottomEdge | Qt.Edge.LeftEdge,
-                Qt.CursorShape.SizeBDiagCursor,
-            ),
-            "bottom_right": ResizeHandle(
-                self,
-                Qt.Edge.BottomEdge | Qt.Edge.RightEdge,
-                Qt.CursorShape.SizeFDiagCursor,
-            ),
-        }
-
-    def _layout_resize_handles(self) -> None:
-        if not hasattr(self, "_resize_handles"):
-            return
-
-        maximized = self.isMaximized()
-        for handle in self._resize_handles.values():
-            handle.setVisible(not maximized)
-        if maximized:
-            return
-
-        width = self.width()
-        height = self.height()
-        border = self.RESIZE_BORDER
-        corner = self.RESIZE_CORNER
-
-        self._resize_handles["left"].setGeometry(0, corner, border, height - 2 * corner)
-        self._resize_handles["right"].setGeometry(
-            width - border,
-            corner,
-            border,
-            height - 2 * corner,
-        )
-        self._resize_handles["top"].setGeometry(corner, 0, width - 2 * corner, border)
-        self._resize_handles["bottom"].setGeometry(
-            corner,
-            height - border,
-            width - 2 * corner,
-            border,
-        )
-        self._resize_handles["top_left"].setGeometry(0, 0, corner, corner)
-        self._resize_handles["top_right"].setGeometry(width - corner, 0, corner, corner)
-        self._resize_handles["bottom_left"].setGeometry(0, height - corner, corner, corner)
-        self._resize_handles["bottom_right"].setGeometry(
-            width - corner,
-            height - corner,
-            corner,
-            corner,
-        )
-
-        for handle in self._resize_handles.values():
-            handle.raise_()
-
-    def showEvent(self, event) -> None:
-        super().showEvent(event)
-        if self._initial_geometry_applied:
-            self._layout_resize_handles()
-            return
-
-        screen = self.screen() or QGuiApplication.primaryScreen()
-        if screen is None:
-            self.resize(self.SAFE_WIDTH, self.SAFE_HEIGHT)
-            return
-
-        available = screen.availableGeometry()
-        width = min(self.SAFE_WIDTH, max(self.minimumWidth(), available.width() - 40))
-        height = min(self.SAFE_HEIGHT, max(self.minimumHeight(), available.height() - 40))
-        x = available.x() + max(20, (available.width() - width) // 2)
-        y = available.y() + max(20, (available.height() - height) // 2)
-
-        self.setGeometry(x, y, width, height)
-        self._initial_geometry_applied = True
-        self._apply_rounded_mask()
-        self._layout_resize_handles()
-
-    def resizeEvent(self, event) -> None:
-        super().resizeEvent(event)
-        self._apply_rounded_mask()
-        self._layout_resize_handles()
-
-    def changeEvent(self, event) -> None:
-        super().changeEvent(event)
-        if event.type() == event.Type.WindowStateChange:
-            QTimer.singleShot(0, self._layout_resize_handles)
-            QTimer.singleShot(0, self._apply_rounded_mask)
-
-    def _apply_rounded_mask(self) -> None:
-        if self.isMaximized():
-            self.clearMask()
-            return
-
-        path = QPainterPath()
-        path.addRoundedRect(self.rect(), 14, 14)
-        region = QRegion(path.toFillPolygon().toPolygon())
-        self.setMask(region)
-
-    def _create_menu(self) -> None:
-        self.menuBar().setVisible(False)
-        help_menu = self.menuBar().addMenu("Справка")
-        about_action = QAction("О программе", self)
-        about_action.triggered.connect(self._show_about_dialog)
-        help_menu.addAction(about_action)
+        if box.clickedButton() is download_button:
+            QDesktopServices.openUrl(QUrl(release.url))
 
     def _show_about_dialog(self) -> None:
         AboutDialog(self).exec()
 
-    def _show_update_available(self, release: ReleaseInfo) -> None:
-        if self._manual_update_check:
-            self.dashboard_page.set_update_result(
-                f"Доступна новая версия: Teggy {release.version}."
-            )
-        self._manual_update_check = False
+    def reset_interface_geometry(self) -> None:
+        self.resize(1280, 820)
+        screen = QGuiApplication.screenAt(self.frameGeometry().center()) or QGuiApplication.primaryScreen()
+        if screen is None:
+            return
+        available = screen.availableGeometry()
+        frame = self.frameGeometry()
+        frame.moveCenter(available.center())
+        self.move(frame.topLeft())
 
-        message = QMessageBox(self)
-        message.setIcon(QMessageBox.Icon.Information)
-        message.setWindowTitle("Доступно обновление")
-        message.setText(f"Доступна версия Teggy {release.version}")
-        message.setInformativeText(
-            "Открыть страницу релиза для загрузки новой версии?"
+    def _create_resize_handles(self):
+        specs = (
+            (Qt.Edge.LeftEdge, Qt.CursorShape.SizeHorCursor),
+            (Qt.Edge.RightEdge, Qt.CursorShape.SizeHorCursor),
+            (Qt.Edge.TopEdge, Qt.CursorShape.SizeVerCursor),
+            (Qt.Edge.BottomEdge, Qt.CursorShape.SizeVerCursor),
+            (Qt.Edge.LeftEdge | Qt.Edge.TopEdge, Qt.CursorShape.SizeFDiagCursor),
+            (Qt.Edge.RightEdge | Qt.Edge.TopEdge, Qt.CursorShape.SizeBDiagCursor),
+            (Qt.Edge.LeftEdge | Qt.Edge.BottomEdge, Qt.CursorShape.SizeBDiagCursor),
+            (Qt.Edge.RightEdge | Qt.Edge.BottomEdge, Qt.CursorShape.SizeFDiagCursor),
         )
-        message.setStandardButtons(
-            QMessageBox.StandardButton.Open | QMessageBox.StandardButton.Cancel
-        )
-        message.setDefaultButton(QMessageBox.StandardButton.Open)
+        return [ResizeHandle(self, edges, cursor) for edges, cursor in specs]
 
-        if message.exec() == QMessageBox.StandardButton.Open:
-            QDesktopServices.openUrl(QUrl(release.page_url))
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        margin = self.RESIZE_MARGIN
+        width = self.width()
+        height = self.height()
+        left, right, top, bottom, top_left, top_right, bottom_left, bottom_right = self._resize_handles
+
+        left.setGeometry(0, margin, margin, max(0, height - 2 * margin))
+        right.setGeometry(width - margin, margin, margin, max(0, height - 2 * margin))
+        top.setGeometry(margin, 0, max(0, width - 2 * margin), margin)
+        bottom.setGeometry(margin, height - margin, max(0, width - 2 * margin), margin)
+        top_left.setGeometry(0, 0, margin, margin)
+        top_right.setGeometry(width - margin, 0, margin, margin)
+        bottom_left.setGeometry(0, height - margin, margin, margin)
+        bottom_right.setGeometry(width - margin, height - margin, margin, margin)
+
+        self._update_window_mask()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._update_window_mask()
+
+    def _update_window_mask(self) -> None:
+        radius = 18
+        path = QPainterPath()
+        path.addRoundedRect(0, 0, self.width(), self.height(), radius, radius)
+        polygon = path.toFillPolygon().toPolygon()
+        self.setMask(QRegion(polygon))
