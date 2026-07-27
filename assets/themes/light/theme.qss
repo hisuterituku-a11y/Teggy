@@ -1,0 +1,29 @@
+QWidget { color: #172033; }
+QMainWindow, QStackedWidget, QScrollArea, #WindowShell, #WindowBody, #ContentShell, #DashboardPage { background: #F4F6FB; }
+#Sidebar, #TopBar { background: #FFFFFF; border-color: #D8DEEA; }
+#PhotoPanel, #DashboardPanel, #TemplateDialog, #TemplateSidebar, #TemplateEditor { background: #FFFFFF; border-color: #D9DFEA; }
+#SideButton { color: #3B465B; }
+#SideButton:hover { background: #EEF1F8; }
+#SideButton:checked { background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #E9E1FF,stop:1 #F1EBFF); border-color: #8B5CF6; color: #39206B; }
+#Logo, #PageTitle, #SectionTitle, #CardTitle, #DashboardWelcome, #DashboardPanelTitle, #DashboardActionTitle { color: #172033; }
+#LogoSub, #CardSubtitle, #DashboardSubtitle, #DashboardPanelText { color: #687389; }
+#TopBar QLineEdit, QLineEdit, QTextEdit, QPlainTextEdit, QComboBox { background: #F7F8FC; border-color: #CCD4E2; color: #172033; }
+#TopBar QLineEdit:focus, QLineEdit:focus, QTextEdit:focus, QComboBox:focus { border-color: #8B5CF6; }
+#PrimaryButton, #TemplateProminentButton, #DashboardActionButton { background: #7C4DDE; border-color: #8B5CF6; color: white; }
+#PrimaryButton:hover, #TemplateProminentButton:hover, #DashboardActionButton:hover { background: #8B5CF6; }
+#DownloadOptionCard { background: #FFFFFF; border-color: #D9DFEA; }
+#DownloadOptionCard[selected="true"] { background: #F0EAFF; border-color: #8B5CF6; }
+#DownloadOptionTitle { color: #172033; }
+#DownloadOptionDescription { color: #687389; }
+QCheckBox#DownloadOptionCheck::indicator { background: #FFFFFF; border-color: #AEB8CA; }
+QCheckBox#DownloadOptionCheck::indicator:checked { background: #7C4DDE; border-color: #8B5CF6; }
+#ThemeButton, #NotifyButton, #SettingsButton { background: #F7F8FC; border-color: #CCD4E2; }
+#ThemeButton:hover, #NotifyButton:hover, #SettingsButton:hover { background: #EEE9FF; border-color: #8B5CF6; }
+#DashboardHero { background: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #ECE7FF,stop:0.55 #DDD3FF,stop:1 #F3D9EE); border-color: #B49AF4; }
+#DashboardActionCard { background: rgba(255,255,255,0.72); border-color: #CFC6EA; }
+#DashboardActionCard:hover { background: #FFFFFF; border-color: #8B5CF6; }
+#DashboardActionIcon, #DashboardVersion { color: #7C4DDE; }
+#DashboardWorkflowRow { background: #F7F8FC; border-color: #D9DFEA; }
+#DashboardStepBadge { background: #E9E1FF; color: #5B35B0; border-color: #8B5CF6; }
+#DashboardTip { background: #F0EAFF; border-color: #C4B1F4; color: #4C347E; }
+#DashboardSecondaryButton { background: #F7F8FC; color: #263147; border-color: #CCD4E2; }
