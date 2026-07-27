@@ -13,6 +13,7 @@ class ThemeManager:
         "inspector.qss",
         "window.qss",
         "templates.qss",
+        "settings.qss",
     )
 
     def __init__(self, themes_path=None):
