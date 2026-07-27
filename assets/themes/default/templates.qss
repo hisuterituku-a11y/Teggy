@@ -80,3 +80,25 @@ QComboBox#TemplateCombo QAbstractItemView::item {
     min-height: 34px;
     padding: 4px 10px;
 }
+
+QPushButton#SettingsButton {
+    min-width: 38px;
+    max-width: 38px;
+    min-height: 38px;
+    max-height: 38px;
+    padding: 0;
+    background: #141B35;
+    color: #F7F5FF;
+    border: 1px solid #303B68;
+    border-radius: 18px;
+}
+
+QPushButton#SettingsButton:hover {
+    background: #1A2343;
+    border-color: #915CFF;
+}
+
+QPushButton#SettingsButton:pressed {
+    background: #24164A;
+    border-color: #A778FF;
+}
