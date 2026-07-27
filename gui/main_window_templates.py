@@ -21,6 +21,14 @@ class MainWindow(base_main_window.MainWindow):
         "sakura": "🌸  Сакура",
     }
 
+    THEME_ICON_COLORS = {
+        "default": "#A778FF",
+        "light": "#7C4DDE",
+        "corporate": "#F59E0B",
+        "frogs": "#A9D9BC",
+        "sakura": "#D9798D",
+    }
+
     def __init__(self, theme_manager=None):
         self._app_settings = QSettings("Teggy", "Teggy")
         base_main_window.TaggingPage = TaggingPage
@@ -64,6 +72,9 @@ class MainWindow(base_main_window.MainWindow):
         self.settings_page.theme_changed.connect(self._apply_theme)
         self.settings_page.check_updates_requested.connect(self._start_manual_update_check)
 
+        current_theme = str(self._app_settings.value("appearance/theme", "default"))
+        self._apply_icon_theme(current_theme)
+
     def _build_theme_menu(self) -> QMenu:
         menu = QMenu(self)
         menu.setObjectName("ThemeMenu")
@@ -89,14 +100,27 @@ class MainWindow(base_main_window.MainWindow):
         self._switch_page(3, "Настройки")
         self.topbar.title.setText("Настройки")
 
+    def _apply_icon_theme(self, theme_name: str) -> None:
+        color = self.THEME_ICON_COLORS.get(theme_name, self.THEME_ICON_COLORS["default"])
+        if hasattr(self.sidebar, "set_icon_color"):
+            self.sidebar.set_icon_color(color)
+        if hasattr(self.topbar, "set_icon_color"):
+            self.topbar.set_icon_color(color)
+
     def _apply_theme(self, theme_name: str) -> None:
         if self.theme_manager is None:
             return
         theme = self.theme_manager.load(theme_name)
         app = QApplication.instance()
         if app is not None:
+            # Полностью снимаем предыдущую тему, иначе Qt сохраняет часть
+            # закэшированных palette/style hints на уже созданных виджетах.
+            app.setStyleSheet("")
+            app.processEvents()
             app.setStyleSheet(theme.qss)
             app.processEvents()
+
+        self._apply_icon_theme(theme_name)
         self._app_settings.setValue("appearance/theme", theme_name)
         for name, action in getattr(self, "_theme_actions", []):
             action.setChecked(name == theme_name)
