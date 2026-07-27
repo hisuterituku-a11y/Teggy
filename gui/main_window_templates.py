@@ -19,7 +19,29 @@ class MainWindow(base_main_window.MainWindow):
         base_main_window.SettingsPage = lambda: SettingsPage(
             theme_manager.list_themes() if theme_manager is not None else ["default"]
         )
-        super().__init__(theme_manager)
+
+        original_update_check = base_main_window.UpdateService.check
+
+        def startup_aware_check(service) -> bool:
+            enabled = self._app_settings.value(
+                "updates/check_on_startup",
+                True,
+                type=bool,
+            )
+            if not enabled:
+                return False
+            return original_update_check(service)
+
+        base_main_window.UpdateService.check = startup_aware_check
+        try:
+            super().__init__(theme_manager)
+        finally:
+            base_main_window.UpdateService.check = original_update_check
+
+        self.update_service.check = original_update_check.__get__(
+            self.update_service,
+            type(self.update_service),
+        )
 
         self.topbar.theme_button.setToolTip("Оформление")
         self.topbar.notify_button.setToolTip("Проверить обновления Teggy")
