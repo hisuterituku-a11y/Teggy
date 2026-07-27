@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QMessageBox, QWidget
+from PySide6.QtWidgets import QMessageBox, QPushButton, QWidget
 
 from core.paths import resource_path
 
@@ -10,8 +10,16 @@ from core.paths import resource_path
 class ThemedMessageBox:
     """Application-styled, non-native QMessageBox helpers."""
 
-    @staticmethod
+    ICON_FILES = {
+        QMessageBox.Icon.Warning: "dialog-warning.svg",
+        QMessageBox.Icon.Critical: "dialog-error.svg",
+        QMessageBox.Icon.Question: "dialog-question.svg",
+        QMessageBox.Icon.Information: "dialog-info.svg",
+    }
+
+    @classmethod
     def _exec(
+        cls,
         parent: QWidget | None,
         icon: QMessageBox.Icon,
         title: str,
@@ -23,21 +31,21 @@ class ThemedMessageBox:
         box.setObjectName("ThemedMessageBox")
         box.setOption(QMessageBox.Option.DontUseNativeDialog, True)
 
-        if icon == QMessageBox.Icon.Warning:
-            warning_pixmap = QPixmap(
-                str(resource_path("assets", "icons", "teggy", "dialog-warning.svg"))
-            )
-            if not warning_pixmap.isNull():
-                box.setIconPixmap(
-                    warning_pixmap.scaled(
-                        42,
-                        42,
-                        Qt.AspectRatioMode.KeepAspectRatio,
-                        Qt.TransformationMode.SmoothTransformation,
-                    )
+        icon_file = cls.ICON_FILES.get(icon)
+        pixmap = (
+            QPixmap(str(resource_path("assets", "icons", "teggy", icon_file)))
+            if icon_file
+            else QPixmap()
+        )
+        if not pixmap.isNull():
+            box.setIconPixmap(
+                pixmap.scaled(
+                    44,
+                    44,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
                 )
-            else:
-                box.setIcon(icon)
+            )
         else:
             box.setIcon(icon)
 
@@ -48,16 +56,28 @@ class ThemedMessageBox:
         if default_button is not None:
             box.setDefaultButton(default_button)
 
-        # Keep a real dialog window. Frameless + translucent QMessageBox widgets
-        # briefly created multiple child surfaces on Windows and produced the
-        # floating overlay seen over the page instead of a stable modal dialog.
+        for button in box.findChildren(QPushButton):
+            standard = box.standardButton(button)
+            if standard in {
+                QMessageBox.StandardButton.Ok,
+                QMessageBox.StandardButton.Yes,
+                QMessageBox.StandardButton.Save,
+                QMessageBox.StandardButton.Apply,
+            }:
+                button.setObjectName("PrimaryButton")
+                button.setMinimumWidth(112)
+            else:
+                button.setObjectName("AboutSecondaryButton")
+                button.setMinimumWidth(104)
+            button.setMinimumHeight(38)
+
         box.setWindowFlags(
             Qt.WindowType.Dialog
             | Qt.WindowType.WindowTitleHint
             | Qt.WindowType.WindowCloseButtonHint
         )
         box.setWindowModality(Qt.WindowModality.WindowModal)
-        box.setMinimumWidth(420)
+        box.setMinimumWidth(460)
         return QMessageBox.StandardButton(box.exec())
 
     @classmethod
@@ -76,6 +96,17 @@ class ThemedMessageBox:
         return cls._exec(
             parent,
             QMessageBox.Icon.Critical,
+            title,
+            text,
+            QMessageBox.StandardButton.Ok,
+            QMessageBox.StandardButton.Ok,
+        )
+
+    @classmethod
+    def information(cls, parent: QWidget | None, title: str, text: str) -> QMessageBox.StandardButton:
+        return cls._exec(
+            parent,
+            QMessageBox.Icon.Information,
             title,
             text,
             QMessageBox.StandardButton.Ok,
