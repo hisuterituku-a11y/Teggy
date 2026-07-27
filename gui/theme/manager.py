@@ -21,7 +21,7 @@ class ThemeManager:
     SCROLLBAR_PALETTES = {
         "default": ("#0B1022", "#4A2A82", "#915CFF"),
         "light": ("#E9EDF5", "#AEB8CA", "#8B5CF6"),
-        "corporate": ("#191D23", "#555D69", "#F59E0B"),
+        "corporate": ("#191D23", "#555D69", "#F33C00"),
         "frogs": ("#083D33", "#679887", "#A9D9BC"),
         "sakura": ("#F1D9DC", "#CF939F", "#D9798D"),
     }
@@ -37,6 +37,8 @@ class ThemeManager:
             "theme_hover": "#1A2340", "theme_border": "#303B68", "accent": "#915CFF",
             "dialog_bg": "#0B1022", "dialog_card": "#11182D", "dialog_text": "#F4F6FF",
             "step_bg": "#2C1B52", "step_text": "#FFFFFF", "step_border": "#915CFF",
+            "check_bg": "#11182D", "check_border": "#5D6A98", "check_hover": "#2A355E",
+            "check_checked": "#915CFF", "check_checked_hover": "#A778FF",
         },
         "light": {
             "topbar_border": "#D8DEEA", "chrome_bg": "#FFFFFF", "chrome_text": "#667085",
@@ -48,17 +50,21 @@ class ThemeManager:
             "theme_hover": "#F4F0FF", "theme_border": "#D9DFEA", "accent": "#8B5CF6",
             "dialog_bg": "#F6F8FC", "dialog_card": "#FFFFFF", "dialog_text": "#172033",
             "step_bg": "#EEE9FF", "step_text": "#4C347E", "step_border": "#8B5CF6",
+            "check_bg": "#FFFFFF", "check_border": "#B8C2D3", "check_hover": "#EEE9FF",
+            "check_checked": "#8B5CF6", "check_checked_hover": "#7C4DDE",
         },
         "corporate": {
             "topbar_border": "#353A44", "chrome_bg": "#1D2027", "chrome_text": "#C8CDD6",
-            "chrome_hover": "#332A1B", "secondary_bg": "#292E37", "secondary_hover": "#332A1B",
+            "chrome_hover": "#3A211B", "secondary_bg": "#292E37", "secondary_hover": "#3A211B",
             "secondary_text": "#F0F2F5", "secondary_border": "#454C58",
-            "premium_title": "#FFD38A", "premium_text": "#D2D7DF",
-            "tip_bg": "#2C251A", "tip_text": "#E7C88E", "tip_border": "#71511F",
-            "theme_bg": "#22262E", "theme_text": "#F0F2F5", "theme_selected": "#332A1B",
-            "theme_hover": "#292E37", "theme_border": "#3A404B", "accent": "#F59E0B",
+            "premium_title": "#FFD0C2", "premium_text": "#D2D7DF",
+            "tip_bg": "#321E19", "tip_text": "#FFD0C2", "tip_border": "#7A2B17",
+            "theme_bg": "#22262E", "theme_text": "#F0F2F5", "theme_selected": "#3A211B",
+            "theme_hover": "#292E37", "theme_border": "#3A404B", "accent": "#F33C00",
             "dialog_bg": "#171A20", "dialog_card": "#22262E", "dialog_text": "#F0F2F5",
-            "step_bg": "#3A2D18", "step_text": "#FFD38A", "step_border": "#F59E0B",
+            "step_bg": "#3A211B", "step_text": "#FFD0C2", "step_border": "#F33C00",
+            "check_bg": "#22262E", "check_border": "#59616E", "check_hover": "#3A211B",
+            "check_checked": "#F33C00", "check_checked_hover": "#FF5A24",
         },
         "frogs": {
             "topbar_border": "#28695A", "chrome_bg": "#0D5144", "chrome_text": "#D8EEE4",
@@ -70,6 +76,8 @@ class ThemeManager:
             "theme_hover": "#176253", "theme_border": "#347565", "accent": "#A9D9BC",
             "dialog_bg": "#083D33", "dialog_card": "#105447", "dialog_text": "#F3FBF5",
             "step_bg": "#D9E9CF", "step_text": "#173C31", "step_border": "#A9D9BC",
+            "check_bg": "#105447", "check_border": "#78AA97", "check_hover": "#206C5A",
+            "check_checked": "#A9D9BC", "check_checked_hover": "#C4E8D2",
         },
         "sakura": {
             "topbar_border": "#E6BFC4", "chrome_bg": "#FBEDEE", "chrome_text": "#8C6971",
@@ -81,6 +89,8 @@ class ThemeManager:
             "theme_hover": "#FBE5E8", "theme_border": "#E9C9CC", "accent": "#D9798D",
             "dialog_bg": "#F4D9DB", "dialog_card": "#FFF8F5", "dialog_text": "#563640",
             "step_bg": "#F4CCD2", "step_text": "#753A47", "step_border": "#D9798D",
+            "check_bg": "#FFFDFC", "check_border": "#CFAAB1", "check_hover": "#FBE5E8",
+            "check_checked": "#D9798D", "check_checked_hover": "#E58CA0",
         },
     }
 
@@ -133,6 +143,35 @@ QLabel#DashboardStepBadge {{ background: {p['step_bg']}; color: {p['step_text']}
 QPushButton#ThemeChoiceButton {{ background: {p['theme_bg']}; color: {p['theme_text']}; border: 1px solid {p['theme_border']}; border-radius: 10px; text-align: left; padding: 12px 16px; }}
 QPushButton#ThemeChoiceButton:hover {{ background: {p['theme_hover']}; color: {p['theme_text']}; border-color: {p['accent']}; }}
 QPushButton#ThemeChoiceButton:checked {{ background: {p['theme_selected']}; color: {p['theme_text']}; border: 2px solid {p['accent']}; }}
+
+/* Checkbox indicators are fully theme-owned, including hover states. */
+QCheckBox, QRadioButton {{ background: transparent; spacing: 9px; }}
+QCheckBox::indicator, QRadioButton::indicator,
+QCheckBox#DownloadOptionCheck::indicator, QRadioButton#DownloadOptionCheck::indicator,
+QCheckBox#SettingsCheckBox::indicator {{
+    width: 18px; height: 18px; border-radius: 5px;
+    background: {p['check_bg']}; border: 1px solid {p['check_border']};
+}}
+QCheckBox::indicator:hover, QRadioButton::indicator:hover,
+QCheckBox#DownloadOptionCheck::indicator:hover, QRadioButton#DownloadOptionCheck::indicator:hover,
+QCheckBox#SettingsCheckBox::indicator:hover {{
+    background: {p['check_hover']}; border-color: {p['accent']};
+}}
+QCheckBox::indicator:checked, QRadioButton::indicator:checked,
+QCheckBox#DownloadOptionCheck::indicator:checked, QRadioButton#DownloadOptionCheck::indicator:checked,
+QCheckBox#SettingsCheckBox::indicator:checked {{
+    background: {p['check_checked']}; border-color: {p['check_checked']};
+    image: url(assets/icons/teggy/check.svg);
+}}
+QCheckBox::indicator:checked:hover, QRadioButton::indicator:checked:hover,
+QCheckBox#DownloadOptionCheck::indicator:checked:hover, QRadioButton#DownloadOptionCheck::indicator:checked:hover,
+QCheckBox#SettingsCheckBox::indicator:checked:hover {{
+    background: {p['check_checked_hover']}; border-color: {p['check_checked_hover']};
+    image: url(assets/icons/teggy/check.svg);
+}}
+QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {{
+    background: {p['secondary_bg']}; border-color: {p['secondary_border']};
+}}
 
 #ThumbnailCard {{ background: {p['dialog_card']}; border: 1px solid {p['theme_border']}; border-radius: 10px; }}
 #ThumbnailCard:hover {{ background: {p['theme_hover']}; border-color: {p['accent']}; }}
