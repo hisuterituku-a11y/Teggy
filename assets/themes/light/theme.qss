@@ -39,9 +39,16 @@ QCheckBox#DownloadOptionCheck::indicator:checked, QRadioButton#DownloadOptionChe
 #DashboardTip { background: #F0EAFF; color: #4C347E; border-color: #C4B1F4; }
 QMenu, #ThemeMenu { background: #FFFFFF; color: #172033; border: 1px solid #CCD4E2; }
 QMenu::item:selected { background: #E9E1FF; color: #39206B; }
-QScrollBar:vertical, QScrollBar:horizontal { background: #E9EDF5; }
-QScrollBar::handle:vertical, QScrollBar::handle:horizontal { background: #AEB8CA; border-radius: 6px; }
 QProgressBar { background: #EEF1F7; border-color: #CCD4E2; color: #172033; }
 QProgressBar::chunk { background: #7C4DDE; }
 QMessageBox { background: #FFFFFF; }
 QToolTip { background: #FFFFFF; color: #172033; border: 1px solid #8B5CF6; }
+
+QScrollBar:vertical, #PageScroll QScrollBar:vertical, QAbstractScrollArea QScrollBar:vertical { background: #E9EDF5; width: 10px; margin: 0; border: none; }
+QScrollBar::handle:vertical, #PageScroll QScrollBar::handle:vertical, QAbstractScrollArea QScrollBar::handle:vertical { background: #AEB8CA; min-height: 28px; border-radius: 5px; border: none; }
+QScrollBar::handle:vertical:hover, #PageScroll QScrollBar::handle:vertical:hover { background: #8B5CF6; }
+QScrollBar:horizontal, #PageScroll QScrollBar:horizontal, QAbstractScrollArea QScrollBar:horizontal { background: #E9EDF5; height: 10px; margin: 0; border: none; }
+QScrollBar::handle:horizontal, #PageScroll QScrollBar::handle:horizontal, QAbstractScrollArea QScrollBar::handle:horizontal { background: #AEB8CA; min-width: 28px; border-radius: 5px; border: none; }
+QScrollBar::handle:horizontal:hover, #PageScroll QScrollBar::handle:horizontal:hover { background: #8B5CF6; }
+QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; background: transparent; border: none; }
+QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }
