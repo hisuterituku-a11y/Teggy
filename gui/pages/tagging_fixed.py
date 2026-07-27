@@ -3,48 +3,37 @@ from __future__ import annotations
 from pathlib import Path
 from shutil import copy2
 
-from PySide6.QtCore import QSize, Qt, QTimer, Signal
+from PySide6.QtCore import QSize, Qt, QTimer
 from PySide6.QtGui import QDragEnterEvent, QDropEvent, QImageReader, QPixmap
-from PySide6.QtWidgets import QCheckBox, QFrame, QHBoxLayout, QLabel, QMessageBox, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+)
 
 from core.files.file_service import FileService
 from core.tag_generator import TagGenerator
 from core.worker_thread import ProcessingThread
 from gui.dialogs.processing_result_dialog import ProcessingResultDialog
+from gui.dialogs.tag_template_dialog import TagTemplateDialog
 from gui.pages.tagging import ClickableThumbnailCard, TaggingPage as BaseTaggingPage
-
-
-class RemovableThumbnailCard(ClickableThumbnailCard):
-    remove_requested = Signal(str)
-
-    def __init__(self, file_path: str, parent=None):
-        super().__init__(file_path, parent)
-        self._remove_button: QPushButton | None = None
-
-    def set_remove_button(self, button: QPushButton) -> None:
-        self._remove_button = button
-        button.hide()
-
-    def enterEvent(self, event) -> None:
-        if self._remove_button is not None:
-            self._remove_button.show()
-            self._remove_button.raise_()
-        super().enterEvent(event)
-
-    def leaveEvent(self, event) -> None:
-        if self._remove_button is not None:
-            self._remove_button.hide()
-        super().leaveEvent(event)
 
 
 class TaggingPage(BaseTaggingPage):
     GALLERY_BATCH_SIZE = 20
+    GALLERY_COLUMNS = 5
 
     def __init__(self, parent=None):
         self.selected_files: list[str] = []
         self.excluded_files: set[str] = set()
         self._pending_source_deletion: list[Path] = []
         self._gallery_generation = 0
+        self._gallery_cards: dict[str, ClickableThumbnailCard] = {}
+        self._gallery_order: list[str] = []
         super().__init__(parent)
 
         self.delete_originals_checkbox.setObjectName("DownloadOptionCheck")
@@ -58,6 +47,45 @@ class TaggingPage(BaseTaggingPage):
         self.delete_sources_checkbox.style().polish(self.delete_sources_checkbox)
 
         self.drop_hint.setText("Перетащите папки или фото сюда")
+        self._install_template_button()
+
+    def _install_template_button(self) -> None:
+        for label in self.findChildren(QLabel):
+            if label.text() != "2. Метаданные":
+                continue
+            layout = label.parentWidget().layout()
+            if layout is None:
+                return
+            button = QPushButton("Шаблоны")
+            button.setObjectName("AboutSecondaryButton")
+            button.setMinimumHeight(30)
+            button.clicked.connect(self.open_template_dialog)
+            layout.addWidget(
+                button,
+                0,
+                1,
+                alignment=Qt.AlignmentFlag.AlignRight,
+            )
+            return
+
+    def _current_metadata(self) -> dict[str, str]:
+        return {
+            key: widget.toPlainText() if key == "keywords" else widget.text()
+            for key, widget in self.metadata_fields.items()
+        }
+
+    def open_template_dialog(self) -> None:
+        dialog = TagTemplateDialog(self._current_metadata(), parent=self)
+        dialog.template_applied.connect(self.apply_template)
+        dialog.exec()
+
+    def apply_template(self, values: dict) -> None:
+        for key, widget in self.metadata_fields.items():
+            value = str(values.get(key, ""))
+            if key == "keywords":
+                widget.setPlainText(value)
+            else:
+                widget.setText(value)
 
     @staticmethod
     def _path_key(path: Path) -> str:
@@ -83,18 +111,18 @@ class TaggingPage(BaseTaggingPage):
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         paths = self._valid_local_paths(event)
-        if paths:
-            event.acceptProposedAction()
-            has_folders = any(path.is_dir() for path in paths)
-            has_files = any(path.is_file() for path in paths)
-            if has_folders and has_files:
-                self.drop_hint.setText("Отпускайте, папки и фото не убегут")
-            elif has_files:
-                self.drop_hint.setText("Отпускайте, фотографии не убегут")
-            else:
-                self.drop_hint.setText("Отпускайте, папки не убегут")
-        else:
+        if not paths:
             event.ignore()
+            return
+        event.acceptProposedAction()
+        has_folders = any(path.is_dir() for path in paths)
+        has_files = any(path.is_file() for path in paths)
+        if has_folders and has_files:
+            self.drop_hint.setText("Отпускайте, папки и фото не убегут")
+        elif has_files:
+            self.drop_hint.setText("Отпускайте, фотографии не убегут")
+        else:
+            self.drop_hint.setText("Отпускайте, папки не убегут")
 
     def dragLeaveEvent(self, event) -> None:
         self.drop_hint.setText("Перетащите папки или фото сюда")
@@ -116,8 +144,7 @@ class TaggingPage(BaseTaggingPage):
                     changed = True
             else:
                 value = str(path)
-                key = self._path_key(path)
-                self.excluded_files.discard(key)
+                self.excluded_files.discard(self._path_key(path))
                 if value not in self.selected_files:
                     self.selected_files.append(value)
                     changed = True
@@ -132,9 +159,40 @@ class TaggingPage(BaseTaggingPage):
             self.selected_files.remove(file_path)
         else:
             self.excluded_files.add(self._path_key(path))
-        QTimer.singleShot(0, self.update_folder_list)
+
+        self._refresh_source_list()
+        self._remove_gallery_card(file_path)
+
+    def _remove_gallery_card(self, file_path: str) -> None:
+        key = self._path_key(Path(file_path))
+        card = self._gallery_cards.pop(key, None)
+        if card is None:
+            return
+        self._gallery_order = [item for item in self._gallery_order if item != key]
+        self.gallery_grid.removeWidget(card)
+        card.deleteLater()
+        QTimer.singleShot(0, self._compact_gallery)
+
+    def _compact_gallery(self) -> None:
+        cards = [
+            self._gallery_cards[key]
+            for key in self._gallery_order
+            if key in self._gallery_cards
+        ]
+        for card in cards:
+            self.gallery_grid.removeWidget(card)
+        for index, card in enumerate(cards):
+            self.gallery_grid.addWidget(
+                card,
+                index // self.GALLERY_COLUMNS,
+                index % self.GALLERY_COLUMNS,
+            )
 
     def update_folder_list(self) -> None:
+        self._refresh_source_list()
+        self.update_gallery()
+
+    def _refresh_source_list(self) -> None:
         while self.folder_container.count():
             item = self.folder_container.takeAt(0)
             widget = item.widget()
@@ -143,7 +201,8 @@ class TaggingPage(BaseTaggingPage):
 
         for folder in self.selected_folders:
             files = [
-                info for info in FileService.get_files(Path(folder))
+                info
+                for info in FileService.get_files(Path(folder))
                 if self._path_key(Path(info.path)) not in self.excluded_files
             ]
             self.folder_container.addWidget(
@@ -165,8 +224,6 @@ class TaggingPage(BaseTaggingPage):
                     lambda checked=False, value=file_path: self.remove_file(value),
                 )
             )
-
-        self.update_gallery()
 
     @staticmethod
     def _source_card(icon_text: str, title: str, details: str, callback) -> QFrame:
@@ -238,10 +295,6 @@ class TaggingPage(BaseTaggingPage):
             QMessageBox.warning(self, "Теги не заполнены", "Добавьте хотя бы один тег.")
             return
 
-        metadata = {
-            key: widget.toPlainText() if key == "keywords" else widget.text()
-            for key, widget in self.metadata_fields.items()
-        }
         try:
             files, output_dir = self._prepare_processing_files(source_files)
         except OSError as error:
@@ -258,7 +311,7 @@ class TaggingPage(BaseTaggingPage):
         self.processing_thread.setup(
             folder_path=str(output_dir),
             file_list=files,
-            metadata=metadata,
+            metadata=self._current_metadata(),
             tags=tags,
             delete_original=True,
             output_dir=str(output_dir),
@@ -306,6 +359,8 @@ class TaggingPage(BaseTaggingPage):
         self.selected_photo_path = None
         self._gallery_generation += 1
         generation = self._gallery_generation
+        self._gallery_cards.clear()
+        self._gallery_order.clear()
 
         while self.gallery_grid.count():
             item = self.gallery_grid.takeAt(0)
@@ -326,41 +381,48 @@ class TaggingPage(BaseTaggingPage):
         if generation != self._gallery_generation:
             return
         end = min(start + self.GALLERY_BATCH_SIZE, len(files))
-        for index in range(start, end):
-            path = files[index]
+        visible_index = len(self._gallery_order)
+        for path in files[start:end]:
             try:
                 is_valid = path.exists() and path.stat().st_size > 0
             except OSError:
                 is_valid = False
-            if is_valid:
-                self.gallery_grid.addWidget(
-                    self._thumbnail_card(path), index // 5, index % 5
-                )
+            if not is_valid:
+                continue
+            card = self._thumbnail_card(path)
+            key = self._path_key(path)
+            self._gallery_cards[key] = card
+            self._gallery_order.append(key)
+            self.gallery_grid.addWidget(
+                card,
+                visible_index // self.GALLERY_COLUMNS,
+                visible_index % self.GALLERY_COLUMNS,
+            )
+            visible_index += 1
         if end < len(files):
             QTimer.singleShot(
-                0, lambda: self._append_gallery_batch(files, end, generation)
+                0,
+                lambda: self._append_gallery_batch(files, end, generation),
             )
 
-    def _thumbnail_card(self, file_path: Path) -> RemovableThumbnailCard:
-        card = RemovableThumbnailCard(str(file_path))
+    def _thumbnail_card(self, file_path: Path) -> ClickableThumbnailCard:
+        card = ClickableThumbnailCard(str(file_path))
         card.double_clicked.connect(self.open_image_viewer)
         card.clicked.connect(
             lambda path, current_card=card: self.select_thumbnail(current_card, path)
         )
         card.remove_requested.connect(self.remove_file)
         card.setFixedWidth(160)
+        card.remove_button.setText("×")
+        card.remove_button.setFixedSize(24, 24)
 
         layout = QVBoxLayout(card)
         layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(6)
 
-        preview_box = QFrame()
-        preview_box.setObjectName("ThumbnailPreviewBox")
-        preview_box.setFixedSize(144, 105)
-
-        preview = QLabel(preview_box)
+        preview = QLabel()
         preview.setObjectName("ThumbnailImage")
-        preview.setGeometry(0, 0, 144, 105)
+        preview.setFixedSize(144, 105)
         preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         preview.setScaledContents(False)
 
@@ -379,21 +441,11 @@ class TaggingPage(BaseTaggingPage):
                 )
             )
 
-        remove = QPushButton("×", preview_box)
-        remove.setObjectName("ThumbnailRemoveButton")
-        remove.setFixedSize(24, 24)
-        remove.move(116, 4)
-        remove.setCursor(Qt.CursorShape.PointingHandCursor)
-        remove.setToolTip("Убрать из обработки")
-        remove.clicked.connect(
-            lambda checked=False, path=str(file_path): card.remove_requested.emit(path)
-        )
-        card.set_remove_button(remove)
-
         name = QLabel(file_path.name)
         name.setObjectName("ThumbnailName")
         name.setWordWrap(True)
         name.setToolTip(str(file_path))
-        layout.addWidget(preview_box)
+        layout.addWidget(preview)
         layout.addWidget(name)
+        card.remove_button.raise_()
         return card
