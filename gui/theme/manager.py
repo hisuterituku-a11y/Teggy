@@ -16,7 +16,7 @@ class ThemeManager:
         "settings.qss",
         "theme.qss",
     )
-    THEME_ORDER = ("default", "blue", "purple", "light")
+    THEME_ORDER = ("default", "light", "corporate", "frogs", "sakura")
 
     def __init__(self, themes_path=None):
         self.themes_path = Path(themes_path) if themes_path else Path(__file__).parent
@@ -32,7 +32,7 @@ class ThemeManager:
     def load(self, theme_name: str) -> ThemeData:
         default_folder = self.themes_path / "default"
         theme_folder = self.themes_path / theme_name
-        if not theme_folder.is_dir():
+        if not theme_folder.is_dir() or theme_name not in self.THEME_ORDER:
             theme_folder = default_folder
             theme_name = "default"
 
@@ -47,5 +47,5 @@ class ThemeManager:
         return [
             name
             for name in self.THEME_ORDER
-            if (self.themes_path / name).is_dir()
+            if name == "default" or (self.themes_path / name / "theme.qss").is_file()
         ]
