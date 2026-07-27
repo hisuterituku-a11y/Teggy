@@ -29,6 +29,14 @@ class MainWindow(base_main_window.MainWindow):
         "sakura": "#D9798D",
     }
 
+    SETTINGS_ICON_COLORS = {
+        "default": "#FFFFFF",
+        "light": "#4C347E",
+        "corporate": "#15171B",
+        "frogs": "#244C3D",
+        "sakura": "#6A3340",
+    }
+
     def __init__(self, theme_manager=None):
         self._app_settings = QSettings("Teggy", "Teggy")
         base_main_window.TaggingPage = TaggingPage
@@ -41,9 +49,7 @@ class MainWindow(base_main_window.MainWindow):
 
         def startup_aware_check(service) -> bool:
             enabled = self._app_settings.value(
-                "updates/check_on_startup",
-                True,
-                type=bool,
+                "updates/check_on_startup", True, type=bool,
             )
             if not enabled:
                 return False
@@ -56,8 +62,7 @@ class MainWindow(base_main_window.MainWindow):
             base_main_window.UpdateService.check = original_update_check
 
         self.update_service.check = original_update_check.__get__(
-            self.update_service,
-            type(self.update_service),
+            self.update_service, type(self.update_service),
         )
 
         self.topbar.theme_button.setToolTip("Выбрать тему")
@@ -102,10 +107,13 @@ class MainWindow(base_main_window.MainWindow):
 
     def _apply_icon_theme(self, theme_name: str) -> None:
         color = self.THEME_ICON_COLORS.get(theme_name, self.THEME_ICON_COLORS["default"])
+        settings_color = self.SETTINGS_ICON_COLORS.get(
+            theme_name, self.SETTINGS_ICON_COLORS["default"]
+        )
         if hasattr(self.sidebar, "set_icon_color"):
             self.sidebar.set_icon_color(color)
         if hasattr(self.topbar, "set_icon_color"):
-            self.topbar.set_icon_color(color)
+            self.topbar.set_icon_color(color, settings_color)
 
     def _apply_theme(self, theme_name: str) -> None:
         if self.theme_manager is None:
@@ -113,8 +121,6 @@ class MainWindow(base_main_window.MainWindow):
         theme = self.theme_manager.load(theme_name)
         app = QApplication.instance()
         if app is not None:
-            # Полностью снимаем предыдущую тему, иначе Qt сохраняет часть
-            # закэшированных palette/style hints на уже созданных виджетах.
             app.setStyleSheet("")
             app.processEvents()
             app.setStyleSheet(theme.qss)
