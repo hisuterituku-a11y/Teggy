@@ -148,6 +148,7 @@ class Dashboard(QWidget):
         self.update_status_label = QLabel("Teggy готов к работе")
         self.update_status_label.setObjectName("DashboardSuccessText")
         self.update_status_label.setWordWrap(True)
+        self.update_status_label.setMinimumHeight(42)
         layout.addWidget(self.update_status_label)
         layout.addStretch(1)
 
@@ -211,6 +212,9 @@ class Dashboard(QWidget):
         )
         tip.setObjectName("DashboardTip")
         tip.setWordWrap(True)
+        tip.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        tip.setMinimumHeight(96)
+        tip.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding)
         layout.addWidget(tip)
         layout.addStretch(1)
 
