@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         self.update_service.no_update.connect(self._handle_no_update)
         self.update_service.failed.connect(self._handle_update_error)
 
-        self.shell = ApplicationShell()
+        self.shell = ApplicationShell(self)
         self.setCentralWidget(self.shell)
         self.sidebar = self.shell.sidebar
         self.topbar = self.shell.topbar
