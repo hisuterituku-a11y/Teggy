@@ -14,10 +14,11 @@ class MainWindow(base_main_window.MainWindow):
     """MainWindow с едиными шаблонами, настройками и переключаемыми темами."""
 
     THEME_LABELS = {
-        "default": "Тёмная",
-        "blue": "Синяя",
-        "purple": "Фиолетовая",
-        "light": "Светлая",
+        "default": "🌙  Тёмная",
+        "light": "☀️  Светлая",
+        "corporate": "💼  Корпоративная",
+        "frogs": "🐸  Лягушки",
+        "sakura": "🌸  Сакура",
     }
 
     def __init__(self, theme_manager=None):
@@ -66,23 +67,23 @@ class MainWindow(base_main_window.MainWindow):
     def _build_theme_menu(self) -> QMenu:
         menu = QMenu(self)
         menu.setObjectName("ThemeMenu")
-        group = []
         current = str(self._app_settings.value("appearance/theme", "default"))
         names = self.theme_manager.list_themes() if self.theme_manager is not None else ["default"]
+        self._theme_actions = []
         for name in names:
             action = QAction(self.THEME_LABELS.get(name, name), menu)
             action.setCheckable(True)
             action.setChecked(name == current)
-            action.triggered.connect(lambda checked=False, theme_name=name: self._apply_theme(theme_name))
+            action.triggered.connect(
+                lambda checked=False, theme_name=name: self._apply_theme(theme_name)
+            )
             menu.addAction(action)
-            group.append((name, action))
-        self._theme_actions = group
+            self._theme_actions.append((name, action))
         return menu
 
     def _show_theme_menu(self) -> None:
         button = self.topbar.theme_button
-        point = button.mapToGlobal(button.rect().bottomLeft())
-        self._theme_menu.popup(point)
+        self._theme_menu.popup(button.mapToGlobal(button.rect().bottomLeft()))
 
     def _open_settings(self) -> None:
         self._switch_page(3, "Настройки")
