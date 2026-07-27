@@ -14,7 +14,9 @@ class ThemeManager:
         "window.qss",
         "templates.qss",
         "settings.qss",
+        "theme.qss",
     )
+    THEME_ORDER = ("default", "blue", "purple", "light")
 
     def __init__(self, themes_path=None):
         self.themes_path = Path(themes_path) if themes_path else Path(__file__).parent
@@ -30,25 +32,20 @@ class ThemeManager:
     def load(self, theme_name: str) -> ThemeData:
         default_folder = self.themes_path / "default"
         theme_folder = self.themes_path / theme_name
-
         if not theme_folder.is_dir():
             theme_folder = default_folder
             theme_name = "default"
 
         qss_parts = self._read_theme_parts(default_folder)
         if theme_name != "default":
-            qss_parts.extend(self._read_theme_parts(theme_folder))
-
+            overlay = theme_folder / "theme.qss"
+            if overlay.is_file():
+                qss_parts.append(overlay.read_text(encoding="utf-8"))
         return ThemeData("\n\n".join(qss_parts))
 
     def list_themes(self) -> list[str]:
-        if not self.themes_path.is_dir():
-            return []
-
-        themes = [
-            folder.name
-            for folder in self.themes_path.iterdir()
-            if folder.is_dir()
-            and any((folder / file_name).is_file() for file_name in self.QSS_FILES)
+        return [
+            name
+            for name in self.THEME_ORDER
+            if (self.themes_path / name).is_dir()
         ]
-        return sorted(themes, key=lambda name: (name != "default", name.casefold()))
