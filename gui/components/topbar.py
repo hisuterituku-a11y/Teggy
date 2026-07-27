@@ -32,7 +32,6 @@ class TopBar(QFrame):
         super().__init__()
         self.setObjectName("TopBar")
         self._icon_color = "#A778FF"
-        self._settings_icon_color = "#FFFFFF"
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(24, 12, 24, 12)
@@ -69,7 +68,7 @@ class TopBar(QFrame):
         self.settings_button.setToolTip("Настройки")
         layout.addWidget(self.settings_button)
 
-        self.set_icon_color(self._icon_color, self._settings_icon_color)
+        self.set_icon_color(self._icon_color)
 
     def set_icon_color(self, color: str, settings_color: str | None = None) -> None:
         self._icon_color = color
@@ -77,4 +76,4 @@ class TopBar(QFrame):
             self._settings_icon_color = settings_color
         self.theme_button.setIcon(tinted_icon("sun", color))
         self.notify_button.setIcon(tinted_icon("bell", color))
-        self.settings_button.setIcon(tinted_icon("settings", self._settings_icon_color))
+        self.settings_button.setIcon(tinted_icon("settings", color))

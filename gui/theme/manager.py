@@ -132,8 +132,8 @@ QScrollBar::add-page, QScrollBar::sub-page {{ background: transparent; }}
 #WindowCloseButton:hover {{ background: #D94B64; color: #FFFFFF; }}
 QPushButton#ThemeButton, QPushButton#NotifyButton {{ background: {p['chrome_bg']}; color: {p['accent']}; border: 1px solid {p['topbar_border']}; border-radius: 18px; }}
 QPushButton#ThemeButton:hover, QPushButton#NotifyButton:hover {{ background: {p['chrome_hover']}; color: {p['accent']}; border-color: {p['accent']}; }}
-QPushButton#SettingsButton {{ background: {p['theme_selected']}; border: 1px solid {p['accent']}; border-radius: 18px; }}
-QPushButton#SettingsButton:hover {{ background: {p['theme_hover']}; border-color: {p['accent']}; }}
+QPushButton#SettingsButton {{ background: {p['chrome_bg']}; border: 1px solid {p['topbar_border']}; border-radius: 18px; color: {p['accent']}; }}
+QPushButton#SettingsButton:hover {{ background: {p['chrome_hover']}; border-color: {p['accent']}; color: {p['accent']}; }}
 QPushButton#YandexActionButton, QPushButton#DashboardSecondaryButton, QPushButton#AboutSecondaryButton, QPushButton#TemplateManagerButton {{ background: {p['secondary_bg']}; color: {p['secondary_text']}; border: 1px solid {p['secondary_border']}; border-radius: 10px; }}
 QPushButton#YandexActionButton:hover, QPushButton#DashboardSecondaryButton:hover, QPushButton#AboutSecondaryButton:hover, QPushButton#TemplateManagerButton:hover {{ background: {p['secondary_hover']}; color: {p['secondary_text']}; border-color: {p['accent']}; }}
 #PremiumTitle {{ color: {p['premium_title']}; background: transparent; }}
