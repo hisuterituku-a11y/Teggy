@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.shell)
         self.sidebar = self.shell.sidebar
         self.topbar = self.shell.topbar
-        self.window_title_bar = self.shell.window_title_bar
+        self.window_title_bar = self.shell.title_bar
         self.pages = self.shell.pages
 
         self.window_title_bar.help_button.clicked.connect(self._show_about_dialog)
