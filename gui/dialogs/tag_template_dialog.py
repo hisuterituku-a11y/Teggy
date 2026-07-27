@@ -36,6 +36,40 @@ class TagTemplateDialog(QDialog):
 
         shell = QWidget(self)
         shell.setObjectName("TemplateDialog")
+        shell.setStyleSheet(
+            """
+            QWidget#TemplateDialog {
+                background: #0E1428;
+                border: 1px solid #303B68;
+                border-radius: 14px;
+            }
+            QWidget#TemplateContent {
+                background: transparent;
+                border-bottom-left-radius: 13px;
+                border-bottom-right-radius: 13px;
+            }
+            QListWidget#TemplateList {
+                background: #11182D;
+                color: #F7F5FF;
+                border: 1px solid #303B68;
+                border-radius: 10px;
+                padding: 6px;
+                outline: none;
+            }
+            QListWidget#TemplateList::item {
+                min-height: 34px;
+                padding: 4px 8px;
+                border-radius: 7px;
+            }
+            QListWidget#TemplateList::item:hover {
+                background: #1A2343;
+            }
+            QListWidget#TemplateList::item:selected {
+                background: #39206B;
+                color: #FFFFFF;
+            }
+            """
+        )
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
