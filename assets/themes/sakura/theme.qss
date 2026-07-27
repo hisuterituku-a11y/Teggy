@@ -126,3 +126,30 @@ QProgressBar { background: #F4E3E4; border-color: #DDB9BF; color: #5D3B45; }
 QProgressBar::chunk { background: #D9798D; }
 QMessageBox { background: #FFF8F5; }
 QToolTip { background: #FFF4F2; color: #5D3B45; border: 1px solid #D9798D; }
+
+/* Dialogs, completion results and template manager */
+QDialog, QMessageBox, #TemplateDialog, #ProcessingResultDialog, #AboutDialog, #UpdateDialog {
+    background-color: #F4D9DB; color: #5D3B45;
+    background-image: url(assets/themes/sakura/pattern.svg);
+    background-repeat: repeat;
+}
+QDialog QFrame, QMessageBox QFrame, #TemplateSidebar, #TemplateEditor, #ProcessingResultCard {
+    background: #FFF8F5; color: #5D3B45; border: 1px solid #E9C9CC; border-radius: 12px;
+}
+QDialog QLabel, QMessageBox QLabel { background: transparent; color: #563640; }
+QDialog QListWidget, QDialog QTreeWidget, QDialog QTableWidget,
+QDialog QLineEdit, QDialog QTextEdit, QDialog QPlainTextEdit, QDialog QComboBox {
+    background: #FFFDFC; color: #5D3B45; border: 1px solid #DEBFC4;
+}
+QDialog QPushButton, QMessageBox QPushButton {
+    min-height: 34px; padding: 0 14px; background: #F8E7E8; color: #64434C;
+    border: 1px solid #DDB9BF; border-radius: 10px;
+}
+QDialog QPushButton:hover, QMessageBox QPushButton:hover { background: #F4D9DD; border-color: #D9798D; }
+QDialog QPushButton#PrimaryButton, QDialog QPushButton#TemplateProminentButton,
+QDialog QPushButton#DashboardActionButton, QMessageBox QPushButton:default {
+    background: #D9798D; color: #FFFFFF; border-color: #E8A4B1;
+}
+#GalleryContent, #PhotoGallery, #GalleryViewport, #EmptyGallery, #YandexDownloadLog {
+    background: #FFF8F5; color: #8C6971; border-color: #E9C9CC;
+}
