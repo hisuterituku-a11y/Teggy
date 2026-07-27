@@ -37,9 +37,25 @@ QCheckBox#DownloadOptionCheck::indicator:checked, QRadioButton#DownloadOptionChe
 #DashboardTip { background: #D9E9CF; color: #244C3D; border-color: #A9D9BC; }
 QMenu, #ThemeMenu { background: #105447; color: #F3FBF5; border: 1px solid #438071; }
 QMenu::item:selected { background: #D9E9CF; color: #123F33; }
-QScrollBar:vertical, QScrollBar:horizontal { background: #083D33; }
-QScrollBar::handle:vertical, QScrollBar::handle:horizontal { background: #679887; border-radius: 7px; }
 QProgressBar { background: #0B4439; border-color: #438071; }
 QProgressBar::chunk { background: #A9D9BC; }
 QMessageBox { background: #0A4A3E; }
 QToolTip { background: #D9E9CF; color: #123F33; border: 1px solid #86B89D; }
+
+/* Complete scrollbar override. The default theme used more specific selectors. */
+QScrollBar:vertical, #PageScroll QScrollBar:vertical, QAbstractScrollArea QScrollBar:vertical {
+    background: #083D33; width: 10px; margin: 0; border: none;
+}
+QScrollBar::handle:vertical, #PageScroll QScrollBar::handle:vertical, QAbstractScrollArea QScrollBar::handle:vertical {
+    background: #679887; min-height: 28px; border-radius: 5px; border: none;
+}
+QScrollBar::handle:vertical:hover, #PageScroll QScrollBar::handle:vertical:hover { background: #A9D9BC; }
+QScrollBar:horizontal, #PageScroll QScrollBar:horizontal, QAbstractScrollArea QScrollBar:horizontal {
+    background: #083D33; height: 10px; margin: 0; border: none;
+}
+QScrollBar::handle:horizontal, #PageScroll QScrollBar::handle:horizontal, QAbstractScrollArea QScrollBar::handle:horizontal {
+    background: #679887; min-width: 28px; border-radius: 5px; border: none;
+}
+QScrollBar::handle:horizontal:hover, #PageScroll QScrollBar::handle:horizontal:hover { background: #A9D9BC; }
+QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; background: transparent; border: none; }
+QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }
