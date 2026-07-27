@@ -1,0 +1,82 @@
+/* Metadata template controls */
+
+QPushButton#TemplateProminentButton {
+    min-height: 40px;
+    padding: 0 18px;
+    background: #39206B;
+    color: #FFFFFF;
+    border: 1px solid #915CFF;
+    border-radius: 11px;
+    font-weight: 700;
+}
+
+QPushButton#TemplateProminentButton:hover {
+    background: #4A2789;
+    border-color: #B68CFF;
+}
+
+QPushButton#TemplateProminentButton:pressed {
+    background: #2D1857;
+    border-color: #7C4DDE;
+}
+
+QPushButton#TemplateProminentButton:disabled {
+    background: #151B31;
+    color: #697392;
+    border-color: #2A3457;
+}
+
+QComboBox#TemplateCombo {
+    min-height: 40px;
+    padding: 0 38px 0 13px;
+    background: #11182D;
+    color: #F7F5FF;
+    border: 1px solid #303B68;
+    border-radius: 10px;
+    selection-background-color: #39206B;
+    selection-color: #FFFFFF;
+}
+
+QComboBox#TemplateCombo:hover {
+    background: #151D39;
+    border-color: #6942B5;
+}
+
+QComboBox#TemplateCombo:focus,
+QComboBox#TemplateCombo:on {
+    border-color: #915CFF;
+}
+
+QComboBox#TemplateCombo:disabled {
+    background: #0D1326;
+    color: #77809E;
+    border-color: #273150;
+}
+
+QComboBox#TemplateCombo::drop-down {
+    width: 34px;
+    border: none;
+    border-left: 1px solid #303B68;
+    background: transparent;
+}
+
+QComboBox#TemplateCombo::down-arrow {
+    image: url(assets/icons/teggy/chevron-down.svg);
+    width: 10px;
+    height: 10px;
+}
+
+QComboBox#TemplateCombo QAbstractItemView {
+    background: #11182D;
+    color: #F7F5FF;
+    border: 1px solid #6942B5;
+    padding: 5px;
+    outline: 0;
+    selection-background-color: #39206B;
+    selection-color: #FFFFFF;
+}
+
+QComboBox#TemplateCombo QAbstractItemView::item {
+    min-height: 34px;
+    padding: 4px 10px;
+}
