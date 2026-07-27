@@ -102,3 +102,39 @@ QPushButton#SettingsButton:pressed {
     background: #24164A;
     border-color: #A778FF;
 }
+
+/* Shared dialogs: processing results, template manager, updates and messages */
+QDialog, QMessageBox, #TemplateDialog, #ProcessingResultDialog, #AboutDialog, #UpdateDialog {
+    background: #0B1020;
+    color: #F7F5FF;
+}
+QDialog QFrame, QMessageBox QFrame, #TemplateSidebar, #TemplateEditor, #ProcessingResultCard {
+    background: #11182D;
+    color: #F7F5FF;
+    border: 1px solid #303B68;
+    border-radius: 12px;
+}
+QDialog QLabel, QMessageBox QLabel {
+    background: transparent;
+    color: #F7F5FF;
+}
+QDialog QPushButton, QMessageBox QPushButton {
+    min-height: 34px;
+    padding: 0 14px;
+    background: #151D39;
+    color: #F7F5FF;
+    border: 1px solid #303B68;
+    border-radius: 9px;
+}
+QDialog QPushButton:hover, QMessageBox QPushButton:hover {
+    background: #24164A;
+    border-color: #915CFF;
+}
+QDialog QPushButton#PrimaryButton,
+QDialog QPushButton#TemplateProminentButton,
+QDialog QPushButton#DashboardActionButton,
+QMessageBox QPushButton:default {
+    background: #7C4DDE;
+    color: #FFFFFF;
+    border-color: #915CFF;
+}
