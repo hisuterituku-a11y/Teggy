@@ -1,9 +1,10 @@
 import sys
 
 from PySide6.QtCore import QSettings
-from PySide6.QtWidgets import QApplication, QPushButton
+from PySide6.QtWidgets import QApplication, QMessageBox, QPushButton
 
 from core.paths import resource_path
+from gui.dialogs.themed_message_box import ThemedMessageBox
 from gui.main_window_templates import MainWindow
 from gui.theme.manager import ThemeManager
 from gui.utils.plain_paste_filter import PlainPasteFilter
@@ -12,9 +13,21 @@ from gui.utils.plain_paste_filter import PlainPasteFilter
 DEFAULT_THEME = "default"
 
 
+def _install_themed_message_boxes() -> None:
+    QMessageBox.warning = staticmethod(ThemedMessageBox.warning)
+    QMessageBox.critical = staticmethod(ThemedMessageBox.critical)
+
+    def themed_question(parent, title, text, buttons=None, default_button=None):
+        default = default_button or QMessageBox.StandardButton.No
+        return ThemedMessageBox.question(parent, title, text, default)
+
+    QMessageBox.question = staticmethod(themed_question)
+
+
 def main() -> int:
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
+    _install_themed_message_boxes()
 
     plain_paste_filter = PlainPasteFilter(app)
     app.installEventFilter(plain_paste_filter)
