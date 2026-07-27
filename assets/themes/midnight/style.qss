@@ -1,0 +1,26 @@
+/* Midnight blue overlay */
+QWidget { color: #EAF2FF; }
+QMainWindow, QStackedWidget, QScrollArea, #WindowBody, #ContentShell, #PageStack,
+#PageScroll, #PageScroll > QWidget, #PageScroll > QWidget > QWidget {
+    background: #07111F;
+}
+#WindowShell { background: #07111F; border-color: #1E3A5F; }
+#Sidebar, #TopBar, #WindowTitleBar { background: #0A1728; border-color: #1E3A5F; }
+#PhotoPanel, #TaskCard, #StatsBlock, #FileList { background: #0D1B2E; border-color: #244A73; }
+#DownloadOptionCard, #FolderItem, #ThumbnailCard { background: #10233A; border-color: #2C527B; }
+#DownloadOptionCard:hover, #ThumbnailCard:hover { background: #132B47; border-color: #3B82F6; }
+#DownloadOptionCard[selected="true"] { background: #102D52; border-color: #60A5FA; }
+#PrimaryButton, QPushButton#TemplateProminentButton, QPushButton#TemplateActionButton {
+    background: #2563EB; border-color: #60A5FA; color: #FFFFFF;
+}
+#PrimaryButton:hover, QPushButton#TemplateProminentButton:hover, QPushButton#TemplateActionButton:hover {
+    background: #3B82F6; border-color: #93C5FD;
+}
+QCheckBox#DownloadOptionCheck::indicator:checked { background: #2563EB; border-color: #60A5FA; }
+QLineEdit, QTextEdit, QPlainTextEdit, QComboBox#TemplateCombo {
+    background: #0A1728; border-color: #2C527B; color: #EAF2FF;
+}
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox#TemplateCombo:focus {
+    border-color: #60A5FA;
+}
+#ThemeButton:hover, #NotifyButton:hover, #SettingsButton:hover { border-color: #60A5FA; background: #132B47; }
