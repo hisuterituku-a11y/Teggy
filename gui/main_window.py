@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
         self.update_service = UpdateService(self)
         self.update_service.update_available.connect(self._handle_update_available)
         self.update_service.no_update.connect(self._handle_no_update)
-        self.update_service.error.connect(self._handle_update_error)
+        self.update_service.failed.connect(self._handle_update_error)
 
         self.shell = ApplicationShell()
         self.setCentralWidget(self.shell)
@@ -124,6 +124,7 @@ class MainWindow(QMainWindow):
     def _switch_page(self, index: int, page_name: str) -> None:
         self.pages.setCurrentIndex(index)
         self.sidebar.set_active(page_name)
+        self.topbar.title.setText(page_name)
 
     def _start_manual_update_check(self) -> None:
         self._manual_update_check = True
@@ -139,83 +140,105 @@ class MainWindow(QMainWindow):
         self._manual_update_check = False
 
     def _handle_update_error(self, message: str) -> None:
-        if self._manual_update_check:
-            self.dashboard_page.set_update_result(f"Не удалось проверить обновления: {message}")
         self._manual_update_check = False
+        self.dashboard_page.set_update_result(f"Не удалось проверить обновления: {message}")
 
     def _handle_update_available(self, release: ReleaseInfo) -> None:
-        self.dashboard_page.set_update_result(f"Доступна версия {release.version}")
         self._manual_update_check = False
-
+        self.dashboard_page.set_update_result(
+            f"Доступна версия {release.version}."
+        )
         if self._update_dialog_open:
             return
+
         self._update_dialog_open = True
-
-        box = QMessageBox(self)
-        box.setWindowTitle("Доступно обновление")
-        box.setIcon(QMessageBox.Icon.Information)
-        box.setText(f"Доступна новая версия Teggy {release.version}.")
-        if release.notes:
-            box.setInformativeText(release.notes[:500])
-        download_button = box.addButton("Открыть страницу релиза", QMessageBox.ButtonRole.AcceptRole)
-        box.addButton("Позже", QMessageBox.ButtonRole.RejectRole)
-        box.exec()
-        self._update_dialog_open = False
-
-        if box.clickedButton() is download_button:
-            QDesktopServices.openUrl(QUrl(release.url))
+        try:
+            answer = QMessageBox.question(
+                self,
+                "Обновление Teggy",
+                f"Доступна новая версия {release.version}. Открыть страницу релиза?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            if answer == QMessageBox.StandardButton.Yes:
+                QDesktopServices.openUrl(QUrl(release.html_url))
+        finally:
+            self._update_dialog_open = False
 
     def _show_about_dialog(self) -> None:
-        AboutDialog(self).exec()
+        dialog = AboutDialog(self)
+        dialog.exec()
 
     def reset_interface_geometry(self) -> None:
-        self.resize(1280, 820)
-        screen = QGuiApplication.screenAt(self.frameGeometry().center()) or QGuiApplication.primaryScreen()
+        screen = QGuiApplication.screenAt(self.frameGeometry().center())
+        if screen is None:
+            screen = QGuiApplication.primaryScreen()
         if screen is None:
             return
-        available = screen.availableGeometry()
-        frame = self.frameGeometry()
-        frame.moveCenter(available.center())
-        self.move(frame.topLeft())
 
-    def _create_resize_handles(self):
-        specs = (
-            (Qt.Edge.LeftEdge, Qt.CursorShape.SizeHorCursor),
-            (Qt.Edge.RightEdge, Qt.CursorShape.SizeHorCursor),
-            (Qt.Edge.TopEdge, Qt.CursorShape.SizeVerCursor),
-            (Qt.Edge.BottomEdge, Qt.CursorShape.SizeVerCursor),
-            (Qt.Edge.LeftEdge | Qt.Edge.TopEdge, Qt.CursorShape.SizeFDiagCursor),
-            (Qt.Edge.RightEdge | Qt.Edge.TopEdge, Qt.CursorShape.SizeBDiagCursor),
-            (Qt.Edge.LeftEdge | Qt.Edge.BottomEdge, Qt.CursorShape.SizeBDiagCursor),
-            (Qt.Edge.RightEdge | Qt.Edge.BottomEdge, Qt.CursorShape.SizeFDiagCursor),
-        )
-        return [ResizeHandle(self, edges, cursor) for edges, cursor in specs]
+        available = screen.availableGeometry()
+        width = min(max(self.SAFE_MINIMUM_WIDTH, 1180), available.width())
+        height = min(max(self.SAFE_MINIMUM_HEIGHT, 760), available.height())
+        self.resize(width, height)
+        self.move(available.center() - self.rect().center())
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        margin = self.RESIZE_MARGIN
-        width = self.width()
-        height = self.height()
-        left, right, top, bottom, top_left, top_right, bottom_left, bottom_right = self._resize_handles
-
-        left.setGeometry(0, margin, margin, max(0, height - 2 * margin))
-        right.setGeometry(width - margin, margin, margin, max(0, height - 2 * margin))
-        top.setGeometry(margin, 0, max(0, width - 2 * margin), margin)
-        bottom.setGeometry(margin, height - margin, max(0, width - 2 * margin), margin)
-        top_left.setGeometry(0, 0, margin, margin)
-        top_right.setGeometry(width - margin, 0, margin, margin)
-        bottom_left.setGeometry(0, height - margin, margin, margin)
-        bottom_right.setGeometry(width - margin, height - margin, margin, margin)
-
         self._update_window_mask()
+        self._position_resize_handles()
 
     def showEvent(self, event):
         super().showEvent(event)
         self._update_window_mask()
+        self._position_resize_handles()
 
     def _update_window_mask(self) -> None:
-        radius = 18
         path = QPainterPath()
-        path.addRoundedRect(0, 0, self.width(), self.height(), radius, radius)
-        polygon = path.toFillPolygon().toPolygon()
-        self.setMask(QRegion(polygon))
+        path.addRoundedRect(self.rect(), 14, 14)
+        region = QRegion(path.toFillPolygon().toPolygon())
+        self.setMask(region)
+
+    def _create_resize_handles(self) -> dict[str, ResizeHandle]:
+        handles = {
+            "left": ResizeHandle(self, Qt.Edge.LeftEdge, Qt.CursorShape.SizeHorCursor),
+            "right": ResizeHandle(self, Qt.Edge.RightEdge, Qt.CursorShape.SizeHorCursor),
+            "top": ResizeHandle(self, Qt.Edge.TopEdge, Qt.CursorShape.SizeVerCursor),
+            "bottom": ResizeHandle(self, Qt.Edge.BottomEdge, Qt.CursorShape.SizeVerCursor),
+            "top_left": ResizeHandle(
+                self,
+                Qt.Edge.TopEdge | Qt.Edge.LeftEdge,
+                Qt.CursorShape.SizeFDiagCursor,
+            ),
+            "top_right": ResizeHandle(
+                self,
+                Qt.Edge.TopEdge | Qt.Edge.RightEdge,
+                Qt.CursorShape.SizeBDiagCursor,
+            ),
+            "bottom_left": ResizeHandle(
+                self,
+                Qt.Edge.BottomEdge | Qt.Edge.LeftEdge,
+                Qt.CursorShape.SizeBDiagCursor,
+            ),
+            "bottom_right": ResizeHandle(
+                self,
+                Qt.Edge.BottomEdge | Qt.Edge.RightEdge,
+                Qt.CursorShape.SizeFDiagCursor,
+            ),
+        }
+        return handles
+
+    def _position_resize_handles(self) -> None:
+        margin = self.RESIZE_MARGIN
+        width = self.width()
+        height = self.height()
+
+        self._resize_handles["left"].setGeometry(0, margin, margin, height - 2 * margin)
+        self._resize_handles["right"].setGeometry(width - margin, margin, margin, height - 2 * margin)
+        self._resize_handles["top"].setGeometry(margin, 0, width - 2 * margin, margin)
+        self._resize_handles["bottom"].setGeometry(margin, height - margin, width - 2 * margin, margin)
+        self._resize_handles["top_left"].setGeometry(0, 0, margin, margin)
+        self._resize_handles["top_right"].setGeometry(width - margin, 0, margin, margin)
+        self._resize_handles["bottom_left"].setGeometry(0, height - margin, margin, margin)
+        self._resize_handles["bottom_right"].setGeometry(width - margin, height - margin, margin, margin)
+
+        for handle in self._resize_handles.values():
+            handle.raise_()
