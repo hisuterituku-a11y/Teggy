@@ -44,8 +44,7 @@ def main() -> int:
     app.setStyleSheet(theme.qss)
 
     window = MainWindow(theme_manager)
-    if window.width() < 1320 or window.height() < 860:
-        window.resize(max(window.width(), 1320), max(window.height(), 860))
+    window.reset_interface_geometry()
 
     for button in window.findChildren(QPushButton):
         if button.text().strip() in {
