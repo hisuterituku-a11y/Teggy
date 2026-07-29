@@ -30,6 +30,8 @@ from gui.components.window_title_bar import WindowTitleBar
 
 ISSUES_URL = "https://github.com/hisuterituku-a11y/Teggy/issues"
 REPOSITORY_URL = "https://github.com/hisuterituku-a11y/Teggy"
+TELEGRAM_HANDLE = "@olablud"
+TELEGRAM_URL = "https://t.me/olablud"
 
 FAQ_SECTIONS = [
     (
@@ -76,7 +78,7 @@ FAQ_SECTIONS = [
         [
             (
                 "Как сообщить об ошибке?",
-                "Перейдите на вкладку «Поддержка», сохраните диагностический отчёт и создайте обращение в GitHub Issues.",
+                "Перейдите на вкладку «Поддержка», сохраните диагностический отчёт и отправьте его разработчику в Telegram либо создайте обращение в GitHub Issues.",
             ),
         ],
     ),
@@ -91,8 +93,8 @@ class HelpDialog(QDialog):
         self.setModal(True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.resize(780, 640)
-        self.setMinimumSize(680, 540)
+        self.resize(780, 680)
+        self.setMinimumSize(680, 580)
 
         shell = QWidget(self)
         shell.setObjectName("HelpDialogShell")
@@ -238,13 +240,55 @@ class HelpDialog(QDialog):
         layout.setContentsMargins(0, 2, 0, 0)
         layout.setSpacing(12)
 
+        contact_card = QFrame()
+        contact_card.setObjectName("ContactCard")
+        contact_layout = QVBoxLayout(contact_card)
+        contact_layout.setContentsMargins(18, 16, 18, 16)
+        contact_layout.setSpacing(9)
+
+        contact_title = QLabel("Связаться с разработчиком")
+        contact_title.setObjectName("ContactTitle")
+        contact_layout.addWidget(contact_title)
+
+        contact_handle = QLabel(f"Telegram:  {TELEGRAM_HANDLE}")
+        contact_handle.setObjectName("ContactHandle")
+        contact_handle.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        contact_layout.addWidget(contact_handle)
+
+        contact_hint = QLabel(
+            "При ошибке кратко опишите, что произошло, и приложите диагностический отчёт. "
+            "Скриншот тоже пригодится, потому что телепатия в сборку пока не вошла."
+        )
+        contact_hint.setObjectName("ContactHint")
+        contact_hint.setWordWrap(True)
+        contact_layout.addWidget(contact_hint)
+
+        contact_actions = QHBoxLayout()
+        contact_actions.setSpacing(10)
+
+        telegram_button = QPushButton("Открыть Telegram")
+        telegram_button.setObjectName("TelegramButton")
+        telegram_button.clicked.connect(
+            lambda: QDesktopServices.openUrl(QUrl(TELEGRAM_URL))
+        )
+        contact_actions.addWidget(telegram_button)
+
+        copy_contact_button = QPushButton(f"Скопировать {TELEGRAM_HANDLE}")
+        copy_contact_button.setObjectName("HelpSecondaryButton")
+        copy_contact_button.clicked.connect(self._copy_telegram_handle)
+        contact_actions.addWidget(copy_contact_button)
+        contact_actions.addStretch(1)
+        contact_layout.addLayout(contact_actions)
+
+        layout.addWidget(contact_card)
+
         title = QLabel("Диагностический отчёт")
         title.setObjectName("SupportTitle")
         layout.addWidget(title)
 
         description = QLabel(
-            "При обращении приложите этот отчёт. Он не содержит фотографии, теги или пароли, "
-            "но включает сведения о системе и последние строки журнала."
+            "Отчёт не содержит фотографии, теги или пароли, но включает сведения о системе "
+            "и последние строки журнала."
         )
         description.setObjectName("SupportDescription")
         description.setWordWrap(True)
@@ -326,16 +370,14 @@ class HelpDialog(QDialog):
                 font-size: 13px;
                 font-weight: 600;
             }
-            QPushButton#HelpSectionButton:hover {
-                color: #e5edf8;
+            QPushButton#HelpSectionButton:hover,
+            QPushButton#HelpSectionButton:checked {
+                color: #ffffff;
                 background: #172033;
                 border-radius: 7px 7px 0 0;
             }
             QPushButton#HelpSectionButton:checked {
-                color: #ffffff;
-                background: #172033;
                 border-bottom: 2px solid #7c3aed;
-                border-radius: 7px 7px 0 0;
             }
             QScrollArea#HelpScroll,
             QScrollArea#HelpScroll > QWidget > QWidget {
@@ -361,7 +403,8 @@ class HelpDialog(QDialog):
                 height: 0;
             }
             QLabel#FaqIntro,
-            QLabel#SupportDescription {
+            QLabel#SupportDescription,
+            QLabel#ContactHint {
                 color: #9da9bb;
                 font-size: 13px;
             }
@@ -372,12 +415,14 @@ class HelpDialog(QDialog):
                 letter-spacing: 1px;
                 padding: 0 2px 2px 2px;
             }
-            QLabel#SupportTitle {
+            QLabel#SupportTitle,
+            QLabel#ContactTitle {
                 color: #ffffff;
                 font-size: 18px;
                 font-weight: 700;
             }
-            QFrame#FaqCard {
+            QFrame#FaqCard,
+            QFrame#ContactCard {
                 background: #151f32;
                 border: 1px solid #2b3850;
                 border-radius: 10px;
@@ -386,9 +431,18 @@ class HelpDialog(QDialog):
                 border-color: #4c3f78;
                 background: #18233a;
             }
+            QFrame#ContactCard {
+                border-color: #4d3977;
+                background: #171f34;
+            }
             QLabel#FaqQuestion {
                 color: #f7f9fc;
                 font-size: 14px;
+                font-weight: 700;
+            }
+            QLabel#ContactHandle {
+                color: #c9b7ff;
+                font-size: 15px;
                 font-weight: 700;
             }
             QFrame#FaqAccent {
@@ -413,18 +467,21 @@ class HelpDialog(QDialog):
             }
             QPushButton#HelpPrimaryButton,
             QPushButton#HelpSecondaryButton,
-            QPushButton#HelpCloseButton {
+            QPushButton#HelpCloseButton,
+            QPushButton#TelegramButton {
                 min-height: 36px;
                 border-radius: 8px;
                 padding: 0 16px;
                 font-weight: 600;
             }
-            QPushButton#HelpPrimaryButton {
+            QPushButton#HelpPrimaryButton,
+            QPushButton#TelegramButton {
                 background: #6d3fc0;
                 color: white;
                 border: 1px solid #8150d4;
             }
-            QPushButton#HelpPrimaryButton:hover {
+            QPushButton#HelpPrimaryButton:hover,
+            QPushButton#TelegramButton:hover {
                 background: #7b4acd;
             }
             QPushButton#HelpSecondaryButton,
@@ -450,6 +507,10 @@ class HelpDialog(QDialog):
     def _copy_report(self) -> None:
         QGuiApplication.clipboard().setText(self.report_view.toPlainText())
         QMessageBox.information(self, "Готово", "Диагностический отчёт скопирован.")
+
+    def _copy_telegram_handle(self) -> None:
+        QGuiApplication.clipboard().setText(TELEGRAM_HANDLE)
+        QMessageBox.information(self, "Готово", f"Контакт {TELEGRAM_HANDLE} скопирован.")
 
     def _save_report(self) -> None:
         default_name = f"teggy-report-{datetime.now():%Y%m%d-%H%M%S}.txt"
