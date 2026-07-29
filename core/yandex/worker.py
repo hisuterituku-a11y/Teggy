@@ -8,7 +8,6 @@ from core.yandex.diagnostics import (
 )
 
 from PySide6.QtCore import QThread, Signal
-
 from core.yandex.yandex_router import YandexRouter
 
 
@@ -52,14 +51,21 @@ class YandexWorker(QThread):
         success = False
 
         try:
+            if self._cancel_requested or self.isInterruptionRequested():
+                self._log("Операция отменена до запуска")
+                return
+
             router = YandexRouter()
             self._router = router
 
             router.log = self._log
             router.progress = self._progress
 
-            if self._cancel_requested:
+            # Отмена могла прийти между первой проверкой и назначением роутера.
+            if self._cancel_requested or self.isInterruptionRequested():
                 router.cancel()
+                self._log("Операция отменена до запуска")
+                return
 
             success = router.run(
                 self.url,
@@ -109,13 +115,14 @@ class YandexWorker(QThread):
         self.progress.emit(str(text))
 
     def cancel(self) -> None:
-        self._cancel_requested = True
+        if self._cancel_requested:
+            return
 
+        self._cancel_requested = True
+        self.requestInterruption()
         self._log("Запрошена отмена операции...")
 
         router = self._router
 
         if router is not None:
             router.cancel()
-
-        self.requestInterruption()
