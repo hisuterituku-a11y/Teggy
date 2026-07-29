@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import re
 import shutil
@@ -908,6 +908,10 @@ class YandexVideoDownloader:
     ) -> bool:
         import time
 
+        temp_path = filename.with_name(
+            f"{filename.stem}.part{filename.suffix}"
+        )
+
         command = [
             ffmpeg_path,
             "-y",
@@ -932,7 +936,7 @@ class YandexVideoDownloader:
             "copy",
             "-movflags",
             "+faststart",
-            str(filename),
+            str(temp_path),
         ]
 
         creation_flags = (
@@ -946,7 +950,7 @@ class YandexVideoDownloader:
         )
 
         error_filename.unlink(missing_ok=True)
-        filename.unlink(missing_ok=True)
+        temp_path.unlink(missing_ok=True)
 
         process: subprocess.Popen | None = None
 
@@ -964,10 +968,7 @@ class YandexVideoDownloader:
                 encoding="utf-8",
                 errors="replace",
             ) as error_file:
-                self._log(
-                    f"Manifest: {manifest_url}",
-                    on_log,
-                )
+
 
                 process = subprocess.Popen(
                     command,
@@ -977,10 +978,7 @@ class YandexVideoDownloader:
                     creationflags=creation_flags,
                 )
 
-                self._log(
-                    f"ffmpeg запущен, PID: {process.pid}",
-                    on_log,
-                )
+
 
                 while process.poll() is None:
                     if self._cancelled:
@@ -994,8 +992,8 @@ class YandexVideoDownloader:
 
                     try:
                         current_size = (
-                            filename.stat().st_size
-                            if filename.exists()
+                            temp_path.stat().st_size
+                            if temp_path.exists()
                             else 0
                         )
                     except OSError:
@@ -1005,13 +1003,6 @@ class YandexVideoDownloader:
                         last_size = current_size
                         last_progress_at = now
 
-                        self._log(
-                            (
-                                "Получено данных: "
-                                f"{current_size / 1024 / 1024:.2f} МБ"
-                            ),
-                            on_log,
-                        )
 
                     elapsed = now - started_at
                     no_progress_elapsed = now - last_progress_at
@@ -1069,11 +1060,6 @@ class YandexVideoDownloader:
 
             return_code = process.returncode
 
-            self._log(
-                f"ffmpeg завершился: {return_code}",
-                on_log,
-            )
-
             if return_code != 0:
                 try:
                     error_text = error_filename.read_text(
@@ -1097,17 +1083,17 @@ class YandexVideoDownloader:
                         on_log,
                     )
 
-                filename.unlink(missing_ok=True)
+                temp_path.unlink(missing_ok=True)
                 return False
 
-            if not filename.exists():
+            if not temp_path.exists():
                 self._log(
-                    "ffmpeg не создал итоговый файл",
+                    "ffmpeg не создал временный файл",
                     on_log,
                 )
                 return False
 
-            file_size = filename.stat().st_size
+            file_size = temp_path.stat().st_size
 
             if file_size < 1024:
                 self._log(
@@ -1115,8 +1101,10 @@ class YandexVideoDownloader:
                     on_log,
                 )
 
-                filename.unlink(missing_ok=True)
+                temp_path.unlink(missing_ok=True)
                 return False
+
+            temp_path.replace(filename)
 
             self._log(
                 (
@@ -1136,7 +1124,7 @@ class YandexVideoDownloader:
                 except Exception:
                     pass
 
-            filename.unlink(missing_ok=True)
+            temp_path.unlink(missing_ok=True)
 
             self._log(
                 f"Ошибка запуска ffmpeg: {error}",
@@ -1232,14 +1220,6 @@ class YandexVideoDownloader:
                 )
                 continue
 
-            temporary_filename = filename.with_suffix(
-                ".part.mp4"
-            )
-
-            temporary_filename.unlink(
-                missing_ok=True,
-            )
-
             self._log(
                 f"Скачивание видео {index}/{total}",
                 on_log,
@@ -1248,15 +1228,11 @@ class YandexVideoDownloader:
             success = self._download_manifest(
                 ffmpeg_path=ffmpeg_path,
                 manifest_url=manifest_url,
-                filename=temporary_filename,
+                filename=filename,
                 on_log=on_log,
             )
 
             if not success:
-                temporary_filename.unlink(
-                    missing_ok=True,
-                )
-
                 self._log(
                     (
                         f"Видео {index}/{total}: "
@@ -1265,11 +1241,6 @@ class YandexVideoDownloader:
                     on_log,
                 )
                 continue
-
-            if filename.exists():
-                filename.unlink()
-
-            temporary_filename.replace(filename)
 
             saved += 1
 
