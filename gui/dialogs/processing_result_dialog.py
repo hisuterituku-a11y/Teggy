@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QLabel,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -36,7 +37,8 @@ class ProcessingResultDialog(QDialog):
         self.setModal(True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setFixedSize(500, 430)
+        self.setFixedWidth(500)
+        self.setMinimumHeight(500)
 
         shell = QWidget(self)
         shell.setObjectName("ResultDialog")
@@ -60,19 +62,28 @@ class ProcessingResultDialog(QDialog):
 
         content = QWidget()
         content.setObjectName("ResultContent")
-        content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(30, 24, 30, 28)
-        content_layout.setSpacing(16)
 
-        icon_name = "dialog-info.svg" if cancelled else (
-            "dialog-error.svg" if failed else "dialog-success.svg"
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(30, 20, 30, 24)
+        content_layout.setSpacing(14)
+
+        icon_name = (
+            "dialog-info.svg"
+            if cancelled
+            else "dialog-error.svg"
+            if failed
+            else "dialog-success.svg"
         )
+
         icon_label = QLabel()
         icon_label.setObjectName("ResultIcon")
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_label.setFixedHeight(64)
+
         icon_pixmap = QPixmap(
             str(resource_path("assets", "icons", "teggy", icon_name))
         )
+
         if not icon_pixmap.isNull():
             icon_label.setPixmap(
                 icon_pixmap.scaled(
@@ -82,23 +93,37 @@ class ProcessingResultDialog(QDialog):
                     Qt.TransformationMode.SmoothTransformation,
                 )
             )
+
         content_layout.addWidget(icon_label)
 
-        title_text = "Обработка отменена" if cancelled else (
-            "Обработка завершена с ошибками" if failed else "Готово"
+        title_text = (
+            "Обработка отменена"
+            if cancelled
+            else "Обработка завершена с ошибками"
+            if failed
+            else "Готово"
         )
+
         title = QLabel(title_text)
         title.setObjectName("ResultTitle")
-        title.setMinimumHeight(32)
+        title.setFixedHeight(32)
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         content_layout.addWidget(title)
 
         stats = QFrame()
         stats.setObjectName("ResultStats")
+        stats.setMinimumHeight(130)
+        stats.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Fixed,
+        )
+
         stats_layout = QGridLayout(stats)
-        stats_layout.setContentsMargins(18, 16, 18, 16)
+        stats_layout.setContentsMargins(18, 14, 18, 14)
         stats_layout.setHorizontalSpacing(24)
-        stats_layout.setVerticalSpacing(12)
+        stats_layout.setVerticalSpacing(6)
+        stats_layout.setColumnStretch(0, 1)
+        stats_layout.setColumnStretch(1, 0)
 
         rows = (
             ("Всего файлов", total),
@@ -106,18 +131,21 @@ class ProcessingResultDialog(QDialog):
             ("Преобразовано в JPG", converted),
             ("Ошибок", failed),
         )
+
         for row, (label_text, value) in enumerate(rows):
             label = QLabel(label_text)
             label.setObjectName("ResultStatLabel")
-            label.setMinimumHeight(24)
+            label.setFixedHeight(22)
             label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
             value_label = QLabel(str(value))
             value_label.setObjectName("ResultStatValue")
-            value_label.setMinimumHeight(24)
+            value_label.setFixedHeight(22)
             value_label.setAlignment(
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+                Qt.AlignmentFlag.AlignRight
+                | Qt.AlignmentFlag.AlignVCenter
             )
+
             stats_layout.addWidget(label, row, 0)
             stats_layout.addWidget(value_label, row, 1)
 
@@ -126,18 +154,22 @@ class ProcessingResultDialog(QDialog):
         if output_dir is not None:
             open_button = QPushButton("Открыть папку Teggy")
             open_button.setObjectName("PrimaryButton")
-            open_button.setMinimumHeight(40)
+            open_button.setFixedHeight(56)
             open_button.clicked.connect(self._open_output_dir)
             content_layout.addWidget(open_button)
 
         close_button = QPushButton("Закрыть")
         close_button.setObjectName("AboutSecondaryButton")
-        close_button.setMinimumHeight(40)
+        close_button.setFixedHeight(40)
         close_button.clicked.connect(self.accept)
         content_layout.addWidget(close_button)
 
-        shell_layout.addWidget(content, 1)
+        shell_layout.addWidget(content)
+
+        self.adjustSize()
 
     def _open_output_dir(self) -> None:
         if self._output_dir is not None:
-            QDesktopServices.openUrl(QUrl.fromLocalFile(str(self._output_dir)))
+            QDesktopServices.openUrl(
+                QUrl.fromLocalFile(str(self._output_dir))
+            )
