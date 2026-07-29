@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QScrollArea,
-    QTabWidget,
+    QStackedWidget,
     QTextBrowser,
     QVBoxLayout,
     QWidget,
@@ -91,8 +91,8 @@ class HelpDialog(QDialog):
         self.setModal(True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.resize(820, 680)
-        self.setMinimumSize(700, 560)
+        self.resize(780, 640)
+        self.setMinimumSize(680, 540)
 
         shell = QWidget(self)
         shell.setObjectName("HelpDialogShell")
@@ -117,26 +117,57 @@ class HelpDialog(QDialog):
         content = QWidget()
         content.setObjectName("HelpDialogContent")
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(22, 18, 22, 18)
-        content_layout.setSpacing(14)
+        content_layout.setContentsMargins(24, 20, 24, 20)
+        content_layout.setSpacing(16)
 
-        tabs = QTabWidget()
-        tabs.setObjectName("HelpTabs")
-        tabs.addTab(self._build_faq_tab(), "FAQ")
-        tabs.addTab(self._build_support_tab(), "Поддержка")
-        content_layout.addWidget(tabs, 1)
+        header = QHBoxLayout()
+        header.setSpacing(8)
 
+        self.faq_button = QPushButton("FAQ")
+        self.faq_button.setObjectName("HelpSectionButton")
+        self.faq_button.setCheckable(True)
+        self.faq_button.setChecked(True)
+        self.faq_button.clicked.connect(lambda: self._switch_page(0))
+        header.addWidget(self.faq_button)
+
+        self.support_button = QPushButton("Поддержка")
+        self.support_button.setObjectName("HelpSectionButton")
+        self.support_button.setCheckable(True)
+        self.support_button.clicked.connect(lambda: self._switch_page(1))
+        header.addWidget(self.support_button)
+        header.addStretch(1)
+        content_layout.addLayout(header)
+
+        divider = QFrame()
+        divider.setObjectName("HelpDivider")
+        divider.setFrameShape(QFrame.Shape.HLine)
+        content_layout.addWidget(divider)
+
+        self.stack = QStackedWidget()
+        self.stack.setObjectName("HelpStack")
+        self.stack.addWidget(self._build_faq_tab())
+        self.stack.addWidget(self._build_support_tab())
+        content_layout.addWidget(self.stack, 1)
+
+        footer = QHBoxLayout()
+        footer.addStretch(1)
         close_button = QPushButton("Закрыть")
         close_button.setObjectName("HelpCloseButton")
         close_button.clicked.connect(self.reject)
-        content_layout.addWidget(close_button)
+        footer.addWidget(close_button)
+        content_layout.addLayout(footer)
 
         shell_layout.addWidget(content, 1)
         self._apply_styles()
 
+    def _switch_page(self, index: int) -> None:
+        self.stack.setCurrentIndex(index)
+        self.faq_button.setChecked(index == 0)
+        self.support_button.setChecked(index == 1)
+
     def _build_faq_tab(self) -> QWidget:
         tab = QWidget()
-        tab.setObjectName("HelpTab")
+        tab.setObjectName("HelpPage")
         tab_layout = QVBoxLayout(tab)
         tab_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -149,8 +180,8 @@ class HelpDialog(QDialog):
         content = QWidget()
         content.setObjectName("FaqContent")
         layout = QVBoxLayout(content)
-        layout.setContentsMargins(18, 18, 18, 18)
-        layout.setSpacing(16)
+        layout.setContentsMargins(0, 2, 10, 8)
+        layout.setSpacing(18)
 
         intro = QLabel("Краткие ответы на основные вопросы по работе с Teggy.")
         intro.setObjectName("FaqIntro")
@@ -158,21 +189,32 @@ class HelpDialog(QDialog):
         layout.addWidget(intro)
 
         for section_title, questions in FAQ_SECTIONS:
-            section_label = QLabel(section_title)
+            section = QWidget()
+            section.setObjectName("FaqSection")
+            section_layout = QVBoxLayout(section)
+            section_layout.setContentsMargins(0, 0, 0, 0)
+            section_layout.setSpacing(10)
+
+            section_label = QLabel(section_title.upper())
             section_label.setObjectName("FaqSectionTitle")
-            layout.addWidget(section_label)
+            section_layout.addWidget(section_label)
 
             for question, answer in questions:
                 card = QFrame()
                 card.setObjectName("FaqCard")
                 card_layout = QVBoxLayout(card)
-                card_layout.setContentsMargins(16, 13, 16, 14)
-                card_layout.setSpacing(7)
+                card_layout.setContentsMargins(18, 15, 18, 16)
+                card_layout.setSpacing(8)
 
                 question_label = QLabel(question)
                 question_label.setObjectName("FaqQuestion")
                 question_label.setWordWrap(True)
                 card_layout.addWidget(question_label)
+
+                accent = QFrame()
+                accent.setObjectName("FaqAccent")
+                accent.setFixedHeight(2)
+                card_layout.addWidget(accent)
 
                 answer_label = QLabel(answer)
                 answer_label.setObjectName("FaqAnswer")
@@ -180,7 +222,9 @@ class HelpDialog(QDialog):
                 answer_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
                 card_layout.addWidget(answer_label)
 
-                layout.addWidget(card)
+                section_layout.addWidget(card)
+
+            layout.addWidget(section)
 
         layout.addStretch(1)
         scroll.setWidget(content)
@@ -189,9 +233,9 @@ class HelpDialog(QDialog):
 
     def _build_support_tab(self) -> QWidget:
         tab = QWidget()
-        tab.setObjectName("HelpTab")
+        tab.setObjectName("HelpPage")
         layout = QVBoxLayout(tab)
-        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setContentsMargins(0, 2, 0, 0)
         layout.setSpacing(12)
 
         title = QLabel("Диагностический отчёт")
@@ -211,28 +255,29 @@ class HelpDialog(QDialog):
         self.report_view.setPlainText(self._build_report())
         layout.addWidget(self.report_view, 1)
 
-        buttons = QHBoxLayout()
-        buttons.setSpacing(10)
+        actions = QHBoxLayout()
+        actions.setSpacing(10)
 
         copy_button = QPushButton("Скопировать отчёт")
         copy_button.setObjectName("HelpPrimaryButton")
         copy_button.clicked.connect(self._copy_report)
-        buttons.addWidget(copy_button)
+        actions.addWidget(copy_button)
 
         save_button = QPushButton("Сохранить отчёт…")
         save_button.setObjectName("HelpSecondaryButton")
         save_button.clicked.connect(self._save_report)
-        buttons.addWidget(save_button)
+        actions.addWidget(save_button)
 
         refresh_button = QPushButton("Обновить")
         refresh_button.setObjectName("HelpSecondaryButton")
         refresh_button.clicked.connect(self._refresh_report)
-        buttons.addWidget(refresh_button)
-
-        layout.addLayout(buttons)
+        actions.addWidget(refresh_button)
+        actions.addStretch(1)
+        layout.addLayout(actions)
 
         links = QHBoxLayout()
         links.setSpacing(10)
+
         issues_button = QPushButton("Создать обращение")
         issues_button.setObjectName("HelpSecondaryButton")
         issues_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(ISSUES_URL)))
@@ -244,6 +289,7 @@ class HelpDialog(QDialog):
             lambda: QDesktopServices.openUrl(QUrl(REPOSITORY_URL))
         )
         links.addWidget(repository_button)
+        links.addStretch(1)
         layout.addLayout(links)
 
         return tab
@@ -252,104 +298,148 @@ class HelpDialog(QDialog):
         self.setStyleSheet(
             """
             QWidget#HelpDialogShell {
-                background: #15181d;
-                border: 1px solid #2b313a;
+                background: #111827;
+                border: 1px solid #2f3b52;
                 border-radius: 14px;
             }
             QWidget#HelpDialogContent,
-            QWidget#HelpTab,
-            QWidget#FaqContent {
-                background: #15181d;
-            }
-            QTabWidget#HelpTabs::pane {
-                border: 1px solid #2b313a;
-                border-radius: 10px;
-                background: #15181d;
-                top: -1px;
-            }
-            QTabWidget#HelpTabs QTabBar::tab {
-                background: #1d2229;
-                color: #aeb7c2;
-                border: 1px solid #2b313a;
-                padding: 9px 22px;
-                min-width: 110px;
-            }
-            QTabWidget#HelpTabs QTabBar::tab:selected {
-                background: #252c35;
-                color: #ffffff;
-                border-bottom: 2px solid #3b82f6;
-            }
-            QScrollArea#HelpScroll {
+            QWidget#HelpPage,
+            QWidget#FaqContent,
+            QWidget#FaqSection,
+            QStackedWidget#HelpStack {
                 background: transparent;
                 border: none;
             }
+            QFrame#HelpDivider {
+                background: #28344a;
+                border: none;
+                max-height: 1px;
+            }
+            QPushButton#HelpSectionButton {
+                min-width: 108px;
+                min-height: 36px;
+                padding: 0 18px;
+                color: #9ca9bd;
+                background: transparent;
+                border: none;
+                border-bottom: 2px solid transparent;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            QPushButton#HelpSectionButton:hover {
+                color: #e5edf8;
+                background: #172033;
+                border-radius: 7px 7px 0 0;
+            }
+            QPushButton#HelpSectionButton:checked {
+                color: #ffffff;
+                background: #172033;
+                border-bottom: 2px solid #7c3aed;
+                border-radius: 7px 7px 0 0;
+            }
+            QScrollArea#HelpScroll,
+            QScrollArea#HelpScroll > QWidget > QWidget {
+                background: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background: transparent;
+                width: 8px;
+                margin: 4px 0;
+            }
+            QScrollBar::handle:vertical {
+                background: #5b35a6;
+                min-height: 34px;
+                border-radius: 4px;
+            }
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical,
+            QScrollBar::add-page:vertical,
+            QScrollBar::sub-page:vertical {
+                background: transparent;
+                border: none;
+                height: 0;
+            }
             QLabel#FaqIntro,
             QLabel#SupportDescription {
-                color: #9da7b3;
+                color: #9da9bb;
                 font-size: 13px;
             }
-            QLabel#FaqSectionTitle,
+            QLabel#FaqSectionTitle {
+                color: #8b9ab0;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 1px;
+                padding: 0 2px 2px 2px;
+            }
             QLabel#SupportTitle {
                 color: #ffffff;
-                font-size: 15px;
+                font-size: 18px;
                 font-weight: 700;
-                padding-top: 4px;
-                padding-bottom: 2px;
-                border-bottom: 1px solid #303741;
             }
             QFrame#FaqCard {
-                background: #1b2027;
-                border: 1px solid #2d343e;
+                background: #151f32;
+                border: 1px solid #2b3850;
                 border-radius: 10px;
             }
+            QFrame#FaqCard:hover {
+                border-color: #4c3f78;
+                background: #18233a;
+            }
             QLabel#FaqQuestion {
-                color: #f4f7fb;
+                color: #f7f9fc;
                 font-size: 14px;
                 font-weight: 700;
             }
+            QFrame#FaqAccent {
+                background: #6d3fc0;
+                border: none;
+                border-radius: 1px;
+                max-width: 52px;
+            }
             QLabel#FaqAnswer {
-                color: #aeb7c2;
+                color: #b4bfd0;
                 font-size: 13px;
-                line-height: 1.4;
+                padding-top: 1px;
             }
             QTextBrowser#ReportView {
-                background: #101318;
-                color: #d7dde5;
-                border: 1px solid #2b313a;
-                border-radius: 8px;
-                padding: 10px;
+                background: #0c1322;
+                color: #d5deeb;
+                border: 1px solid #2b3850;
+                border-radius: 9px;
+                padding: 12px;
                 font-family: Consolas, monospace;
                 font-size: 12px;
             }
             QPushButton#HelpPrimaryButton,
             QPushButton#HelpSecondaryButton,
             QPushButton#HelpCloseButton {
-                min-height: 34px;
+                min-height: 36px;
                 border-radius: 8px;
                 padding: 0 16px;
-            }
-            QPushButton#HelpPrimaryButton {
-                background: #2563eb;
-                color: white;
-                border: 1px solid #3b82f6;
                 font-weight: 600;
             }
+            QPushButton#HelpPrimaryButton {
+                background: #6d3fc0;
+                color: white;
+                border: 1px solid #8150d4;
+            }
             QPushButton#HelpPrimaryButton:hover {
-                background: #2f6ff0;
+                background: #7b4acd;
             }
             QPushButton#HelpSecondaryButton,
             QPushButton#HelpCloseButton {
-                background: #1d2229;
-                color: #d7dde5;
-                border: 1px solid #333b46;
+                background: #172033;
+                color: #dce5f2;
+                border: 1px solid #30405a;
             }
             QPushButton#HelpSecondaryButton:hover,
             QPushButton#HelpCloseButton:hover {
-                background: #272e38;
+                background: #1d2a42;
+                border-color: #445878;
             }
             QPushButton#HelpCloseButton {
-                min-width: 120px;
-                align-self: center;
+                min-width: 118px;
             }
             """
         )
