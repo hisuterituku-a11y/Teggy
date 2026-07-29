@@ -1,6 +1,7 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QEasingCurve, Qt, QTimer, QVariantAnimation, Signal
 from PySide6.QtWidgets import (
     QFrame,
+    QGraphicsOpacityEffect,
     QGridLayout,
     QHBoxLayout,
     QLabel,
@@ -10,6 +11,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from core.statistics import StatisticsStore
 from core.version import display_version
 
 
@@ -24,6 +26,13 @@ class Dashboard(QWidget):
         self.setObjectName("DashboardPage")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setMinimumWidth(900)
+
+        self._statistics_store = StatisticsStore()
+        self._stat_labels: dict[str, QLabel] = {}
+        self._stat_animations: list[QVariantAnimation] = []
+        self._statistics_card: QFrame | None = None
+        self._statistics_effect: QGraphicsOpacityEffect | None = None
+        self._statistics_fade: QVariantAnimation | None = None
 
         root = QVBoxLayout(self)
         root.setContentsMargins(32, 28, 32, 28)
@@ -51,6 +60,8 @@ class Dashboard(QWidget):
         content.addWidget(self._tips_panel(), 1, 1)
         root.addLayout(content)
         root.addStretch(1)
+
+        QTimer.singleShot(120, self.refresh_statistics)
 
     def _quick_start_panel(self) -> QFrame:
         panel = QFrame()
@@ -85,14 +96,7 @@ class Dashboard(QWidget):
                 "☁",
             )
         )
-        cards.addWidget(
-            self._quick_action(
-                "Шаблоны",
-                "Повторное использование полей",
-                "Тегирование",
-                "✦",
-            )
-        )
+        cards.addWidget(self._statistics_panel())
         layout.addLayout(cards)
         return panel
 
@@ -125,6 +129,141 @@ class Dashboard(QWidget):
         )
         box.addWidget(button)
         return card
+
+    def _statistics_panel(self) -> QFrame:
+        card = QFrame()
+        card.setObjectName("DashboardStatisticsCard")
+        card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        card.setStyleSheet(
+            """
+            QFrame#DashboardStatisticsCard {
+                background-color: rgba(18, 25, 54, 210);
+                border: 1px solid rgba(145, 91, 255, 150);
+                border-radius: 16px;
+            }
+            QLabel#DashboardStatisticsIcon {
+                color: #a875ff;
+                font-size: 22px;
+            }
+            QLabel#DashboardStatisticsTitle {
+                color: #ffffff;
+                font-size: 15px;
+                font-weight: 700;
+            }
+            QLabel#DashboardStatisticsName {
+                color: #aab6dd;
+                font-size: 11px;
+            }
+            QLabel#DashboardStatisticsValue {
+                color: #ffffff;
+                font-size: 18px;
+                font-weight: 800;
+            }
+            """
+        )
+
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(16, 14, 16, 14)
+        layout.setSpacing(8)
+
+        header = QHBoxLayout()
+        header.setSpacing(7)
+
+        icon = QLabel("◈")
+        icon.setObjectName("DashboardStatisticsIcon")
+        header.addWidget(icon)
+
+        title = QLabel("Статистика")
+        title.setObjectName("DashboardStatisticsTitle")
+        header.addWidget(title)
+        header.addStretch(1)
+        layout.addLayout(header)
+
+        grid = QGridLayout()
+        grid.setContentsMargins(0, 1, 0, 0)
+        grid.setHorizontalSpacing(12)
+        grid.setVerticalSpacing(7)
+        grid.setColumnStretch(0, 1)
+
+        rows = (
+            ("downloaded", "Скачано", "↓"),
+            ("tagged", "Протегировано", "#"),
+            ("converted", "В JPG", "◇"),
+            ("failed", "Ошибок", "!"),
+        )
+
+        for row, (key, caption, symbol) in enumerate(rows):
+            name = QLabel(f"{symbol}  {caption}")
+            name.setObjectName("DashboardStatisticsName")
+
+            value = QLabel("0")
+            value.setObjectName("DashboardStatisticsValue")
+            value.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            value.setMinimumWidth(42)
+
+            self._stat_labels[key] = value
+            grid.addWidget(name, row, 0)
+            grid.addWidget(value, row, 1)
+
+        layout.addLayout(grid)
+        layout.addStretch(1)
+
+        self._statistics_card = card
+        self._statistics_effect = QGraphicsOpacityEffect(card)
+        self._statistics_effect.setOpacity(0.0)
+        card.setGraphicsEffect(self._statistics_effect)
+        return card
+
+    def refresh_statistics(self) -> None:
+        statistics = self._statistics_store.load()
+        targets = {
+            "downloaded": statistics.downloaded,
+            "tagged": statistics.tagged,
+            "converted": statistics.converted,
+            "failed": statistics.failed,
+        }
+
+        for animation in self._stat_animations:
+            animation.stop()
+        self._stat_animations.clear()
+
+        for index, (key, target) in enumerate(targets.items()):
+            label = self._stat_labels.get(key)
+            if label is None:
+                continue
+
+            try:
+                start_value = int(label.text().replace(" ", ""))
+            except ValueError:
+                start_value = 0
+
+            animation = QVariantAnimation(self)
+            animation.setStartValue(start_value)
+            animation.setEndValue(target)
+            animation.setDuration(520 + index * 70)
+            animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+            animation.valueChanged.connect(
+                lambda value, target_label=label: target_label.setText(
+                    f"{int(value):,}".replace(",", " ")
+                )
+            )
+            animation.start()
+            self._stat_animations.append(animation)
+
+        if self._statistics_effect is not None and self._statistics_effect.opacity() < 1.0:
+            self._statistics_fade = QVariantAnimation(self)
+            self._statistics_fade.setStartValue(0.0)
+            self._statistics_fade.setEndValue(1.0)
+            self._statistics_fade.setDuration(420)
+            self._statistics_fade.setEasingCurve(QEasingCurve.Type.OutCubic)
+            self._statistics_fade.valueChanged.connect(
+                self._statistics_effect.setOpacity
+            )
+            self._statistics_fade.start()
+
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        self.refresh_statistics()
 
     def _status_panel(self) -> QFrame:
         panel = QFrame()
