@@ -183,7 +183,7 @@ class HelpDialog(QDialog):
         content.setObjectName("FaqContent")
         layout = QVBoxLayout(content)
         layout.setContentsMargins(0, 2, 10, 8)
-        layout.setSpacing(18)
+        layout.setSpacing(22)
 
         intro = QLabel("Краткие ответы на основные вопросы по работе с Teggy.")
         intro.setObjectName("FaqIntro")
@@ -205,7 +205,7 @@ class HelpDialog(QDialog):
                 card = QFrame()
                 card.setObjectName("FaqCard")
                 card_layout = QVBoxLayout(card)
-                card_layout.setContentsMargins(18, 15, 18, 16)
+                card_layout.setContentsMargins(22, 20, 22, 20)
                 card_layout.setSpacing(8)
 
                 question_label = QLabel(question)
@@ -215,7 +215,8 @@ class HelpDialog(QDialog):
 
                 accent = QFrame()
                 accent.setObjectName("FaqAccent")
-                accent.setFixedHeight(2)
+                accent.setFixedHeight(3)
+                accent.setMaximumWidth(64)
                 card_layout.addWidget(accent)
 
                 answer_label = QLabel(answer)
@@ -246,7 +247,7 @@ class HelpDialog(QDialog):
         contact_layout.setContentsMargins(18, 16, 18, 16)
         contact_layout.setSpacing(9)
 
-        contact_title = QLabel("Связаться с разработчиком")
+        contact_title = QLabel("Нашли баг? Или он нашёл вас?")
         contact_title.setObjectName("ContactTitle")
         contact_layout.addWidget(contact_title)
 
@@ -256,6 +257,7 @@ class HelpDialog(QDialog):
         contact_layout.addWidget(contact_handle)
 
         contact_hint = QLabel(
+            "Если возникла проблема или есть идея для Teggy, напишите мне в Telegram."
             "При ошибке кратко опишите, что произошло, и приложите диагностический отчёт. "
             "Скриншот тоже пригодится, потому что телепатия в сборку пока не вошла."
         )
@@ -273,12 +275,9 @@ class HelpDialog(QDialog):
         )
         contact_actions.addWidget(telegram_button)
 
-        copy_contact_button = QPushButton(f"Скопировать {TELEGRAM_HANDLE}")
-        copy_contact_button.setObjectName("HelpSecondaryButton")
-        copy_contact_button.clicked.connect(self._copy_telegram_handle)
-        contact_actions.addWidget(copy_contact_button)
-        contact_actions.addStretch(1)
-        contact_layout.addLayout(contact_actions)
+
+        telegram_button.setMinimumHeight(40)
+        contact_layout.addWidget(telegram_button)
 
         layout.addWidget(contact_card)
 
@@ -407,6 +406,18 @@ class HelpDialog(QDialog):
             QLabel#ContactHint {
                 color: #9da9bb;
                 font-size: 13px;
+                border: none;
+                background: transparent;
+            }
+
+            QLabel#FaqSectionTitle,
+            QLabel#FaqQuestion,
+            QLabel#FaqAnswer,
+            QLabel#SupportTitle,
+            QLabel#ContactTitle,
+            QLabel#ContactHandle {
+                border: none;
+                background: transparent;
             }
             QLabel#FaqSectionTitle {
                 color: #8b9ab0;
@@ -508,9 +519,7 @@ class HelpDialog(QDialog):
         QGuiApplication.clipboard().setText(self.report_view.toPlainText())
         QMessageBox.information(self, "Готово", "Диагностический отчёт скопирован.")
 
-    def _copy_telegram_handle(self) -> None:
-        QGuiApplication.clipboard().setText(TELEGRAM_HANDLE)
-        QMessageBox.information(self, "Готово", f"Контакт {TELEGRAM_HANDLE} скопирован.")
+    
 
     def _save_report(self) -> None:
         default_name = f"teggy-report-{datetime.now():%Y%m%d-%H%M%S}.txt"
