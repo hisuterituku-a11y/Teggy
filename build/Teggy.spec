@@ -2,10 +2,9 @@
 
 from pathlib import Path
 
-from PyInstaller.utils.hooks import collect_submodules
 
-
-PROJECT_ROOT = Path(SPECPATH).parent.parent
+# PyInstaller exposes SPECPATH as the directory containing this spec file.
+PROJECT_ROOT = Path(SPECPATH).parent
 ASSETS_DIR = PROJECT_ROOT / "assets"
 FFMPEG_CANDIDATES = (
     PROJECT_ROOT / "tools" / "ffmpeg.exe",
@@ -23,14 +22,12 @@ for candidate in FFMPEG_CANDIDATES:
         binaries.append((str(candidate), "."))
         break
 
-hiddenimports = collect_submodules("PySide6")
-
 analysis = Analysis(
     [str(PROJECT_ROOT / "main.py")],
     pathex=[str(PROJECT_ROOT)],
     binaries=binaries,
     datas=datas,
-    hiddenimports=hiddenimports,
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
