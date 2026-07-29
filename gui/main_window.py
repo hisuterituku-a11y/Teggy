@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QLabel, QMainWindow, QMessageBox, QScrollArea, QWi
 from core.update_checker import ReleaseInfo
 from core.version import __version__, display_version
 from gui.components.application_shell import ApplicationShell
-from gui.dialogs.about_dialog import AboutDialog
+from gui.dialogs.help_dialog import HelpDialog
 from gui.pages.dashboard import Dashboard
 from gui.pages.settings_page import SettingsPage
 from gui.pages.tagging_fixed import TaggingPage
@@ -70,7 +70,7 @@ class MainWindow(QMainWindow):
         self.window_title_bar = self.shell.title_bar
         self.pages = self.shell.pages
 
-        self.window_title_bar.help_button.clicked.connect(self._show_about_dialog)
+        self.window_title_bar.help_button.clicked.connect(self._show_help_dialog)
 
         version_label = self.sidebar.findChild(QLabel, "VersionLabel")
         if version_label is not None:
@@ -166,8 +166,8 @@ class MainWindow(QMainWindow):
         finally:
             self._update_dialog_open = False
 
-    def _show_about_dialog(self) -> None:
-        dialog = AboutDialog(self)
+    def _show_help_dialog(self) -> None:
+        dialog = HelpDialog(self)
         dialog.exec()
 
     def reset_interface_geometry(self) -> None:
