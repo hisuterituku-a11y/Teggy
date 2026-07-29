@@ -5,7 +5,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 
-LOG_DIR = Path.home() / ".teggy" / "logs"
+LOG_DIR = Path.home() / ".teggy"
 LOG_FILE = LOG_DIR / "teggy.log"
 
 
