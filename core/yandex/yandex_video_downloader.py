@@ -58,7 +58,6 @@ class YandexVideoDownloader:
         max_wait_seconds: float = 180.0,
         stall_threshold: float = 12.0,
     ) -> list[str]:
-        self._cancelled = False
         browser: Browser | None = None
         found: dict[str, str] = {}
 
