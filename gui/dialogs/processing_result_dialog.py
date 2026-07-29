@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from core.paths import resource_path
+from core.statistics import StatisticsStore
 from gui.components.window_title_bar import WindowTitleBar
 
 
@@ -33,6 +34,12 @@ class ProcessingResultDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self._output_dir = output_dir
+
+        StatisticsStore().increment(
+            tagged=processed,
+            converted=converted,
+            failed=failed,
+        )
 
         self.setModal(True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
