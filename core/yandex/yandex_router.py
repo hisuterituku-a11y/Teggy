@@ -225,6 +225,7 @@ class YandexRouter:
 
         finally:
             self._set_active_downloader(None)
+
     def _download_videos(
         self,
         base_url: str,
@@ -273,6 +274,7 @@ class YandexRouter:
 
         finally:
             self._set_active_downloader(None)
+
     def _register_error(
         self,
         *,
@@ -358,14 +360,12 @@ class YandexRouter:
                 parents=True,
                 exist_ok=True,
             )
+
         self.log("================================")
         self.log("ЗАПУСК ИМПОРТА ИЗ ЯНДЕКС КАРТ")
         self.log(f"Организация: {base_url}")
         self.log(f"Папка сохранения: {save_dir}")
 
-        org_count = 0
-        reviews_count = 0
-        stories_count = 0
         org_count = 0
         reviews_count = 0
         stories_count = 0
@@ -436,23 +436,10 @@ class YandexRouter:
                     url=base_url,
                 )
                 errors.append(message)
-
                 self.log(
                     "Ошибка Stories не прерывает импорт остальных фотографий"
                 )
 
-        if self._check_cancelled():
-            return False
-
-        self.progress("Готово")
-        self.log("================================")
-        self.log("ГОТОВО")
-        self.log(f"Организация: {org_count} фото")
-        self.log(f"Отзывы: {reviews_count} фото")
-        if download_stories:
-            self.log(f"Stories: {stories_count}")
-        if download_videos:
-            self.log(f"Видео: {videos_count}")
         if self._check_cancelled():
             return False
 
@@ -470,11 +457,23 @@ class YandexRouter:
                     url=base_url,
                 )
                 errors.append(message)
-
                 self.log(
                     "Ошибка загрузки видео не прерывает импорт остальных данных"
                 )
-                
+
+        if self._check_cancelled():
+            return False
+
+        self.progress("Готово")
+        self.log("================================")
+        self.log("ГОТОВО")
+        self.log(f"Организация: {org_count} фото")
+        self.log(f"Отзывы: {reviews_count} фото")
+        if download_stories:
+            self.log(f"Stories: {stories_count}")
+        if download_videos:
+            self.log(f"Видео: {videos_count}")
+
         if errors:
             self.log(
                 f"Завершено с предупреждениями: {len(errors)}"
