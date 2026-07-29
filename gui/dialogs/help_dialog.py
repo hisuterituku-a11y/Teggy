@@ -12,10 +12,12 @@ from PySide6.QtGui import QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (
     QDialog,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QTabWidget,
     QTextBrowser,
     QVBoxLayout,
@@ -29,30 +31,56 @@ from gui.components.window_title_bar import WindowTitleBar
 ISSUES_URL = "https://github.com/hisuterituku-a11y/Teggy/issues"
 REPOSITORY_URL = "https://github.com/hisuterituku-a11y/Teggy"
 
-
-FAQ_HTML = """
-<h2>Частые вопросы</h2>
-<h3>Как добавить фотографии?</h3>
-<p>Откройте раздел «Тегирование», выберите папку или перетащите фотографии в окно приложения.</p>
-
-<h3>В каком порядке обрабатываются фотографии?</h3>
-<p>Файлы обрабатываются в порядке, в котором их возвращает выбранная папка. Перед запуском проверьте список фотографий в интерфейсе.</p>
-
-<h3>Почему теги не записались?</h3>
-<p>Проверьте, что файлы доступны для записи, не открыты другой программой и имеют поддерживаемый формат. Повторите обработку и сохраните отчёт для поддержки, если ошибка остаётся.</p>
-
-<h3>Как импортировать материалы из Яндекс Карт?</h3>
-<p>Откройте раздел «Яндекс Карты», вставьте ссылку на карточку или публикацию и запустите импорт. Для видео в системе должен быть доступен FFmpeg.</p>
-
-<h3>Где находятся шаблоны тегов?</h3>
-<p>Шаблоны доступны из раздела тегирования. Их можно создавать, изменять и применять к выбранным фотографиям.</p>
-
-<h3>Что делать, если видео не скачивается?</h3>
-<p>Проверьте интернет-соединение, корректность ссылки и наличие FFmpeg. Затем повторите попытку. Если проблема сохраняется, приложите диагностический отчёт.</p>
-
-<h3>Как сообщить об ошибке?</h3>
-<p>Перейдите на вкладку «Поддержка», сохраните диагностический отчёт и создайте обращение в GitHub Issues.</p>
-"""
+FAQ_SECTIONS = [
+    (
+        "Начало работы",
+        [
+            (
+                "Как добавить фотографии?",
+                "Откройте раздел «Тегирование», выберите папку или перетащите фотографии в окно приложения.",
+            ),
+            (
+                "В каком порядке обрабатываются фотографии?",
+                "Файлы идут в том порядке, в котором они показаны в списке. Перед запуском проверьте последовательность фотографий в интерфейсе.",
+            ),
+        ],
+    ),
+    (
+        "Теги и шаблоны",
+        [
+            (
+                "Почему теги не записались?",
+                "Проверьте, что файлы доступны для записи, не открыты другой программой и имеют поддерживаемый формат. Если ошибка повторяется, сохраните диагностический отчёт.",
+            ),
+            (
+                "Где находятся шаблоны тегов?",
+                "Шаблоны доступны из раздела тегирования. Их можно создавать, изменять и применять к выбранным фотографиям.",
+            ),
+        ],
+    ),
+    (
+        "Яндекс Карты и видео",
+        [
+            (
+                "Как импортировать материалы из Яндекс Карт?",
+                "Откройте раздел «Яндекс Карты», вставьте ссылку на карточку или публикацию и запустите импорт.",
+            ),
+            (
+                "Что делать, если видео не скачивается?",
+                "Проверьте интернет-соединение, корректность ссылки и наличие FFmpeg. Затем повторите попытку. Если проблема остаётся, приложите диагностический отчёт.",
+            ),
+        ],
+    ),
+    (
+        "Поддержка",
+        [
+            (
+                "Как сообщить об ошибке?",
+                "Перейдите на вкладку «Поддержка», сохраните диагностический отчёт и создайте обращение в GitHub Issues.",
+            ),
+        ],
+    ),
+]
 
 
 class HelpDialog(QDialog):
@@ -63,11 +91,11 @@ class HelpDialog(QDialog):
         self.setModal(True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.resize(720, 620)
-        self.setMinimumSize(620, 520)
+        self.resize(820, 680)
+        self.setMinimumSize(700, 560)
 
         shell = QWidget(self)
-        shell.setObjectName("AboutDialog")
+        shell.setObjectName("HelpDialogShell")
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
@@ -87,74 +115,131 @@ class HelpDialog(QDialog):
         shell_layout.addWidget(title_bar)
 
         content = QWidget()
-        content.setObjectName("AboutContent")
+        content.setObjectName("HelpDialogContent")
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(24, 20, 24, 20)
+        content_layout.setContentsMargins(22, 18, 22, 18)
         content_layout.setSpacing(14)
 
         tabs = QTabWidget()
+        tabs.setObjectName("HelpTabs")
         tabs.addTab(self._build_faq_tab(), "FAQ")
         tabs.addTab(self._build_support_tab(), "Поддержка")
         content_layout.addWidget(tabs, 1)
 
         close_button = QPushButton("Закрыть")
-        close_button.setObjectName("AboutSecondaryButton")
+        close_button.setObjectName("HelpCloseButton")
         close_button.clicked.connect(self.reject)
         content_layout.addWidget(close_button)
 
         shell_layout.addWidget(content, 1)
+        self._apply_styles()
 
     def _build_faq_tab(self) -> QWidget:
         tab = QWidget()
-        layout = QVBoxLayout(tab)
-        layout.setContentsMargins(14, 14, 14, 14)
+        tab.setObjectName("HelpTab")
+        tab_layout = QVBoxLayout(tab)
+        tab_layout.setContentsMargins(0, 0, 0, 0)
 
-        browser = QTextBrowser()
-        browser.setOpenExternalLinks(True)
-        browser.setHtml(FAQ_HTML)
-        layout.addWidget(browser)
+        scroll = QScrollArea()
+        scroll.setObjectName("HelpScroll")
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        content = QWidget()
+        content.setObjectName("FaqContent")
+        layout = QVBoxLayout(content)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(16)
+
+        intro = QLabel("Краткие ответы на основные вопросы по работе с Teggy.")
+        intro.setObjectName("FaqIntro")
+        intro.setWordWrap(True)
+        layout.addWidget(intro)
+
+        for section_title, questions in FAQ_SECTIONS:
+            section_label = QLabel(section_title)
+            section_label.setObjectName("FaqSectionTitle")
+            layout.addWidget(section_label)
+
+            for question, answer in questions:
+                card = QFrame()
+                card.setObjectName("FaqCard")
+                card_layout = QVBoxLayout(card)
+                card_layout.setContentsMargins(16, 13, 16, 14)
+                card_layout.setSpacing(7)
+
+                question_label = QLabel(question)
+                question_label.setObjectName("FaqQuestion")
+                question_label.setWordWrap(True)
+                card_layout.addWidget(question_label)
+
+                answer_label = QLabel(answer)
+                answer_label.setObjectName("FaqAnswer")
+                answer_label.setWordWrap(True)
+                answer_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+                card_layout.addWidget(answer_label)
+
+                layout.addWidget(card)
+
+        layout.addStretch(1)
+        scroll.setWidget(content)
+        tab_layout.addWidget(scroll)
         return tab
 
     def _build_support_tab(self) -> QWidget:
         tab = QWidget()
+        tab.setObjectName("HelpTab")
         layout = QVBoxLayout(tab)
-        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setContentsMargins(18, 18, 18, 18)
         layout.setSpacing(12)
 
+        title = QLabel("Диагностический отчёт")
+        title.setObjectName("SupportTitle")
+        layout.addWidget(title)
+
         description = QLabel(
-            "При обращении приложите диагностический отчёт. Он не содержит фотографии, "
-            "теги или пароли, но включает сведения о системе и последние строки журнала."
+            "При обращении приложите этот отчёт. Он не содержит фотографии, теги или пароли, "
+            "но включает сведения о системе и последние строки журнала."
         )
+        description.setObjectName("SupportDescription")
         description.setWordWrap(True)
         layout.addWidget(description)
 
         self.report_view = QTextBrowser()
+        self.report_view.setObjectName("ReportView")
         self.report_view.setPlainText(self._build_report())
         layout.addWidget(self.report_view, 1)
 
         buttons = QHBoxLayout()
+        buttons.setSpacing(10)
 
         copy_button = QPushButton("Скопировать отчёт")
-        copy_button.setObjectName("AboutPrimaryButton")
+        copy_button.setObjectName("HelpPrimaryButton")
         copy_button.clicked.connect(self._copy_report)
         buttons.addWidget(copy_button)
 
         save_button = QPushButton("Сохранить отчёт…")
+        save_button.setObjectName("HelpSecondaryButton")
         save_button.clicked.connect(self._save_report)
         buttons.addWidget(save_button)
 
         refresh_button = QPushButton("Обновить")
+        refresh_button.setObjectName("HelpSecondaryButton")
         refresh_button.clicked.connect(self._refresh_report)
         buttons.addWidget(refresh_button)
 
         layout.addLayout(buttons)
 
         links = QHBoxLayout()
+        links.setSpacing(10)
         issues_button = QPushButton("Создать обращение")
+        issues_button.setObjectName("HelpSecondaryButton")
         issues_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(ISSUES_URL)))
         links.addWidget(issues_button)
 
         repository_button = QPushButton("Открыть GitHub")
+        repository_button.setObjectName("HelpSecondaryButton")
         repository_button.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(REPOSITORY_URL))
         )
@@ -162,6 +247,112 @@ class HelpDialog(QDialog):
         layout.addLayout(links)
 
         return tab
+
+    def _apply_styles(self) -> None:
+        self.setStyleSheet(
+            """
+            QWidget#HelpDialogShell {
+                background: #15181d;
+                border: 1px solid #2b313a;
+                border-radius: 14px;
+            }
+            QWidget#HelpDialogContent,
+            QWidget#HelpTab,
+            QWidget#FaqContent {
+                background: #15181d;
+            }
+            QTabWidget#HelpTabs::pane {
+                border: 1px solid #2b313a;
+                border-radius: 10px;
+                background: #15181d;
+                top: -1px;
+            }
+            QTabWidget#HelpTabs QTabBar::tab {
+                background: #1d2229;
+                color: #aeb7c2;
+                border: 1px solid #2b313a;
+                padding: 9px 22px;
+                min-width: 110px;
+            }
+            QTabWidget#HelpTabs QTabBar::tab:selected {
+                background: #252c35;
+                color: #ffffff;
+                border-bottom: 2px solid #3b82f6;
+            }
+            QScrollArea#HelpScroll {
+                background: transparent;
+                border: none;
+            }
+            QLabel#FaqIntro,
+            QLabel#SupportDescription {
+                color: #9da7b3;
+                font-size: 13px;
+            }
+            QLabel#FaqSectionTitle,
+            QLabel#SupportTitle {
+                color: #ffffff;
+                font-size: 15px;
+                font-weight: 700;
+                padding-top: 4px;
+                padding-bottom: 2px;
+                border-bottom: 1px solid #303741;
+            }
+            QFrame#FaqCard {
+                background: #1b2027;
+                border: 1px solid #2d343e;
+                border-radius: 10px;
+            }
+            QLabel#FaqQuestion {
+                color: #f4f7fb;
+                font-size: 14px;
+                font-weight: 700;
+            }
+            QLabel#FaqAnswer {
+                color: #aeb7c2;
+                font-size: 13px;
+                line-height: 1.4;
+            }
+            QTextBrowser#ReportView {
+                background: #101318;
+                color: #d7dde5;
+                border: 1px solid #2b313a;
+                border-radius: 8px;
+                padding: 10px;
+                font-family: Consolas, monospace;
+                font-size: 12px;
+            }
+            QPushButton#HelpPrimaryButton,
+            QPushButton#HelpSecondaryButton,
+            QPushButton#HelpCloseButton {
+                min-height: 34px;
+                border-radius: 8px;
+                padding: 0 16px;
+            }
+            QPushButton#HelpPrimaryButton {
+                background: #2563eb;
+                color: white;
+                border: 1px solid #3b82f6;
+                font-weight: 600;
+            }
+            QPushButton#HelpPrimaryButton:hover {
+                background: #2f6ff0;
+            }
+            QPushButton#HelpSecondaryButton,
+            QPushButton#HelpCloseButton {
+                background: #1d2229;
+                color: #d7dde5;
+                border: 1px solid #333b46;
+            }
+            QPushButton#HelpSecondaryButton:hover,
+            QPushButton#HelpCloseButton:hover {
+                background: #272e38;
+            }
+            QPushButton#HelpCloseButton {
+                min-width: 120px;
+                align-self: center;
+            }
+            """
+        )
 
     def _refresh_report(self) -> None:
         self.report_view.setPlainText(self._build_report())
