@@ -333,7 +333,19 @@ class YandexMapsPage(QWidget):
                 checked=False,
             )
         )
+        videos_card, self.videos_checkbox = (
+            self.create_download_option(
+                title="Скачать видео",
+                description=(
+                    "Сохранить видео из карточки организации"
+                ),
+                checked=False,
+            )
+        )
 
+        options_layout.addWidget(
+            videos_card
+        )
         options_layout.addWidget(
             stories_card
         )
@@ -724,14 +736,12 @@ class YandexMapsPage(QWidget):
         """
         Запускает скачивание данных из Яндекс Карт.
 
-        Фото организации и фото из отзывов
-        скачиваются всегда.
-
-        Stories скачиваются только по выбору пользователя.
+        Фото организации и фото из отзывов скачиваются всегда.
+        Stories и видео скачиваются по выбору пользователя.
         """
         if self.is_downloading:
             return
-        
+
         url = self.url_input.text().strip()
 
         if self.output_folder is None:
@@ -743,6 +753,11 @@ class YandexMapsPage(QWidget):
         download_stories = (
             self.stories_checkbox.isChecked()
         )
+
+        download_videos = (
+            self.videos_checkbox.isChecked()
+        )
+
         self.is_downloading = True
 
         self.download_log.clear()
@@ -754,6 +769,7 @@ class YandexMapsPage(QWidget):
         self.download_button.setEnabled(
             False
         )
+
         self.cancel_button.setEnabled(
             True
         )
@@ -774,6 +790,10 @@ class YandexMapsPage(QWidget):
             False
         )
 
+        self.videos_checkbox.setEnabled(
+            False
+        )
+
         self.download_status.setText(
             "Загрузка запущена"
         )
@@ -782,6 +802,7 @@ class YandexMapsPage(QWidget):
             url=url,
             save_dir=self.output_folder,
             download_stories=download_stories,
+            download_videos=download_videos,
             on_log=self.append_download_log,
             on_progress=self.update_download_progress,
             on_finished=self.on_download_finished,
@@ -855,7 +876,9 @@ class YandexMapsPage(QWidget):
         self.stories_checkbox.setEnabled(
             True
         )
-
+        self.videos_checkbox.setEnabled(
+            True
+        )
         if success:
             self.download_status.setText(
                 "Загрузка завершена"

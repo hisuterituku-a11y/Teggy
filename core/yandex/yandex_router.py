@@ -12,6 +12,7 @@ from core.yandex.photo_compare import PhotoComparator
 from core.yandex.yandex_downloader import YandexPhotoDownloader
 from core.yandex.yandex_reviews import YandexReviewDownloader
 from core.yandex.yandex_stories import YandexStoriesDownloader
+from core.yandex.yandex_video_downloader import YandexVideoDownloader
 
 
 class YandexRouter:
@@ -224,7 +225,54 @@ class YandexRouter:
 
         finally:
             self._set_active_downloader(None)
+    def _download_videos(
+        self,
+        base_url: str,
+        folder: Path,
+        skip_existing: bool,
+    ) -> int:
+        self.progress("Видео")
+        self.log("================================")
+        self.log("ЭТАП 5: ВИДЕО")
 
+        downloader = YandexVideoDownloader(
+            headless=True,
+        )
+        self._set_active_downloader(downloader)
+
+        try:
+            urls = downloader.collect(
+                base_url,
+                on_log=self.log,
+            )
+
+            if self._check_cancelled():
+                return 0
+
+            if not urls:
+                self.log(
+                    "Видео не найдены — продолжаем без ошибки"
+                )
+                return 0
+
+            saved = downloader.download(
+                urls,
+                folder=folder,
+                on_log=self.log,
+                skip_existing=skip_existing,
+            )
+
+            self.log(
+                (
+                    f"Видео найдено: {len(urls)}; "
+                    f"сохранено новых: {saved}"
+                )
+            )
+
+            return len(urls)
+
+        finally:
+            self._set_active_downloader(None)
     def _register_error(
         self,
         *,
@@ -269,6 +317,7 @@ class YandexRouter:
         url: str,
         save_dir: Path | str,
         download_stories: bool = False,
+        download_videos: bool = False,
         skip_existing: bool = True,
     ) -> bool:
         self._cancelled = False
@@ -289,7 +338,7 @@ class YandexRouter:
         org_folder = save_dir / "Фото организации"
         reviews_folder = save_dir / "Фото отзывы"
         stories_folder = save_dir / "Сторис"
-
+        videos_folder = save_dir / "Видео"
 
         org_folder.mkdir(
             parents=True,
@@ -304,7 +353,11 @@ class YandexRouter:
                 parents=True,
                 exist_ok=True,
             )
-
+        if download_videos:
+            videos_folder.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
         self.log("================================")
         self.log("ЗАПУСК ИМПОРТА ИЗ ЯНДЕКС КАРТ")
         self.log(f"Организация: {base_url}")
@@ -313,7 +366,10 @@ class YandexRouter:
         org_count = 0
         reviews_count = 0
         stories_count = 0
-
+        org_count = 0
+        reviews_count = 0
+        stories_count = 0
+        videos_count = 0
         errors: list[str] = []
 
         try:
@@ -395,7 +451,30 @@ class YandexRouter:
         self.log(f"Отзывы: {reviews_count} фото")
         if download_stories:
             self.log(f"Stories: {stories_count}")
+        if download_videos:
+            self.log(f"Видео: {videos_count}")
+        if self._check_cancelled():
+            return False
 
+        if download_videos:
+            try:
+                videos_count = self._download_videos(
+                    base_url=base_url,
+                    folder=videos_folder,
+                    skip_existing=skip_existing,
+                )
+            except Exception as exc:
+                message = self._register_error(
+                    stage="Видео",
+                    exc=exc,
+                    url=base_url,
+                )
+                errors.append(message)
+
+                self.log(
+                    "Ошибка загрузки видео не прерывает импорт остальных данных"
+                )
+                
         if errors:
             self.log(
                 f"Завершено с предупреждениями: {len(errors)}"
