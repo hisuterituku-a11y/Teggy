@@ -1,4 +1,7 @@
-from PySide6.QtCore import QEasingCurve, Qt, QTimer, QVariantAnimation, Signal
+from __future__ import annotations
+
+from PySide6.QtCore import QEasingCurve, QRectF, Qt, QTimer, QVariantAnimation, Signal
+from PySide6.QtGui import QColor, QFont, QPainter, QPen
 from PySide6.QtWidgets import (
     QFrame,
     QGraphicsOpacityEffect,
@@ -15,8 +18,76 @@ from core.statistics import StatisticsStore
 from core.version import display_version
 
 
+class StatisticsDonut(QWidget):
+    COLORS = (
+        QColor("#9B5CFF"),
+        QColor("#C274FF"),
+        QColor("#5D8CFF"),
+        QColor("#FF668F"),
+    )
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self.setFixedSize(116, 116)
+        self._values = [0, 0, 0, 0]
+        self._progress = 0.0
+        self._animation = QVariantAnimation(self)
+        self._animation.setDuration(950)
+        self._animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._animation.valueChanged.connect(self._set_progress)
+
+    def set_values(self, values: list[int]) -> None:
+        self._values = [max(0, int(value)) for value in values]
+        self._animation.stop()
+        self._animation.setStartValue(0.0)
+        self._animation.setEndValue(1.0)
+        self._animation.start()
+
+    def _set_progress(self, value) -> None:
+        self._progress = float(value)
+        self.update()
+
+    def paintEvent(self, event) -> None:
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+        rect = QRectF(12, 12, self.width() - 24, self.height() - 24)
+        width = 11
+
+        painter.setPen(QPen(QColor(70, 82, 132, 95), width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        painter.drawArc(rect, 0, 360 * 16)
+
+        total = sum(self._values)
+        start_angle = 90 * 16
+        if total > 0:
+            gap = 4 * 16
+            for value, color in zip(self._values, self.COLORS):
+                if value <= 0:
+                    continue
+                span = int((value / total) * 360 * 16 * self._progress)
+                painter.setPen(QPen(color, width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+                painter.drawArc(rect, start_angle, -(max(0, span - gap)))
+                start_angle -= span
+        else:
+            painter.setPen(QPen(self.COLORS[0], width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+            painter.drawArc(rect, 90 * 16, int(-300 * 16 * self._progress))
+
+        painter.setPen(QColor("#FFFFFF"))
+        font = QFont(self.font())
+        font.setBold(True)
+        font.setPointSize(17)
+        painter.setFont(font)
+        painter.drawText(self.rect().adjusted(0, -7, 0, 0), Qt.AlignmentFlag.AlignCenter, f"{total:,}".replace(",", " "))
+
+        painter.setPen(QColor("#9AA8D2"))
+        font.setBold(False)
+        font.setPointSize(8)
+        painter.setFont(font)
+        painter.drawText(self.rect().adjusted(0, 27, 0, 0), Qt.AlignmentFlag.AlignCenter, "файлов")
+
+
 class Dashboard(QWidget):
-    """Главная страница с реальными быстрыми действиями Teggy."""
+    """Главная страница с быстрыми действиями и статистикой Teggy."""
 
     navigate_requested = Signal(str)
     check_updates_requested = Signal()
@@ -30,9 +101,9 @@ class Dashboard(QWidget):
         self._statistics_store = StatisticsStore()
         self._stat_labels: dict[str, QLabel] = {}
         self._stat_animations: list[QVariantAnimation] = []
-        self._statistics_card: QFrame | None = None
         self._statistics_effect: QGraphicsOpacityEffect | None = None
         self._statistics_fade: QVariantAnimation | None = None
+        self._donut: StatisticsDonut | None = None
 
         root = QVBoxLayout(self)
         root.setContentsMargins(32, 28, 32, 28)
@@ -53,7 +124,6 @@ class Dashboard(QWidget):
         content.setVerticalSpacing(18)
         content.setColumnStretch(0, 3)
         content.setColumnStretch(1, 2)
-
         content.addWidget(self._quick_start_panel(), 0, 0)
         content.addWidget(self._status_panel(), 0, 1)
         content.addWidget(self._workflow_panel(), 1, 0)
@@ -80,22 +150,8 @@ class Dashboard(QWidget):
 
         cards = QHBoxLayout()
         cards.setSpacing(12)
-        cards.addWidget(
-            self._quick_action(
-                "Тегирование",
-                "Фото, теги и метаданные",
-                "Тегирование",
-                "🏷",
-            )
-        )
-        cards.addWidget(
-            self._quick_action(
-                "Яндекс Карты",
-                "Фото, сторис и отзывы",
-                "Яндекс Карты",
-                "☁",
-            )
-        )
+        cards.addWidget(self._quick_action("Тегирование", "Фото, теги и метаданные", "Тегирование", "🏷"))
+        cards.addWidget(self._quick_action("Яндекс Карты", "Фото, сторис и отзывы", "Яндекс Карты", "☁"))
         cards.addWidget(self._statistics_panel())
         layout.addLayout(cards)
         return panel
@@ -124,9 +180,7 @@ class Dashboard(QWidget):
 
         button = QPushButton("Открыть")
         button.setObjectName("DashboardActionButton")
-        button.clicked.connect(
-            lambda checked=False, name=page: self.navigate_requested.emit(name)
-        )
+        button.clicked.connect(lambda checked=False, name=page: self.navigate_requested.emit(name))
         box.addWidget(button)
         return card
 
@@ -137,78 +191,68 @@ class Dashboard(QWidget):
         card.setStyleSheet(
             """
             QFrame#DashboardStatisticsCard {
-                background-color: rgba(18, 25, 54, 210);
-                border: 1px solid rgba(145, 91, 255, 150);
+                background-color: rgba(18, 25, 54, 218);
+                border: 1px solid rgba(145, 91, 255, 165);
                 border-radius: 16px;
             }
-            QLabel#DashboardStatisticsIcon {
-                color: #a875ff;
-                font-size: 22px;
-            }
-            QLabel#DashboardStatisticsTitle {
-                color: #ffffff;
-                font-size: 15px;
-                font-weight: 700;
-            }
-            QLabel#DashboardStatisticsName {
-                color: #aab6dd;
-                font-size: 11px;
-            }
-            QLabel#DashboardStatisticsValue {
-                color: #ffffff;
-                font-size: 18px;
-                font-weight: 800;
-            }
+            QLabel#DashboardStatisticsTitle { color: #ffffff; font-size: 15px; font-weight: 700; }
+            QLabel#DashboardStatisticsName { color: #aab6dd; font-size: 10px; }
+            QLabel#DashboardStatisticsValue { color: #ffffff; font-size: 15px; font-weight: 800; }
+            QLabel#DashboardStatisticsDot { font-size: 14px; }
             """
         )
 
         layout = QVBoxLayout(card)
-        layout.setContentsMargins(16, 14, 16, 14)
-        layout.setSpacing(8)
-
-        header = QHBoxLayout()
-        header.setSpacing(7)
-
-        icon = QLabel("◈")
-        icon.setObjectName("DashboardStatisticsIcon")
-        header.addWidget(icon)
+        layout.setContentsMargins(13, 12, 13, 12)
+        layout.setSpacing(5)
 
         title = QLabel("Статистика")
         title.setObjectName("DashboardStatisticsTitle")
-        header.addWidget(title)
-        header.addStretch(1)
-        layout.addLayout(header)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
+
+        self._donut = StatisticsDonut(card)
+        layout.addWidget(self._donut, 0, Qt.AlignmentFlag.AlignHCenter)
 
         grid = QGridLayout()
-        grid.setContentsMargins(0, 1, 0, 0)
-        grid.setHorizontalSpacing(12)
-        grid.setVerticalSpacing(7)
-        grid.setColumnStretch(0, 1)
+        grid.setContentsMargins(0, 0, 0, 0)
+        grid.setHorizontalSpacing(10)
+        grid.setVerticalSpacing(4)
 
         rows = (
-            ("downloaded", "Скачано", "↓"),
-            ("tagged", "Протегировано", "#"),
-            ("converted", "В JPG", "◇"),
-            ("failed", "Ошибок", "!"),
+            ("downloaded", "Скачано", "#9B5CFF"),
+            ("tagged", "Протегировано", "#C274FF"),
+            ("converted", "В JPG", "#5D8CFF"),
+            ("failed", "Ошибок", "#FF668F"),
         )
+        for index, (key, caption, color) in enumerate(rows):
+            row = index // 2
+            column = (index % 2) * 2
 
-        for row, (key, caption, symbol) in enumerate(rows):
-            name = QLabel(f"{symbol}  {caption}")
+            text_box = QVBoxLayout()
+            text_box.setSpacing(0)
+            line = QHBoxLayout()
+            line.setSpacing(3)
+            dot = QLabel("●")
+            dot.setObjectName("DashboardStatisticsDot")
+            dot.setStyleSheet(f"color: {color};")
+            name = QLabel(caption)
             name.setObjectName("DashboardStatisticsName")
+            line.addWidget(dot)
+            line.addWidget(name)
+            line.addStretch(1)
 
             value = QLabel("0")
             value.setObjectName("DashboardStatisticsValue")
-            value.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-            value.setMinimumWidth(42)
-
             self._stat_labels[key] = value
-            grid.addWidget(name, row, 0)
-            grid.addWidget(value, row, 1)
+            text_box.addLayout(line)
+            text_box.addWidget(value)
+            grid.addLayout(text_box, row, column)
 
+        grid.setColumnStretch(0, 1)
+        grid.setColumnStretch(2, 1)
         layout.addLayout(grid)
-        layout.addStretch(1)
 
-        self._statistics_card = card
         self._statistics_effect = QGraphicsOpacityEffect(card)
         self._statistics_effect.setOpacity(0.0)
         card.setGraphicsEffect(self._statistics_effect)
@@ -223,6 +267,9 @@ class Dashboard(QWidget):
             "failed": statistics.failed,
         }
 
+        if self._donut is not None:
+            self._donut.set_values(list(targets.values()))
+
         for animation in self._stat_animations:
             animation.stop()
         self._stat_animations.clear()
@@ -231,7 +278,6 @@ class Dashboard(QWidget):
             label = self._stat_labels.get(key)
             if label is None:
                 continue
-
             try:
                 start_value = int(label.text().replace(" ", ""))
             except ValueError:
@@ -240,12 +286,10 @@ class Dashboard(QWidget):
             animation = QVariantAnimation(self)
             animation.setStartValue(start_value)
             animation.setEndValue(target)
-            animation.setDuration(520 + index * 70)
+            animation.setDuration(620 + index * 70)
             animation.setEasingCurve(QEasingCurve.Type.OutCubic)
             animation.valueChanged.connect(
-                lambda value, target_label=label: target_label.setText(
-                    f"{int(value):,}".replace(",", " ")
-                )
+                lambda value, target_label=label: target_label.setText(f"{int(value):,}".replace(",", " "))
             )
             animation.start()
             self._stat_animations.append(animation)
@@ -256,9 +300,7 @@ class Dashboard(QWidget):
             self._statistics_fade.setEndValue(1.0)
             self._statistics_fade.setDuration(420)
             self._statistics_fade.setEasingCurve(QEasingCurve.Type.OutCubic)
-            self._statistics_fade.valueChanged.connect(
-                self._statistics_effect.setOpacity
-            )
+            self._statistics_fade.valueChanged.connect(self._statistics_effect.setOpacity)
             self._statistics_fade.start()
 
     def showEvent(self, event) -> None:
@@ -359,9 +401,7 @@ class Dashboard(QWidget):
 
         button = QPushButton("Перейти к тегированию")
         button.setObjectName("DashboardActionButton")
-        button.clicked.connect(
-            lambda checked=False: self.navigate_requested.emit("Тегирование")
-        )
+        button.clicked.connect(lambda checked=False: self.navigate_requested.emit("Тегирование"))
         layout.addWidget(button)
         return panel
 
