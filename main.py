@@ -1,8 +1,10 @@
+import logging
 import sys
 
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QApplication, QMessageBox, QPushButton
 
+from core.logger import setup_logging
 from core.paths import resource_path
 from gui.dialogs.themed_message_box import ThemedMessageBox
 from gui.main_window_templates import MainWindow
@@ -11,6 +13,7 @@ from gui.utils.plain_paste_filter import PlainPasteFilter
 
 
 DEFAULT_THEME = "default"
+logger = logging.getLogger(__name__)
 
 
 def _install_themed_message_boxes() -> None:
@@ -25,6 +28,9 @@ def _install_themed_message_boxes() -> None:
 
 
 def main() -> int:
+    log_path = setup_logging()
+    logger.info("Запуск Teggy. Журнал: %s", log_path)
+
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     _install_themed_message_boxes()
@@ -58,8 +64,14 @@ def main() -> int:
             button.style().polish(button)
 
     window.show()
-    return app.exec()
+    exit_code = app.exec()
+    logger.info("Завершение Teggy с кодом %s", exit_code)
+    return exit_code
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception:
+        logger.exception("Необработанная ошибка при запуске Teggy")
+        raise
