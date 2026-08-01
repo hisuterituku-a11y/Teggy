@@ -1,9 +1,11 @@
 param(
     [switch]$SkipInstaller,
-    [switch]$Clean
+    [switch]$Clean,
+    [string]$IsccPath
 )
 
 $ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $VenvDir = Join-Path $ProjectRoot ".venv-build"
@@ -13,44 +15,69 @@ $WorkDir = Join-Path $ProjectRoot "build\pyinstaller-work"
 $SpecFile = Join-Path $ProjectRoot "build\Teggy.spec"
 $InstallerScript = Join-Path $ProjectRoot "build\installer\Teggy.iss"
 $ReleaseDir = Join-Path $ProjectRoot "release"
+$AppDir = Join-Path $DistDir "Teggy"
+$Executable = Join-Path $AppDir "Teggy.exe"
 
-$PlaywrightSource = Join-Path `
-    $VenvDir `
-    "Lib\site-packages\playwright\driver\package\.local-browsers"
+$PlaywrightSource = Join-Path $VenvDir "Lib\site-packages\playwright\driver\package\.local-browsers"
+$PlaywrightDestination = Join-Path $AppDir "_internal\playwright\driver\package\.local-browsers"
 
-$PlaywrightDestination = Join-Path `
-    $DistDir `
-    "Teggy\_internal\playwright\driver\package\.local-browsers"
+function Invoke-Checked {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath,
+
+        [Parameter(Mandatory = $false)]
+        [string[]]$Arguments = @(),
+
+        [Parameter(Mandatory = $true)]
+        [string]$ErrorMessage
+    )
+
+    & $FilePath @Arguments
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "$ErrorMessage Exit code: $LASTEXITCODE"
+    }
+}
 
 Set-Location $ProjectRoot
 
 if ($Clean) {
+    Write-Host "Cleaning previous build..." -ForegroundColor Cyan
     Remove-Item $DistDir -Recurse -Force -ErrorAction SilentlyContinue
     Remove-Item $WorkDir -Recurse -Force -ErrorAction SilentlyContinue
     Remove-Item $ReleaseDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 if (-not (Test-Path $Python)) {
-    py -3 -m venv $VenvDir
+    Write-Host "Creating build virtual environment..." -ForegroundColor Cyan
+    & py -3 -m venv $VenvDir
+
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $Python)) {
+        throw "Failed to create build virtual environment: $VenvDir"
+    }
 }
 
-& $Python -m pip install --upgrade pip
-& $Python -m pip install -r (Join-Path $ProjectRoot "requirements.txt")
-& $Python -m pip install -r (Join-Path $ProjectRoot "requirements-build.txt")
-$env:PLAYWRIGHT_BROWSERS_PATH = "0"
+Invoke-Checked -FilePath $Python -Arguments @(
+    "-m", "pip", "install", "--upgrade", "pip"
+) -ErrorMessage "Failed to upgrade pip."
 
-& $Python -m playwright install chromium
-# Устанавливаем браузеры внутрь пакета Playwright.
+Invoke-Checked -FilePath $Python -Arguments @(
+    "-m", "pip", "install", "-r", (Join-Path $ProjectRoot "requirements.txt")
+) -ErrorMessage "Failed to install runtime requirements."
+
+Invoke-Checked -FilePath $Python -Arguments @(
+    "-m", "pip", "install", "-r", (Join-Path $ProjectRoot "requirements-build.txt")
+) -ErrorMessage "Failed to install build requirements."
+
 $PreviousBrowsersPath = $env:PLAYWRIGHT_BROWSERS_PATH
 $env:PLAYWRIGHT_BROWSERS_PATH = "0"
 
 try {
-    Write-Host "Установка Chromium для Playwright..." -ForegroundColor Cyan
-    & $Python -m playwright install chromium
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Не удалось установить Chromium для Playwright."
-    }
+    Write-Host "Installing Playwright Chromium..." -ForegroundColor Cyan
+    Invoke-Checked -FilePath $Python -Arguments @(
+        "-m", "playwright", "install", "chromium"
+    ) -ErrorMessage "Failed to install Playwright Chromium."
 }
 finally {
     if ($null -eq $PreviousBrowsersPath) {
@@ -62,114 +89,97 @@ finally {
 }
 
 if (-not (Test-Path $PlaywrightSource)) {
-    throw "Браузеры Playwright не найдены: $PlaywrightSource"
+    throw "Playwright browser directory was not created: $PlaywrightSource"
 }
 
-& $Python -m PyInstaller `
-    --noconfirm `
-    --clean `
-    --distpath $DistDir `
-    --workpath $WorkDir `
+Write-Host "Building Teggy with PyInstaller..." -ForegroundColor Cyan
+Invoke-Checked -FilePath $Python -Arguments @(
+    "-m", "PyInstaller",
+    "--noconfirm",
+    "--clean",
+    "--distpath", $DistDir,
+    "--workpath", $WorkDir,
     $SpecFile
+) -ErrorMessage "PyInstaller failed."
 
-if ($LASTEXITCODE -ne 0) {
-    throw "PyInstaller завершился с ошибкой."
-}
-
-$Executable = Join-Path $DistDir "Teggy\Teggy.exe"
-$PlaywrightSource = Join-Path `
-    $VenvDir `
-    "Lib\site-packages\playwright\driver\package\.local-browsers"
-
-$PlaywrightDestination = Join-Path `
-    $DistDir `
-    "Teggy\_internal\playwright\driver\package\.local-browsers"
-
-Copy-Item `
-    $PlaywrightSource `
-    $PlaywrightDestination `
-    -Recurse `
-    -Force
 if (-not (Test-Path $Executable)) {
-    throw "Сборка завершилась без Teggy.exe: $Executable"
+    throw "Build completed without Teggy.exe: $Executable"
 }
 
-# PyInstaller включает библиотеку Playwright, но не её Chromium.
-Write-Host "Добавление Chromium в сборку..." -ForegroundColor Cyan
+Write-Host "Bundling Playwright browsers..." -ForegroundColor Cyan
 
-New-Item `
-    -ItemType Directory `
-    -Path (Split-Path -Parent $PlaywrightDestination) `
-    -Force | Out-Null
+$PlaywrightParent = Split-Path -Parent $PlaywrightDestination
+New-Item -ItemType Directory -Path $PlaywrightParent -Force | Out-Null
 
 if (Test-Path $PlaywrightDestination) {
     Remove-Item $PlaywrightDestination -Recurse -Force
 }
 
-Copy-Item `
-    -Path $PlaywrightSource `
-    -Destination $PlaywrightDestination `
-    -Recurse `
-    -Force
+Copy-Item -Path $PlaywrightSource -Destination $PlaywrightDestination -Recurse -Force
 
-$ChromiumExecutable = Get-ChildItem `
-    $PlaywrightDestination `
-    -Recurse `
-    -Filter "chrome.exe" `
-    -ErrorAction SilentlyContinue |
-    Select-Object -First 1
-
-$HeadlessExecutable = Get-ChildItem `
-    $PlaywrightDestination `
-    -Recurse `
-    -Filter "chrome-headless-shell.exe" `
-    -ErrorAction SilentlyContinue |
-    Select-Object -First 1
+$ChromiumExecutable = Get-ChildItem -Path $PlaywrightDestination -Recurse -Filter "chrome.exe" -File -ErrorAction SilentlyContinue | Select-Object -First 1
+$HeadlessExecutable = Get-ChildItem -Path $PlaywrightDestination -Recurse -Filter "chrome-headless-shell.exe" -File -ErrorAction SilentlyContinue | Select-Object -First 1
 
 if (-not $ChromiumExecutable) {
-    throw "В сборку не попал chrome.exe Playwright."
+    throw "Bundled Playwright Chromium does not contain chrome.exe."
 }
 
 if (-not $HeadlessExecutable) {
-    Write-Warning (
-        "chrome-headless-shell.exe не найден. " +
-        "Обычный Chromium добавлен, но headless-функции могут не работать."
-    )
+    throw "Bundled Playwright Chromium does not contain chrome-headless-shell.exe."
 }
 
-Write-Host "Приложение собрано: $Executable" -ForegroundColor Green
-Write-Host "Браузеры Playwright: $PlaywrightDestination" -ForegroundColor Green
+Write-Host "Application ready: $Executable" -ForegroundColor Green
+Write-Host "Chromium: $($ChromiumExecutable.FullName)" -ForegroundColor DarkGreen
+Write-Host "Headless shell: $($HeadlessExecutable.FullName)" -ForegroundColor DarkGreen
 
 if ($SkipInstaller) {
+    Write-Host "Installer step skipped." -ForegroundColor Yellow
     exit 0
 }
 
-$IsccCandidates = @(
+if (-not (Test-Path $InstallerScript)) {
+    throw "Inno Setup script not found: $InstallerScript"
+}
+
+$IsccCandidates = @()
+
+if ($IsccPath) {
+    $IsccCandidates += $IsccPath
+}
+
+if ($env:INNO_SETUP_ISCC) {
+    $IsccCandidates += $env:INNO_SETUP_ISCC
+}
+
+$IsccCandidates += @(
     "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe",
     "$env:ProgramFiles(x86)\Inno Setup 6\ISCC.exe",
     "$env:ProgramFiles\Inno Setup 6\ISCC.exe"
 )
 
-$CustomIscc = Get-ChildItem `
-    -Path "X:\" `
-    -Filter "ISCC.exe" `
-    -Recurse `
-    -ErrorAction SilentlyContinue |
-    Where-Object {
-        $_.FullName -like "*Inno Setup 6*"
-    } |
-    Select-Object -First 1 -ExpandProperty FullName
+# Matches paths such as X:\<folder>\Inno Setup 6\ISCC.exe without
+# hard-coding a non-ASCII folder name into this PowerShell script.
+$CustomIscc = Get-ChildItem -Path "X:\*\Inno Setup 6\ISCC.exe" -File -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
 
 if ($CustomIscc) {
     $IsccCandidates = @($CustomIscc) + $IsccCandidates
 }
 
-$Iscc = $IsccCandidates |
-    Where-Object { Test-Path $_ } |
-    Select-Object -First 1
+$Iscc = $IsccCandidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
 
-if (-not $Installer) {
-    throw "Установщик не найден в $ReleaseDir"
+if (-not $Iscc) {
+    throw "Inno Setup 6 was not found. Pass -IsccPath or set INNO_SETUP_ISCC."
 }
 
-Write-Host "Установщик готов: $($Installer.FullName)" -ForegroundColor Green
+New-Item -ItemType Directory -Path $ReleaseDir -Force | Out-Null
+
+Write-Host "Building installer with: $Iscc" -ForegroundColor Cyan
+Invoke-Checked -FilePath $Iscc -Arguments @($InstallerScript) -ErrorMessage "Inno Setup failed."
+
+$Installer = Get-ChildItem -Path $ReleaseDir -Filter "TeggySetup-*.exe" -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+
+if (-not $Installer) {
+    throw "Installer was not created in: $ReleaseDir"
+}
+
+Write-Host "Installer ready: $($Installer.FullName)" -ForegroundColor Green
