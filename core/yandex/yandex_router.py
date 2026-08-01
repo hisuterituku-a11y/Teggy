@@ -181,23 +181,31 @@ class YandexRouter:
         self.log("================================")
         self.log("ЭТАП 5: ВИДЕО")
 
-        downloader = YandexVideoDownloader(headless=True)
+        downloader = YandexVideoDownloader(headless=False)
         self._set_active_downloader(downloader)
         try:
-            urls = downloader.collect(base_url, on_log=self.log)
-            if self._check_cancelled():
-                return 0
-            if not urls:
-                self.log("Видео не найдены — продолжаем без ошибки")
-                return 0
-            saved = downloader.download(
-                urls,
+            found, saved, skipped, failed = downloader.collect_and_download(
+                base_url,
                 folder=folder,
                 on_log=self.log,
                 skip_existing=skip_existing,
             )
-            self.log(f"Видео найдено: {len(urls)}; сохранено новых: {saved}")
-            return len(urls)
+            if self._check_cancelled():
+                return 0
+            if found == 0:
+                self.log("Видео не найдены — продолжаем без ошибки")
+                return 0
+            if failed:
+                self.log(
+                    f"[WARNING] Видео найдено: {found}; сохранено: {saved}; "
+                    f"пропущено: {skipped}; ошибок: {failed}"
+                )
+            else:
+                self.log(
+                    f"Видео найдено: {found}; сохранено: {saved}; "
+                    f"пропущено: {skipped}"
+                )
+            return found
         finally:
             self._set_active_downloader(None)
 
