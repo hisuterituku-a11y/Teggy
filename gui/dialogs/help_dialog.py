@@ -35,50 +35,175 @@ TELEGRAM_URL = "https://t.me/olablud"
 
 FAQ_SECTIONS = [
     (
+        "О программе",
+        [
+            (
+                "Что умеет Teggy?",
+                "Teggy помогает собирать и обрабатывать материалы для карточек Яндекс Бизнес: импортирует фото организации, фото отзывов, Stories и видео, удаляет дубликаты, показывает изображения во встроенной галерее, записывает метаданные, применяет шаблоны и генерирует теги по данным Wordstat.",
+            ),
+            (
+                "Нужно ли устанавливать браузер отдельно?",
+                "Нет. Необходимые браузерные компоненты входят в комплект приложения.",
+            ),
+            (
+                "Куда сохраняются материалы?",
+                "В выбранную папку проекта. Teggy создаёт отдельные папки для фотографий организации, фотографий отзывов, Stories и видео.",
+            ),
+        ],
+    ),
+    (
         "Начало работы",
         [
             (
-                "Как добавить фотографии?",
-                "Откройте раздел «Тегирование», выберите папку или перетащите фотографии в окно приложения.",
+                "Как добавить фотографии для обработки?",
+                "Откройте раздел «Тегирование», выберите папку или перетащите фотографии и папки мышью в окно приложения.",
+            ),
+            (
+                "Можно ли перетащить целую папку?",
+                "Да. Teggy поддерживает drag and drop папок и отдельных изображений.",
             ),
             (
                 "В каком порядке обрабатываются фотографии?",
-                "Файлы идут в том порядке, в котором они показаны в списке. Перед запуском проверьте последовательность фотографий в интерфейсе.",
+                "Файлы идут в том порядке, в котором они показаны в списке. Перед запуском проверьте последовательность изображений в интерфейсе.",
+            ),
+            (
+                "Почему программа пропускает некоторые файлы?",
+                "Если включена опция «Пропускать существующие файлы», Teggy не повторяет уже выполненную загрузку или обработку.",
             ),
         ],
     ),
     (
-        "Теги и шаблоны",
-        [
-            (
-                "Почему теги не записались?",
-                "Проверьте, что файлы доступны для записи, не открыты другой программой и имеют поддерживаемый формат. Если ошибка повторяется, сохраните диагностический отчёт.",
-            ),
-            (
-                "Где находятся шаблоны тегов?",
-                "Шаблоны доступны из раздела тегирования. Их можно создавать, изменять и применять к выбранным фотографиям.",
-            ),
-        ],
-    ),
-    (
-        "Яндекс Карты и видео",
+        "Яндекс Карты",
         [
             (
                 "Как импортировать материалы из Яндекс Карт?",
-                "Откройте раздел «Яндекс Карты», вставьте ссылку на карточку или публикацию и запустите импорт.",
+                "Откройте раздел «Яндекс Карты», вставьте ссылку на организацию, выберите папку проекта, отметьте нужные типы данных и запустите импорт.",
             ),
             (
-                "Что делать, если видео не скачивается?",
-                "Проверьте интернет-соединение, корректность ссылки и наличие FFmpeg. Затем повторите попытку. Если проблема остаётся, приложите диагностический отчёт.",
+                "Какие материалы можно скачать?",
+                "Фото организации, фото из отзывов, Stories и видео. Каждый этап можно включать и отключать отдельно.",
+            ),
+            (
+                "Что делает сравнение фотографий?",
+                "После загрузки Teggy сравнивает фото организации и фото отзывов. Полные дубликаты удаляются только из папки организации. Фото отзывов не удаляются.",
+            ),
+            (
+                "Почему Stories или видео могут не найтись?",
+                "У организации может не быть таких материалов, либо Яндекс мог изменить интерфейс или формат выдачи. В таком случае стоит проверить обновления Teggy и приложить диагностический отчёт.",
+            ),
+            (
+                "Почему импорт может идти долго?",
+                "Скорость зависит от количества материалов, соединения с интернетом и ответа серверов Яндекса. Видео обрабатываются дольше фотографий.",
             ),
         ],
     ),
     (
-        "Поддержка",
+        "Галерея",
         [
             (
+                "Для чего нужна встроенная галерея?",
+                "В ней можно просматривать изображения, листать их, увеличивать, быстро переходить между файлами и проверять результаты обработки.",
+            ),
+            (
+                "Можно ли открыть собственную папку?",
+                "Да. Выберите её через интерфейс или перетащите в окно программы.",
+            ),
+            (
+                "Можно ли удалять изображения из галереи?",
+                "Да, если соответствующая команда доступна для выбранного файла. Удаление затрагивает реальный файл на диске, поэтому программа запрашивает подтверждение.",
+            ),
+        ],
+    ),
+    (
+        "Метаданные",
+        [
+            (
+                "Какие метаданные поддерживаются?",
+                "Teggy работает с EXIF, IPTC и XMP.",
+            ),
+            (
+                "Можно ли записать метаданные сразу в несколько фотографий?",
+                "Да. Выберите нужные изображения и примените изменения пакетно.",
+            ),
+            (
+                "Какие поля можно заполнить?",
+                "Например: заголовок, описание, автор, ключевые слова, авторские права и другие поддерживаемые поля.",
+            ),
+            (
+                "Почему метаданные не записались?",
+                "Проверьте, что файл доступен для записи, не открыт другой программой и имеет поддерживаемый формат. При повторной ошибке сохраните диагностический отчёт.",
+            ),
+        ],
+    ),
+    (
+        "Шаблоны",
+        [
+            (
+                "Что такое шаблон метаданных?",
+                "Это сохранённый набор полей, который можно повторно применять к выбранным изображениям.",
+            ),
+            (
+                "Можно ли создать несколько шаблонов?",
+                "Да. Можно хранить разные шаблоны для Яндекс Бизнес, Google Maps, 2ГИС или отдельных клиентов.",
+            ),
+            (
+                "Где находятся шаблоны?",
+                "Шаблоны доступны в разделе тегирования. Их можно создавать, изменять и применять к выбранным файлам.",
+            ),
+        ],
+    ),
+    (
+        "Wordstat",
+        [
+            (
+                "Что делает генератор тегов Wordstat?",
+                "Он собирает поисковые запросы, объединяет результаты, удаляет дубликаты и нерелевантные фразы, после чего формирует итоговую строку тегов до 3000 символов.",
+            ),
+            (
+                "Что такое базовые запросы?",
+                "Это основные поисковые фразы, с которых начинается сбор. Их можно заменить своими.",
+            ),
+            (
+                "Почему часть запросов удаляется?",
+                "Фильтр исключает чужую географию, бренды, годы, товарные и нерелевантные запросы.",
+            ),
+            (
+                "Почему итог короче 3000 символов?",
+                "После фильтрации могло остаться меньше качественных запросов. Teggy не добавляет случайные слова только ради заполнения лимита.",
+            ),
+        ],
+    ),
+    (
+        "Диагностика",
+        [
+            (
+                "Где находятся журналы?",
+                "Основной журнал: %USERPROFILE%\\.teggy\\logs\\teggy.log. Журнал ошибок: %USERPROFILE%\\.teggy\\logs\\teggy-errors.log.",
+            ),
+            (
+                "Как создать диагностический отчёт?",
+                "Перейдите на вкладку «Поддержка» в этом окне и нажмите «Сохранить отчёт…» или «Скопировать отчёт».",
+            ),
+            (
+                "Что приложить при обращении в поддержку?",
+                "Диагностический отчёт, описание проблемы, журнал ошибок и, по возможности, снимок экрана.",
+            ),
+            (
                 "Как сообщить об ошибке?",
-                "Перейдите на вкладку «Поддержка», сохраните диагностический отчёт и отправьте его разработчику в Telegram либо создайте обращение в GitHub Issues.",
+                "На вкладке «Поддержка» можно открыть Telegram разработчика или создать обращение в GitHub Issues.",
+            ),
+        ],
+    ),
+    (
+        "Обновления",
+        [
+            (
+                "Нужно ли удалять старую версию?",
+                "Нет. Новую версию можно устанавливать поверх существующей.",
+            ),
+            (
+                "Где посмотреть версию программы?",
+                "Версия отображается в интерфейсе, диагностическом отчёте и журнале запуска.",
             ),
         ],
     ),
@@ -93,8 +218,11 @@ class HelpDialog(QDialog):
         self.setModal(True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.resize(780, 680)
-        self.setMinimumSize(680, 580)
+        self.resize(860, 720)
+        self.setMinimumSize(720, 620)
+
+        self._faq_scroll: QScrollArea | None = None
+        self._faq_sections: dict[str, QWidget] = {}
 
         shell = QWidget(self)
         shell.setObjectName("HelpDialogShell")
@@ -167,17 +295,51 @@ class HelpDialog(QDialog):
         self.faq_button.setChecked(index == 0)
         self.support_button.setChecked(index == 1)
 
+    def _scroll_to_section(self, title: str) -> None:
+        scroll = self._faq_scroll
+        target = self._faq_sections.get(title)
+        if scroll is None or target is None:
+            return
+        scroll.ensureWidgetVisible(target, 0, 12)
+
     def _build_faq_tab(self) -> QWidget:
         tab = QWidget()
         tab.setObjectName("HelpPage")
         tab_layout = QVBoxLayout(tab)
         tab_layout.setContentsMargins(0, 0, 0, 0)
+        tab_layout.setSpacing(12)
+
+        nav_scroll = QScrollArea()
+        nav_scroll.setObjectName("FaqNavScroll")
+        nav_scroll.setWidgetResizable(True)
+        nav_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        nav_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        nav_scroll.setFixedHeight(48)
+
+        nav_content = QWidget()
+        nav_content.setObjectName("FaqNavContent")
+        nav_layout = QHBoxLayout(nav_content)
+        nav_layout.setContentsMargins(0, 0, 0, 0)
+        nav_layout.setSpacing(8)
+
+        for section_title, _ in FAQ_SECTIONS:
+            button = QPushButton(section_title)
+            button.setObjectName("FaqNavButton")
+            button.clicked.connect(
+                lambda checked=False, title=section_title: self._scroll_to_section(title)
+            )
+            nav_layout.addWidget(button)
+        nav_layout.addStretch(1)
+        nav_scroll.setWidget(nav_content)
+        tab_layout.addWidget(nav_scroll)
 
         scroll = QScrollArea()
         scroll.setObjectName("HelpScroll")
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._faq_scroll = scroll
 
         content = QWidget()
         content.setObjectName("FaqContent")
@@ -185,7 +347,9 @@ class HelpDialog(QDialog):
         layout.setContentsMargins(0, 2, 10, 8)
         layout.setSpacing(22)
 
-        intro = QLabel("Краткие ответы на основные вопросы по работе с Teggy.")
+        intro = QLabel(
+            "Краткие ответы по основным функциям Teggy. Используйте кнопки выше, чтобы быстро перейти к нужному разделу."
+        )
         intro.setObjectName("FaqIntro")
         intro.setWordWrap(True)
         layout.addWidget(intro)
@@ -196,6 +360,7 @@ class HelpDialog(QDialog):
             section_layout = QVBoxLayout(section)
             section_layout.setContentsMargins(0, 0, 0, 0)
             section_layout.setSpacing(10)
+            self._faq_sections[section_title] = section
 
             section_label = QLabel(section_title.upper())
             section_label.setObjectName("FaqSectionTitle")
@@ -222,7 +387,9 @@ class HelpDialog(QDialog):
                 answer_label = QLabel(answer)
                 answer_label.setObjectName("FaqAnswer")
                 answer_label.setWordWrap(True)
-                answer_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+                answer_label.setTextInteractionFlags(
+                    Qt.TextInteractionFlag.TextSelectableByMouse
+                )
                 card_layout.addWidget(answer_label)
 
                 section_layout.addWidget(card)
@@ -231,7 +398,7 @@ class HelpDialog(QDialog):
 
         layout.addStretch(1)
         scroll.setWidget(content)
-        tab_layout.addWidget(scroll)
+        tab_layout.addWidget(scroll, 1)
         return tab
 
     def _build_support_tab(self) -> QWidget:
@@ -253,11 +420,13 @@ class HelpDialog(QDialog):
 
         contact_handle = QLabel(f"Telegram:  {TELEGRAM_HANDLE}")
         contact_handle.setObjectName("ContactHandle")
-        contact_handle.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        contact_handle.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
         contact_layout.addWidget(contact_handle)
 
         contact_hint = QLabel(
-            "Если возникла проблема или есть идея для Teggy, напишите мне в Telegram."
+            "Если возникла проблема или есть идея для Teggy, напишите мне в Telegram. "
             "При ошибке кратко опишите, что произошло, и приложите диагностический отчёт. "
             "Скриншот тоже пригодится, потому что телепатия в сборку пока не вошла."
         )
@@ -265,20 +434,13 @@ class HelpDialog(QDialog):
         contact_hint.setWordWrap(True)
         contact_layout.addWidget(contact_hint)
 
-        contact_actions = QHBoxLayout()
-        contact_actions.setSpacing(10)
-
         telegram_button = QPushButton("Открыть Telegram")
         telegram_button.setObjectName("TelegramButton")
         telegram_button.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(TELEGRAM_URL))
         )
-        contact_actions.addWidget(telegram_button)
-
-
         telegram_button.setMinimumHeight(40)
         contact_layout.addWidget(telegram_button)
-
         layout.addWidget(contact_card)
 
         title = QLabel("Диагностический отчёт")
@@ -323,7 +485,9 @@ class HelpDialog(QDialog):
 
         issues_button = QPushButton("Создать обращение")
         issues_button.setObjectName("HelpSecondaryButton")
-        issues_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(ISSUES_URL)))
+        issues_button.clicked.connect(
+            lambda: QDesktopServices.openUrl(QUrl(ISSUES_URL))
+        )
         links.addWidget(issues_button)
 
         repository_button = QPushButton("Открыть GitHub")
@@ -349,6 +513,7 @@ class HelpDialog(QDialog):
             QWidget#HelpPage,
             QWidget#FaqContent,
             QWidget#FaqSection,
+            QWidget#FaqNavContent,
             QStackedWidget#HelpStack {
                 background: transparent;
                 border: none;
@@ -379,26 +544,55 @@ class HelpDialog(QDialog):
                 border-bottom: 2px solid #7c3aed;
             }
             QScrollArea#HelpScroll,
-            QScrollArea#HelpScroll > QWidget > QWidget {
+            QScrollArea#HelpScroll > QWidget > QWidget,
+            QScrollArea#FaqNavScroll,
+            QScrollArea#FaqNavScroll > QWidget > QWidget {
                 background: transparent;
                 border: none;
+            }
+            QPushButton#FaqNavButton {
+                min-height: 34px;
+                padding: 0 14px;
+                color: #c7d1e0;
+                background: #172033;
+                border: 1px solid #30405a;
+                border-radius: 8px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+            QPushButton#FaqNavButton:hover {
+                color: #ffffff;
+                background: #201a35;
+                border-color: #6d3fc0;
             }
             QScrollBar:vertical {
                 background: transparent;
                 width: 8px;
                 margin: 4px 0;
             }
-            QScrollBar::handle:vertical {
+            QScrollBar:horizontal {
+                background: transparent;
+                height: 7px;
+                margin: 0 4px;
+            }
+            QScrollBar::handle:vertical,
+            QScrollBar::handle:horizontal {
                 background: #5b35a6;
                 min-height: 34px;
+                min-width: 34px;
                 border-radius: 4px;
             }
             QScrollBar::add-line:vertical,
             QScrollBar::sub-line:vertical,
             QScrollBar::add-page:vertical,
-            QScrollBar::sub-page:vertical {
+            QScrollBar::sub-page:vertical,
+            QScrollBar::add-line:horizontal,
+            QScrollBar::sub-line:horizontal,
+            QScrollBar::add-page:horizontal,
+            QScrollBar::sub-page:horizontal {
                 background: transparent;
                 border: none;
+                width: 0;
                 height: 0;
             }
             QLabel#FaqIntro,
@@ -409,7 +603,6 @@ class HelpDialog(QDialog):
                 border: none;
                 background: transparent;
             }
-
             QLabel#FaqSectionTitle,
             QLabel#FaqQuestion,
             QLabel#FaqAnswer,
@@ -517,9 +710,11 @@ class HelpDialog(QDialog):
 
     def _copy_report(self) -> None:
         QGuiApplication.clipboard().setText(self.report_view.toPlainText())
-        QMessageBox.information(self, "Готово", "Диагностический отчёт скопирован.")
-
-    
+        QMessageBox.information(
+            self,
+            "Готово",
+            "Диагностический отчёт скопирован.",
+        )
 
     def _save_report(self) -> None:
         default_name = f"teggy-report-{datetime.now():%Y%m%d-%H%M%S}.txt"
@@ -532,11 +727,22 @@ class HelpDialog(QDialog):
         if not path:
             return
         try:
-            Path(path).write_text(self.report_view.toPlainText(), encoding="utf-8")
+            Path(path).write_text(
+                self.report_view.toPlainText(),
+                encoding="utf-8",
+            )
         except OSError as exc:
-            QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить отчёт:\n{exc}")
+            QMessageBox.critical(
+                self,
+                "Ошибка",
+                f"Не удалось сохранить отчёт:\n{exc}",
+            )
             return
-        QMessageBox.information(self, "Готово", "Диагностический отчёт сохранён.")
+        QMessageBox.information(
+            self,
+            "Готово",
+            "Диагностический отчёт сохранён.",
+        )
 
     def _build_report(self) -> str:
         ffmpeg_path = shutil.which("ffmpeg") or "не найден"
@@ -559,6 +765,7 @@ class HelpDialog(QDialog):
     @staticmethod
     def _read_recent_log() -> str:
         candidates = [
+            Path.home() / ".teggy" / "logs" / "teggy.log",
             Path.cwd() / "teggy.log",
             Path.cwd() / "app.log",
             Path.cwd() / "logs" / "teggy.log",
@@ -569,7 +776,10 @@ class HelpDialog(QDialog):
             if not path.is_file():
                 continue
             try:
-                lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+                lines = path.read_text(
+                    encoding="utf-8",
+                    errors="replace",
+                ).splitlines()
                 return f"Файл: {path}\n" + "\n".join(lines[-100:])
             except OSError as exc:
                 return f"Не удалось прочитать {path}: {exc}"
