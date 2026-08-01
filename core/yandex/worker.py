@@ -20,6 +20,8 @@ class YandexWorker(QThread):
         self,
         url: str,
         save_dir: Path,
+        download_organization_photos: bool = True,
+        download_review_photos: bool = True,
         download_stories: bool = False,
         download_videos: bool = False,
         on_log=None,
@@ -31,6 +33,8 @@ class YandexWorker(QThread):
 
         self.url = url
         self.save_dir = Path(save_dir)
+        self.download_organization_photos = download_organization_photos
+        self.download_review_photos = download_review_photos
         self.download_stories = download_stories
         self.download_videos = download_videos
         self.skip_existing = skip_existing
@@ -61,7 +65,6 @@ class YandexWorker(QThread):
             router.log = self._log
             router.progress = self._progress
 
-            # Отмена могла прийти между первой проверкой и назначением роутера.
             if self._cancel_requested or self.isInterruptionRequested():
                 router.cancel()
                 self._log("Операция отменена до запуска")
@@ -70,6 +73,8 @@ class YandexWorker(QThread):
             success = router.run(
                 self.url,
                 save_dir=self.save_dir,
+                download_organization_photos=self.download_organization_photos,
+                download_review_photos=self.download_review_photos,
                 download_stories=self.download_stories,
                 download_videos=self.download_videos,
                 skip_existing=self.skip_existing,
