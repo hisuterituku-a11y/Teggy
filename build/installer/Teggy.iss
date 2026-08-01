@@ -1,4 +1,4 @@
-#define MyAppName "Teggy"
+﻿#define MyAppName "Teggy"
 #define MyAppVersion "2.1.0-dev"
 #define MyAppPublisher "Teggy"
 #define MyAppExeName "Teggy.exe"
@@ -9,6 +9,7 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
+DisableDirPage=no
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
