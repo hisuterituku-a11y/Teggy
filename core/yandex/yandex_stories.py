@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import time
 from pathlib import Path
 from typing import Callable
 
@@ -12,7 +13,7 @@ LogCallback = Callable[[str], None]
 
 
 class YandexStoriesDownloader:
-    """Собирает изображения из всех карточек Stories организации Яндекс Карт."""
+    """Собирает изображения Stories организации Яндекс Карт."""
 
     USER_AGENT = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -106,46 +107,21 @@ class YandexStoriesDownloader:
             and self._click_carousel_arrow(page, "next")
         ):
             steps += 1
-            page.wait_for_timeout(200)
+            page.wait_for_timeout(250)
+
         self._log(f"Лента Stories пройдена: {steps} шагов вправо", on_log)
+        self._log("Возвращаем ленту Stories в начало", on_log)
 
-        while not self._cancelled and self._click_carousel_arrow(page, "prev"):
-            page.wait_for_timeout(150)
+        back_steps = 0
+        while (
+            not self._cancelled
+            and back_steps < max_steps
+            and self._click_carousel_arrow(page, "prev")
+        ):
+            back_steps += 1
+            page.wait_for_timeout(200)
 
-    @staticmethod
-    def _viewer_signature(page: Page) -> str:
-        try:
-            return str(
-                page.evaluate(
-                    """
-                    () => {
-                        const nodes = [...document.querySelectorAll(
-                            '.story-screen-view img, .story-screen-view [style*="background-image"], '
-                            '[class*="story"] img, [class*="story"] [style*="background-image"]'
-                        )].filter((el) => {
-                            const r = el.getBoundingClientRect();
-                            const s = getComputedStyle(el);
-                            return r.width > 150 && r.height > 150 &&
-                                   s.display !== 'none' && s.visibility !== 'hidden';
-                        });
-                        const el = nodes.sort((a, b) => {
-                            const ar = a.getBoundingClientRect();
-                            const br = b.getBoundingClientRect();
-                            return br.width * br.height - ar.width * ar.height;
-                        })[0];
-                        if (!el) return location.href;
-                        return [
-                            el.currentSrc || '', el.src || '',
-                            getComputedStyle(el).backgroundImage || '',
-                            el.getAttribute('data-id') || '',
-                            el.outerHTML.slice(0, 300)
-                        ].join('|');
-                    }
-                    """
-                )
-            )
-        except Exception:
-            return page.url
+        self._log(f"Лента Stories возвращена: {back_steps} шагов влево", on_log)
 
     @staticmethod
     def _viewer_open(page: Page) -> bool:
@@ -163,64 +139,53 @@ class YandexStoriesDownloader:
                 continue
         return False
 
-    def _next_story(self, page: Page) -> bool:
+    def _open_first_story(self, page: Page) -> bool:
+        try:
+            cards = page.locator(".story-cover-preview")
+            if cards.count() == 0:
+                return False
+            card = cards.first
+            card.scroll_into_view_if_needed(timeout=3000)
+            card.click(force=True, timeout=5000)
+            page.wait_for_timeout(1000)
+            return self._viewer_open(page)
+        except Exception:
+            return False
+
+    def _nudge_viewer(self, page: Page, on_log: LogCallback | None) -> bool:
         selectors = (
             ".story-screen-view__next",
             "[aria-label='Следующая история']",
             "[aria-label='Next story']",
             "[class*='story'] [class*='next']",
         )
-        before = self._viewer_signature(page)
 
         for selector in selectors:
             try:
                 button = page.locator(selector).first
                 if button.count() and button.is_visible():
                     button.click(force=True, timeout=1500)
-                    break
+                    self._log("Stories подвисли: нажимаем Далее один раз", on_log)
+                    return True
             except Exception:
                 continue
-        else:
-            try:
-                page.keyboard.press("ArrowRight")
-            except Exception:
-                return False
 
-        for _ in range(15):
-            page.wait_for_timeout(120)
-            if not self._viewer_open(page):
-                return False
-            if self._viewer_signature(page) != before:
-                return True
-        return False
-
-    @staticmethod
-    def _close_viewer(page: Page) -> None:
         try:
-            page.keyboard.press("Escape")
-            page.wait_for_timeout(350)
+            page.keyboard.press("ArrowRight")
+            self._log("Stories подвисли: нажимаем стрелку вправо один раз", on_log)
+            return True
         except Exception:
-            pass
-
-    def _open_card(self, page: Page, index: int) -> bool:
-        self._close_viewer(page)
-        cards = page.locator(".story-cover-preview")
-        if index >= cards.count():
-            return False
-        try:
-            card = cards.nth(index)
-            card.scroll_into_view_if_needed(timeout=3000)
-            card.click(force=True, timeout=5000)
-            page.wait_for_timeout(800)
-            return self._viewer_open(page)
-        except Exception:
+            self._log("Stories подвисли, но переключить их не удалось", on_log)
             return False
 
     def collect(
         self,
         url: str,
         on_log: LogCallback | None = None,
-        max_slides_per_card: int = 50,
+        max_wait_seconds: float = 900.0,
+        stall_seconds: float = 14.0,
+        max_stall_nudges: int = 5,
+        finish_after_last_nudge: float = 20.0,
     ) -> list[str]:
         self._cancelled = False
         registry: dict[str, str] = {}
@@ -270,54 +235,62 @@ class YandexStoriesDownloader:
                     self._log("Stories у организации не найдены", on_log)
                     return []
 
-                for card_index in range(cards_count):
-                    if self._cancelled:
-                        break
+                if not self._open_first_story(page):
+                    self._log("Не удалось открыть первую Stories", on_log)
+                    return []
 
-                    before_card = len(order)
-                    self._log(
-                        f"Открываем карточку Stories {card_index + 1}/{cards_count}",
-                        on_log,
-                    )
-                    if not self._open_card(page, card_index):
+                self._log(
+                    "Первая Stories открыта. Ждём автоматического показа всех Stories без кликов",
+                    on_log,
+                )
+
+                started_at = time.monotonic()
+                last_growth_at = started_at
+                last_count = len(order)
+                nudges = 0
+                last_nudge_at: float | None = None
+
+                while not self._cancelled:
+                    now = time.monotonic()
+
+                    if now - started_at >= max_wait_seconds:
                         self._log(
-                            f"Карточку Stories {card_index + 1} открыть не удалось",
+                            f"Достигнут общий тайм-аут Stories: {max_wait_seconds:.0f} секунд",
                             on_log,
                         )
+                        break
+
+                    page.wait_for_timeout(1000)
+                    current_count = len(order)
+
+                    if current_count > last_count:
+                        last_count = current_count
+                        last_growth_at = time.monotonic()
+                        last_nudge_at = None
                         continue
 
-                    page.wait_for_timeout(700)
-                    seen_signatures: set[str] = set()
-                    unchanged = 0
+                    silent_for = time.monotonic() - last_growth_at
+                    if silent_for < stall_seconds:
+                        continue
 
-                    for _ in range(max_slides_per_card):
-                        if self._cancelled or not self._viewer_open(page):
-                            break
+                    if nudges < max_stall_nudges:
+                        if self._nudge_viewer(page, on_log):
+                            nudges += 1
+                            last_nudge_at = time.monotonic()
+                            last_growth_at = last_nudge_at
+                            page.wait_for_timeout(1200)
+                            continue
 
-                        signature = self._viewer_signature(page)
-                        if signature in seen_signatures:
-                            unchanged += 1
-                        else:
-                            seen_signatures.add(signature)
-                            unchanged = 0
+                    if last_nudge_at is None:
+                        self._log("Stories перестали переключаться", on_log)
+                        break
 
-                        count_before = len(order)
-                        page.wait_for_timeout(450)
-                        if len(order) == count_before:
-                            unchanged += 1
-                        else:
-                            unchanged = 0
-
-                        if unchanged >= 3 or not self._next_story(page):
-                            break
-
-                    self._close_viewer(page)
-                    found_in_card = len(order) - before_card
-                    self._log(
-                        f"Карточка {card_index + 1}/{cards_count}: "
-                        f"найдено новых Stories: {found_in_card}; всего: {len(order)}",
-                        on_log,
-                    )
+                    if time.monotonic() - last_nudge_at >= finish_after_last_nudge:
+                        self._log(
+                            "После последней попытки новые Stories не появились, сбор завершён",
+                            on_log,
+                        )
+                        break
 
         finally:
             self._browser = None
