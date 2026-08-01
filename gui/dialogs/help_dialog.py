@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from core.logger import ERROR_LOG_FILE, LOG_FILE
 from core.version import display_version
 from gui.components.window_title_bar import WindowTitleBar
 
@@ -727,16 +728,14 @@ class HelpDialog(QDialog):
 
     @staticmethod
     def _read_recent_log() -> str:
-        candidates = [
-            Path.cwd() / "teggy.log",
-            Path.cwd() / "app.log",
-            Path.cwd() / "logs" / "teggy.log",
-            Path.cwd() / "logs" / "app.log",
-            Path.home() / ".teggy" / "teggy.log",
-        ]
+        parts: list[str] = []
 
-        for path in candidates:
+        for path, title in (
+            (LOG_FILE, "Основной журнал"),
+            (ERROR_LOG_FILE, "Журнал ошибок"),
+        ):
             if not path.is_file():
+                parts.append(f"{title}: файл не найден: {path}")
                 continue
 
             try:
@@ -744,8 +743,18 @@ class HelpDialog(QDialog):
                     encoding="utf-8",
                     errors="replace",
                 ).splitlines()
-                return f"Файл: {path}\n" + "\n".join(lines[-100:])
-            except OSError as exc:
-                return f"Не удалось прочитать {path}: {exc}"
 
-        return "Журнал не найден."
+                parts.extend(
+                    [
+                        f"{title}: {path}",
+                        *lines[-200:],
+                    ]
+                )
+            except OSError as exc:
+                parts.append(
+                    f"{title}: не удалось прочитать {path}: {exc}"
+                )
+
+            parts.append("")
+
+        return "\n".join(parts).rstrip()
