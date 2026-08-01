@@ -31,6 +31,8 @@ class YandexService:
         self,
         url: str,
         save_dir: Path,
+        download_organization_photos: bool = True,
+        download_review_photos: bool = True,
         download_stories: bool = False,
         download_videos: bool = False,
         on_log=None,
@@ -47,6 +49,8 @@ class YandexService:
         worker = YandexWorker(
             url=url,
             save_dir=save_dir,
+            download_organization_photos=download_organization_photos,
+            download_review_photos=download_review_photos,
             download_stories=download_stories,
             download_videos=download_videos,
             on_log=on_log,
