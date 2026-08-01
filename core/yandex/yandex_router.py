@@ -117,7 +117,7 @@ class YandexRouter:
         self.progress("Stories")
         self.log("================================")
         self.log("ЭТАП 4: STORIES")
-        downloader = YandexStoriesDownloader(headless=True)
+        downloader = YandexStoriesDownloader(headless=False)
         self._set_active_downloader(downloader)
         try:
             urls = downloader.collect(base_url, on_log=self.log)
