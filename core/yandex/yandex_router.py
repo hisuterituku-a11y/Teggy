@@ -3,11 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from core.yandex.diagnostics import (
-    format_exception_report,
-    save_diagnostic_report,
-)
-
+from core.yandex.diagnostics import format_exception_report, save_diagnostic_report
 from core.yandex.photo_compare import PhotoComparator
 from core.yandex.yandex_downloader import YandexPhotoDownloader
 from core.yandex.yandex_reviews import YandexReviewDownloader
@@ -16,7 +12,7 @@ from core.yandex.yandex_video_downloader import YandexVideoDownloader
 
 
 class YandexRouter:
-    """Последовательно запускает загрузчики Яндекс Карт."""
+    """Последовательно запускает выбранные загрузчики Яндекс Карт."""
 
     def __init__(self) -> None:
         self._cancelled = False
@@ -36,13 +32,10 @@ class YandexRouter:
     @staticmethod
     def _normalize_base_url(url: str) -> str:
         clean_url = url.strip()
-
         if not clean_url:
             raise ValueError("Не указана ссылка на организацию")
-
         return (
-            clean_url
-            .split("/gallery", 1)[0]
+            clean_url.split("/gallery", 1)[0]
             .split("/reviews", 1)[0]
             .split("?", 1)[0]
             .rstrip("/")
@@ -51,16 +44,11 @@ class YandexRouter:
     def _check_cancelled(self) -> bool:
         if not self._cancelled:
             return False
-
         self.log("Операция отменена пользователем")
         return True
 
-    def _set_active_downloader(
-        self,
-        downloader: Any | None,
-    ) -> None:
+    def _set_active_downloader(self, downloader: Any | None) -> None:
         self._active_downloader = downloader
-
         if self._cancelled and downloader is not None:
             try:
                 downloader.cancel()
@@ -68,210 +56,110 @@ class YandexRouter:
                 pass
 
     def _download_organization_photos(
-        self,
-        gallery_url: str,
-        folder: Path,
-        skip_existing: bool,
+        self, gallery_url: str, folder: Path, skip_existing: bool
     ) -> int:
         self.progress("Фото организации")
         self.log("================================")
         self.log("ЭТАП 1: ФОТО ОРГАНИЗАЦИИ")
         self.log(f"Открываем: {gallery_url}")
-
-        downloader = YandexPhotoDownloader(
-            headless=False,
-        )
+        downloader = YandexPhotoDownloader(headless=False)
         self._set_active_downloader(downloader)
-
         try:
-            urls = downloader.collect(
-                gallery_url,
-                on_log=self.log,
-            )
-
+            urls = downloader.collect(gallery_url, on_log=self.log)
             if self._check_cancelled():
                 return 0
-
             saved = downloader.download(
                 urls,
                 folder=folder,
                 on_log=self.log,
                 skip_existing=skip_existing,
             )
-
-            self.log(
-                (
-                    f"Фото организации найдено: {len(urls)}; "
-                    f"сохранено новых: {saved}"
-                )
-            )
-
+            self.log(f"Фото организации найдено: {len(urls)}; сохранено новых: {saved}")
             return len(urls)
-
         finally:
             self._set_active_downloader(None)
 
     def _download_review_photos(
-        self,
-        reviews_url: str,
-        folder: Path,
-        skip_existing: bool,
+        self, reviews_url: str, folder: Path, skip_existing: bool
     ) -> int:
         self.progress("Фото отзывов")
         self.log("================================")
         self.log("ЭТАП 2: ФОТО ОТЗЫВОВ")
         self.log(f"Открываем: {reviews_url}")
-
-        downloader = YandexReviewDownloader(
-            headless=False,
-        )
+        downloader = YandexReviewDownloader(headless=False)
         self._set_active_downloader(downloader)
-
         try:
-            urls = downloader.collect(
-                reviews_url,
-                on_log=self.log,
-            )
-
+            urls = downloader.collect(reviews_url, on_log=self.log)
             if self._check_cancelled():
                 return 0
-
             saved = downloader.download(
                 urls,
                 folder=folder,
                 on_log=self.log,
                 skip_existing=skip_existing,
             )
-
-            self.log(
-                (
-                    f"Фото отзывов найдено: {len(urls)}; "
-                    f"сохранено новых: {saved}"
-                )
-            )
-
+            self.log(f"Фото отзывов найдено: {len(urls)}; сохранено новых: {saved}")
             return len(urls)
-
         finally:
             self._set_active_downloader(None)
 
-    def _compare_photos(
-        self,
-        org_folder: Path,
-        reviews_folder: Path,
-    ) -> None:
+    def _compare_photos(self, org_folder: Path, reviews_folder: Path) -> None:
         self.progress("Удаление дублей")
         self.log("================================")
         self.log("ЭТАП 3: СРАВНЕНИЕ ФОТО")
-        self.log(
-            "Сравниваем фото организации и фото отзывов"
-        )
-
-        comparator = PhotoComparator(
-            org_folder=org_folder,
-            reviews_folder=reviews_folder,
-        )
-        comparator.compare()
-
-        self.log(
-            "Сравнение завершено, дубли удалены из папки организации"
-        )
+        self.log("Сравниваем фото организации и фото отзывов")
+        PhotoComparator(org_folder=org_folder, reviews_folder=reviews_folder).compare()
+        self.log("Сравнение завершено, дубли удалены из папки организации")
 
     def _download_stories(
-        self,
-        base_url: str,
-        folder: Path,
-        skip_existing: bool,
+        self, base_url: str, folder: Path, skip_existing: bool
     ) -> int:
         self.progress("Stories")
         self.log("================================")
         self.log("ЭТАП 4: STORIES")
-
-        downloader = YandexStoriesDownloader(
-            headless=True,
-        )
+        downloader = YandexStoriesDownloader(headless=True)
         self._set_active_downloader(downloader)
-
         try:
-            urls = downloader.collect(
-                base_url,
-                on_log=self.log,
-            )
-
+            urls = downloader.collect(base_url, on_log=self.log)
             if self._check_cancelled():
                 return 0
-
             if not urls:
-                self.log(
-                    "Stories не найдены — продолжаем без ошибки"
-                )
+                self.log("Stories не найдены — продолжаем без ошибки")
                 return 0
-
             saved = downloader.download(
                 urls,
                 folder=folder,
                 on_log=self.log,
                 skip_existing=skip_existing,
             )
-
-            self.log(
-                (
-                    f"Stories найдено: {len(urls)}; "
-                    f"сохранено новых: {saved}"
-                )
-            )
-
+            self.log(f"Stories найдено: {len(urls)}; сохранено новых: {saved}")
             return len(urls)
-
         finally:
             self._set_active_downloader(None)
 
     def _download_videos(
-        self,
-        base_url: str,
-        folder: Path,
-        skip_existing: bool,
+        self, base_url: str, folder: Path, skip_existing: bool
     ) -> int:
         self.progress("Видео")
         self.log("================================")
         self.log("ЭТАП 5: ВИДЕО")
-
-        downloader = YandexVideoDownloader(
-            headless=True,
-        )
+        downloader = YandexVideoDownloader(headless=True)
         self._set_active_downloader(downloader)
-
         try:
-            urls = downloader.collect(
-                base_url,
-                on_log=self.log,
-            )
-
+            urls = downloader.collect(base_url, on_log=self.log)
             if self._check_cancelled():
                 return 0
-
             if not urls:
-                self.log(
-                    "Видео не найдены — продолжаем без ошибки"
-                )
+                self.log("Видео не найдены — продолжаем без ошибки")
                 return 0
-
             saved = downloader.download(
                 urls,
                 folder=folder,
                 on_log=self.log,
                 skip_existing=skip_existing,
             )
-
-            self.log(
-                (
-                    f"Видео найдено: {len(urls)}; "
-                    f"сохранено новых: {saved}"
-                )
-            )
-
+            self.log(f"Видео найдено: {len(urls)}; сохранено новых: {saved}")
             return len(urls)
-
         finally:
             self._set_active_downloader(None)
 
@@ -282,16 +170,9 @@ class YandexRouter:
         exc: BaseException,
         url: str | None = None,
     ) -> str:
-        """Пишет подробную ошибку в лог и сохраняет диагностику."""
-        report = format_exception_report(
-            stage=stage,
-            exc=exc,
-            url=url,
-        )
-
+        report = format_exception_report(stage=stage, exc=exc, url=url)
         for line in report.splitlines():
             self.log(line)
-
         if self._save_dir is not None:
             try:
                 diagnostic_dir = save_diagnostic_report(
@@ -301,23 +182,17 @@ class YandexRouter:
                     url=url,
                     log_lines=self._log_lines,
                 )
-                self.log(
-                    f"[ERROR] Диагностика сохранена: {diagnostic_dir}"
-                )
+                self.log(f"[ERROR] Диагностика сохранена: {diagnostic_dir}")
             except Exception as diagnostic_exc:
-                self.log(
-                    "[ERROR] Не удалось сохранить диагностику: "
-                    f"{diagnostic_exc}"
-                )
-
-        return (
-            f"{stage}: {type(exc).__name__}: {exc}"
-        )
+                self.log(f"[ERROR] Не удалось сохранить диагностику: {diagnostic_exc}")
+        return f"{stage}: {type(exc).__name__}: {exc}"
 
     def run(
         self,
         url: str,
         save_dir: Path | str,
+        download_organization_photos: bool = True,
+        download_review_photos: bool = True,
         download_stories: bool = False,
         download_videos: bool = False,
         skip_existing: bool = True,
@@ -325,12 +200,18 @@ class YandexRouter:
         self._cancelled = False
         self._log_lines = []
 
+        selected = (
+            download_organization_photos,
+            download_review_photos,
+            download_stories,
+            download_videos,
+        )
+        if not any(selected):
+            raise ValueError("Не выбран ни один тип данных для скачивания")
+
         save_dir = Path(save_dir)
         self._save_dir = save_dir
-        save_dir.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
+        save_dir.mkdir(parents=True, exist_ok=True)
 
         base_url = self._normalize_base_url(url)
         self._base_url = base_url
@@ -342,82 +223,68 @@ class YandexRouter:
         stories_folder = save_dir / "Сторис"
         videos_folder = save_dir / "Видео"
 
-        org_folder.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
-        reviews_folder.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
+        if download_organization_photos:
+            org_folder.mkdir(parents=True, exist_ok=True)
+        if download_review_photos:
+            reviews_folder.mkdir(parents=True, exist_ok=True)
         if download_stories:
-            stories_folder.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
+            stories_folder.mkdir(parents=True, exist_ok=True)
         if download_videos:
-            videos_folder.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
+            videos_folder.mkdir(parents=True, exist_ok=True)
 
         self.log("================================")
         self.log("ЗАПУСК ИМПОРТА ИЗ ЯНДЕКС КАРТ")
         self.log(f"Организация: {base_url}")
         self.log(f"Папка сохранения: {save_dir}")
 
-        org_count = 0
-        reviews_count = 0
-        stories_count = 0
-        videos_count = 0
+        org_count = reviews_count = stories_count = videos_count = 0
         errors: list[str] = []
 
-        try:
-            org_count = self._download_organization_photos(
-                gallery_url=gallery_url,
-                folder=org_folder,
-                skip_existing=skip_existing,
-            )
-        except Exception as exc:
-            message = self._register_error(
-                stage="Фото организации",
-                exc=exc,
-                url=gallery_url,
-            )
-            errors.append(message)
+        if download_organization_photos:
+            try:
+                org_count = self._download_organization_photos(
+                    gallery_url, org_folder, skip_existing
+                )
+            except Exception as exc:
+                errors.append(
+                    self._register_error(
+                        stage="Фото организации", exc=exc, url=gallery_url
+                    )
+                )
+        else:
+            self.log("Фото организации: этап пропущен")
 
         if self._check_cancelled():
             return False
 
-        try:
-            reviews_count = self._download_review_photos(
-                reviews_url=reviews_url,
-                folder=reviews_folder,
-                skip_existing=skip_existing,
-            )
-        except Exception as exc:
-            message = self._register_error(
-                stage="Фото отзывов",
-                exc=exc,
-                url=reviews_url,
-            )
-            errors.append(message)
+        if download_review_photos:
+            try:
+                reviews_count = self._download_review_photos(
+                    reviews_url, reviews_folder, skip_existing
+                )
+            except Exception as exc:
+                errors.append(
+                    self._register_error(
+                        stage="Фото отзывов", exc=exc, url=reviews_url
+                    )
+                )
+        else:
+            self.log("Фото отзывов: этап пропущен")
 
         if self._check_cancelled():
             return False
 
-        try:
-            self._compare_photos(
-                org_folder=org_folder,
-                reviews_folder=reviews_folder,
-            )
-        except Exception as exc:
-            message = self._register_error(
-                stage="Сравнение фотографий",
-                exc=exc,
-                url=base_url,
-            )
-            errors.append(message)
+        if download_organization_photos and download_review_photos:
+            try:
+                self._compare_photos(org_folder, reviews_folder)
+            except Exception as exc:
+                errors.append(
+                    self._register_error(
+                        stage="Сравнение фотографий", exc=exc, url=base_url
+                    )
+                )
+        else:
+            self.log("Сравнение фото: этап пропущен, нужны оба типа фотографий")
 
         if self._check_cancelled():
             return False
@@ -425,20 +292,11 @@ class YandexRouter:
         if download_stories:
             try:
                 stories_count = self._download_stories(
-                    base_url=base_url,
-                    folder=stories_folder,
-                    skip_existing=skip_existing,
+                    base_url, stories_folder, skip_existing
                 )
             except Exception as exc:
-                message = self._register_error(
-                    stage="Stories",
-                    exc=exc,
-                    url=base_url,
-                )
-                errors.append(message)
-                self.log(
-                    "Ошибка Stories не прерывает импорт остальных фотографий"
-                )
+                errors.append(self._register_error(stage="Stories", exc=exc, url=base_url))
+                self.log("Ошибка Stories не прерывает импорт остальных данных")
 
         if self._check_cancelled():
             return False
@@ -446,20 +304,11 @@ class YandexRouter:
         if download_videos:
             try:
                 videos_count = self._download_videos(
-                    base_url=base_url,
-                    folder=videos_folder,
-                    skip_existing=skip_existing,
+                    base_url, videos_folder, skip_existing
                 )
             except Exception as exc:
-                message = self._register_error(
-                    stage="Видео",
-                    exc=exc,
-                    url=base_url,
-                )
-                errors.append(message)
-                self.log(
-                    "Ошибка загрузки видео не прерывает импорт остальных данных"
-                )
+                errors.append(self._register_error(stage="Видео", exc=exc, url=base_url))
+                self.log("Ошибка загрузки видео не прерывает импорт остальных данных")
 
         if self._check_cancelled():
             return False
@@ -467,32 +316,28 @@ class YandexRouter:
         self.progress("Готово")
         self.log("================================")
         self.log("ГОТОВО")
-        self.log(f"Организация: {org_count} фото")
-        self.log(f"Отзывы: {reviews_count} фото")
+        if download_organization_photos:
+            self.log(f"Организация: {org_count} фото")
+        if download_review_photos:
+            self.log(f"Отзывы: {reviews_count} фото")
         if download_stories:
             self.log(f"Stories: {stories_count}")
         if download_videos:
             self.log(f"Видео: {videos_count}")
 
         if errors:
-            self.log(
-                f"Завершено с предупреждениями: {len(errors)}"
-            )
-
+            self.log(f"Завершено с предупреждениями: {len(errors)}")
             for error in errors:
                 self.log(f"• {error}")
         else:
-            self.log("Все этапы завершены без ошибок")
+            self.log("Все выбранные этапы завершены без ошибок")
 
         self.log("================================")
-
         return True
 
     def cancel(self) -> None:
         self._cancelled = True
-
         downloader = self._active_downloader
-
         if downloader is not None:
             try:
                 downloader.cancel()
