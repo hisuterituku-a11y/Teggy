@@ -201,26 +201,31 @@ class DashDownloader:
 
         representation_id = representation.get("id", "")
         bandwidth = int(representation.get("bandwidth", "0") or 0)
+        start_number = int(template.get("startNumber", "1") or 1)
         initialization = self._replace_template(
             initialization,
             representation_id=representation_id,
             bandwidth=bandwidth,
+            number=start_number,
+            time_value=0,
         )
 
         segment_names: list[str] = []
         timeline = template.find("mpd:SegmentTimeline", ns)
         if timeline is not None:
             timescale = int(template.get("timescale", "1") or 1)
-            for time_value in self._timeline_values(
+            timeline_values = self._timeline_values(
                 timeline,
                 period_seconds=period_seconds,
                 timescale=timescale,
-            ):
+            )
+            for offset, time_value in enumerate(timeline_values):
                 segment_names.append(
                     self._replace_template(
                         media,
                         representation_id=representation_id,
                         bandwidth=bandwidth,
+                        number=start_number + offset,
                         time_value=time_value,
                     )
                 )
@@ -232,7 +237,6 @@ class DashDownloader:
                     f"Для дорожки {kind} нельзя вычислить число сегментов"
                 )
             count = max(1, int((period_seconds * timescale + duration - 1) // duration))
-            start_number = int(template.get("startNumber", "1") or 1)
             for number in range(start_number, start_number + count):
                 segment_names.append(
                     self._replace_template(
@@ -240,6 +244,7 @@ class DashDownloader:
                         representation_id=representation_id,
                         bandwidth=bandwidth,
                         number=number,
+                        time_value=(number - start_number) * duration,
                     )
                 )
 
