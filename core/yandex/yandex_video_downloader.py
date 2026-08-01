@@ -15,7 +15,7 @@ LogCallback = Callable[[str], None]
 
 
 class YandexVideoDownloader:
-    """Сбор и скачивание видео из галереи организации Яндекс Карт."""
+    """Сбор и немедленное скачивание видео из галереи Яндекс Карт."""
 
     USER_AGENT = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -25,7 +25,7 @@ class YandexVideoDownloader:
 
     def __init__(
         self,
-        headless: bool = True,
+        headless: bool = False,
         timeout: int = 60,
     ) -> None:
         self.headless = headless
@@ -89,13 +89,13 @@ class YandexVideoDownloader:
         self,
         response,
         context,
-        manifests: list[str],
+        pending: list[str],
         keys: set[str],
         on_log: LogCallback | None,
     ) -> None:
         try:
-            content_type = response.headers.get("content-type", "")
             url = response.url
+            content_type = response.headers.get("content-type", "")
             if not self._is_manifest_response(url, content_type):
                 return
 
@@ -111,18 +111,12 @@ class YandexVideoDownloader:
             )
 
             headers = {
-                "User-Agent": request_headers.get(
-                    "user-agent",
-                    self.USER_AGENT,
-                ),
+                "User-Agent": request_headers.get("user-agent", self.USER_AGENT),
                 "Referer": request_headers.get(
                     "referer",
                     "https://yandex.ru/maps/",
                 ),
-                "Origin": request_headers.get(
-                    "origin",
-                    "https://yandex.ru",
-                ),
+                "Origin": request_headers.get("origin", "https://yandex.ru"),
                 "Accept": request_headers.get("accept", "*/*"),
                 "Accept-Language": request_headers.get(
                     "accept-language",
@@ -133,15 +127,12 @@ class YandexVideoDownloader:
                 headers["Cookie"] = cookie_header
 
             keys.add(key)
-            manifests.append(url)
+            pending.append(url)
             self._manifest_headers[key] = headers
 
             video_id = self._extract_video_id(url)
             suffix = f" ({video_id})" if video_id else ""
-            self._log(
-                f"Видео найдено: {len(manifests)}{suffix}",
-                on_log,
-            )
+            self._log(f"Видео найдено: {len(keys)}{suffix}", on_log)
         except Exception as error:
             self._log(
                 f"Не удалось сохранить параметры manifest: {error}",
@@ -163,42 +154,6 @@ class YandexVideoDownloader:
         )
         page.wait_for_timeout(5000)
         self._log(f"Текущая страница: {page.url}", on_log)
-
-    @staticmethod
-    def _current_signature(page: Page) -> str:
-        try:
-            return str(
-                page.evaluate(
-                    """
-                    () => {
-                        const visible = [...document.querySelectorAll('video, img')]
-                            .filter((el) => {
-                                const r = el.getBoundingClientRect();
-                                const s = getComputedStyle(el);
-                                return r.width > 250 && r.height > 250 &&
-                                    s.display !== 'none' && s.visibility !== 'hidden';
-                            })
-                            .sort((a, b) => {
-                                const ar = a.getBoundingClientRect();
-                                const br = b.getBoundingClientRect();
-                                return br.width * br.height - ar.width * ar.height;
-                            });
-                        const el = visible[0];
-                        if (!el) return location.href;
-                        return [
-                            location.href,
-                            el.currentSrc || '',
-                            el.src || '',
-                            el.poster || '',
-                            el.getAttribute('data-id') || '',
-                            el.getAttribute('data-photo-id') || ''
-                        ].join('|');
-                    }
-                    """
-                )
-            )
-        except Exception:
-            return page.url
 
     def _open_first_item(
         self,
@@ -225,7 +180,7 @@ class YandexVideoDownloader:
                         continue
                     item.scroll_into_view_if_needed(timeout=3000)
                     item.click(force=True, timeout=3000)
-                    page.wait_for_timeout(1200)
+                    page.wait_for_timeout(1000)
                     self._log(
                         f"Первый материал открыт через: {selector}",
                         on_log,
@@ -253,122 +208,6 @@ class YandexVideoDownloader:
             )
         except Exception:
             pass
-
-    def _walk_gallery(
-        self,
-        page: Page,
-        manifests: list[str],
-        on_log: LogCallback | None,
-        max_items: int = 200,
-    ) -> None:
-        self._log(
-            "Открываем просмотрщик и обходим материалы галереи",
-            on_log,
-        )
-        self._open_first_item(page, on_log)
-
-        seen: set[str] = set()
-        repeated = 0
-        for index in range(max_items):
-            if self._cancelled:
-                return
-
-            before = len(manifests)
-            self._play_video(page)
-            page.wait_for_timeout(2200)
-
-            signature = self._current_signature(page)
-            if signature in seen:
-                repeated += 1
-            else:
-                seen.add(signature)
-                repeated = 0
-
-            if index % 10 == 0:
-                self._log(
-                    f"Галерея: материал {index + 1}/{max_items}; "
-                    f"видео найдено: {len(manifests)}",
-                    on_log,
-                )
-
-            if len(manifests) > before:
-                self._log(
-                    f"Новый manifest перехвачен; всего: {len(manifests)}",
-                    on_log,
-                )
-
-            if repeated >= 4:
-                self._log(
-                    "Материалы начали повторяться, обход завершён",
-                    on_log,
-                )
-                break
-
-            try:
-                page.keyboard.press("ArrowRight")
-                page.wait_for_timeout(500)
-            except Exception as error:
-                self._log(
-                    f"Не удалось перейти к следующему материалу: {error}",
-                    on_log,
-                )
-                break
-
-    def collect(
-        self,
-        url: str,
-        on_log: LogCallback | None = None,
-    ) -> list[str]:
-        self._cancelled = False
-        self._manifest_headers = {}
-        manifests: list[str] = []
-        keys: set[str] = set()
-        browser: Browser | None = None
-
-        try:
-            with sync_playwright() as playwright:
-                self._log("Запуск браузера для поиска видео", on_log)
-                browser = playwright.chromium.launch(
-                    headless=self.headless,
-                    args=[
-                        "--disable-blink-features=AutomationControlled",
-                        "--autoplay-policy=no-user-gesture-required",
-                        "--mute-audio",
-                    ],
-                )
-                self._browser = browser
-                context = browser.new_context(
-                    viewport={"width": 1920, "height": 1080},
-                    user_agent=self.USER_AGENT,
-                    locale="ru-RU",
-                )
-                page = context.new_page()
-                page.on(
-                    "response",
-                    lambda response: self._capture_manifest(
-                        response,
-                        context,
-                        manifests,
-                        keys,
-                        on_log,
-                    ),
-                )
-                self._open_gallery(page, url, on_log)
-                if not self._cancelled:
-                    self._walk_gallery(page, manifests, on_log)
-                page.wait_for_timeout(1500)
-        except Exception as error:
-            self._log(f"Ошибка при сборе видео: {error}", on_log)
-        finally:
-            self._browser = None
-            if browser is not None:
-                try:
-                    browser.close()
-                except Exception:
-                    pass
-
-        self._log(f"Сбор видео завершён: {len(manifests)}", on_log)
-        return manifests
 
     @staticmethod
     def _find_ffmpeg() -> str | None:
@@ -400,7 +239,6 @@ class YandexVideoDownloader:
         filename: Path,
         headers: dict[str, str],
         on_log: LogCallback | None,
-        attempt: int,
     ) -> bool:
         temp_path = filename.with_name(
             f"{filename.stem}.part{filename.suffix}"
@@ -416,7 +254,7 @@ class YandexVideoDownloader:
             "-loglevel",
             "error",
             "-rw_timeout",
-            "30000000",
+            "20000000",
             "-reconnect",
             "1",
             "-reconnect_streamed",
@@ -424,7 +262,7 @@ class YandexVideoDownloader:
             "-reconnect_at_eof",
             "1",
             "-reconnect_delay_max",
-            "5",
+            "3",
             "-http_persistent",
             "0",
             "-multiple_requests",
@@ -451,10 +289,10 @@ class YandexVideoDownloader:
             if hasattr(subprocess, "CREATE_NO_WINDOW")
             else 0
         )
+        process: subprocess.Popen | None = None
         started = time.monotonic()
         last_growth = started
         last_size = 0
-        process: subprocess.Popen | None = None
 
         try:
             with error_path.open(
@@ -469,6 +307,7 @@ class YandexVideoDownloader:
                     stderr=error_file,
                     creationflags=flags,
                 )
+
                 while process.poll() is None:
                     if self._cancelled:
                         break
@@ -477,25 +316,13 @@ class YandexVideoDownloader:
                     if size > last_size:
                         last_size = size
                         last_growth = now
-                    if size == 0 and now - started >= 45:
-                        self._log(
-                            f"ffmpeg попытка {attempt}: данные не поступили за 45 секунд",
-                            on_log,
-                        )
+                    if size == 0 and now - started >= 20:
                         break
-                    if size > 0 and now - last_growth >= 60:
-                        self._log(
-                            f"ffmpeg попытка {attempt}: файл не растёт 60 секунд",
-                            on_log,
-                        )
+                    if size > 0 and now - last_growth >= 45:
                         break
-                    if now - started >= 900:
-                        self._log(
-                            f"ffmpeg попытка {attempt}: превышен тайм-аут 900 секунд",
-                            on_log,
-                        )
+                    if now - started >= 600:
                         break
-                    time.sleep(0.25)
+                    time.sleep(0.2)
 
                 if process.poll() is None:
                     process.terminate()
@@ -512,17 +339,13 @@ class YandexVideoDownloader:
                 ).strip()
                 if error_text:
                     self._log(
-                        f"Ошибка ffmpeg, попытка {attempt}: {error_text[-2500:]}",
+                        f"Ошибка ffmpeg: {error_text[-1800:]}",
                         on_log,
                     )
                 temp_path.unlink(missing_ok=True)
                 return False
 
             if not temp_path.exists() or temp_path.stat().st_size < 1024:
-                self._log(
-                    f"ffmpeg попытка {attempt}: итоговый файл отсутствует или слишком мал",
-                    on_log,
-                )
                 temp_path.unlink(missing_ok=True)
                 return False
 
@@ -544,16 +367,30 @@ class YandexVideoDownloader:
         finally:
             error_path.unlink(missing_ok=True)
 
-    def _download_manifest(
+    def _download_fresh_manifest(
         self,
         ffmpeg_path: str,
         manifest_url: str,
-        filename: Path,
+        folder: Path,
+        index: int,
+        skip_existing: bool,
         on_log: LogCallback | None,
-    ) -> bool:
-        key = self._manifest_key(manifest_url)
+    ) -> tuple[bool, bool]:
+        video_id = self._extract_video_id(manifest_url)
+        filename = folder / (
+            f"{video_id}.mp4" if video_id else f"video_{index:03}.mp4"
+        )
+
+        if (
+            skip_existing
+            and filename.exists()
+            and filename.stat().st_size > 1024
+        ):
+            self._log(f"Видео {index}: уже существует", on_log)
+            return True, True
+
         headers = self._manifest_headers.get(
-            key,
+            self._manifest_key(manifest_url),
             {
                 "User-Agent": self.USER_AGENT,
                 "Referer": "https://yandex.ru/maps/",
@@ -563,25 +400,207 @@ class YandexVideoDownloader:
             },
         )
 
-        for attempt in range(1, 4):
-            if self._cancelled:
-                return False
-            if self._run_ffmpeg(
+        self._log(
+            f"Скачиваем свежее видео {index}, пока браузерная сессия активна",
+            on_log,
+        )
+        return (
+            self._run_ffmpeg(
                 ffmpeg_path,
                 manifest_url,
                 filename,
                 headers,
                 on_log,
-                attempt,
-            ):
-                return True
-            if attempt < 3:
+            ),
+            False,
+        )
+
+    def collect_and_download(
+        self,
+        url: str,
+        folder: Path | str,
+        on_log: LogCallback | None = None,
+        skip_existing: bool = True,
+        max_items: int = 200,
+        no_new_limit: int = 30,
+    ) -> tuple[int, int, int, int]:
+        """Ищет ролики и скачивает каждый сразу, не закрывая Chromium."""
+        self._cancelled = False
+        self._manifest_headers = {}
+        folder = Path(folder)
+        folder.mkdir(parents=True, exist_ok=True)
+
+        ffmpeg_path = self._find_ffmpeg()
+        if not ffmpeg_path:
+            raise RuntimeError(
+                "Не найден ffmpeg. Установи ffmpeg или положи ffmpeg.exe рядом с программой."
+            )
+
+        self._log(f"Используется ffmpeg: {ffmpeg_path}", on_log)
+
+        pending: list[str] = []
+        keys: set[str] = set()
+        downloaded_keys: set[str] = set()
+        browser: Browser | None = None
+        saved = 0
+        skipped = 0
+        failed = 0
+
+        try:
+            with sync_playwright() as playwright:
+                self._log("Запуск браузера для поиска видео", on_log)
+                browser = playwright.chromium.launch(
+                    headless=self.headless,
+                    args=[
+                        "--disable-blink-features=AutomationControlled",
+                        "--autoplay-policy=no-user-gesture-required",
+                        "--mute-audio",
+                    ],
+                )
+                self._browser = browser
+                context = browser.new_context(
+                    viewport={"width": 1920, "height": 1080},
+                    user_agent=self.USER_AGENT,
+                    locale="ru-RU",
+                )
+                page = context.new_page()
+                page.on(
+                    "response",
+                    lambda response: self._capture_manifest(
+                        response,
+                        context,
+                        pending,
+                        keys,
+                        on_log,
+                    ),
+                )
+
+                self._open_gallery(page, url, on_log)
                 self._log(
-                    f"Повтор скачивания через {attempt * 2} секунд",
+                    "Открываем просмотрщик и обходим материалы галереи",
                     on_log,
                 )
-                time.sleep(attempt * 2)
-        return False
+                self._open_first_item(page, on_log)
+
+                no_new = 0
+                for index in range(max_items):
+                    if self._cancelled:
+                        break
+
+                    before_found = len(keys)
+                    self._play_video(page)
+                    page.wait_for_timeout(1200)
+
+                    while pending:
+                        manifest_url = pending.pop(0)
+                        key = self._manifest_key(manifest_url)
+                        if key in downloaded_keys:
+                            continue
+                        downloaded_keys.add(key)
+
+                        success, was_skipped = self._download_fresh_manifest(
+                            ffmpeg_path,
+                            manifest_url,
+                            folder,
+                            len(downloaded_keys),
+                            skip_existing,
+                            on_log,
+                        )
+                        if was_skipped:
+                            skipped += 1
+                        elif success:
+                            saved += 1
+                        else:
+                            failed += 1
+
+                    if len(keys) > before_found:
+                        no_new = 0
+                    else:
+                        no_new += 1
+
+                    if index % 10 == 0:
+                        self._log(
+                            f"Галерея: материал {index + 1}/{max_items}; "
+                            f"найдено: {len(keys)}; скачано: {saved}",
+                            on_log,
+                        )
+
+                    if no_new >= no_new_limit:
+                        self._log(
+                            f"Новых видео нет {no_new_limit} материалов подряд, обход завершён",
+                            on_log,
+                        )
+                        break
+
+                    page.keyboard.press("ArrowRight")
+                    page.wait_for_timeout(300)
+
+                page.wait_for_timeout(500)
+        finally:
+            self._browser = None
+            if browser is not None:
+                try:
+                    browser.close()
+                except Exception:
+                    pass
+
+        self._log(
+            f"Видео найдено: {len(keys)}; сохранено: {saved}; "
+            f"пропущено: {skipped}; ошибок: {failed}",
+            on_log,
+        )
+        return len(keys), saved, skipped, failed
+
+    def collect(
+        self,
+        url: str,
+        on_log: LogCallback | None = None,
+    ) -> list[str]:
+        """Совместимость со старым API. Для импорта используй collect_and_download."""
+        manifests: list[str] = []
+        keys: set[str] = set()
+        self._cancelled = False
+        self._manifest_headers = {}
+        browser: Browser | None = None
+
+        try:
+            with sync_playwright() as playwright:
+                browser = playwright.chromium.launch(headless=self.headless)
+                self._browser = browser
+                context = browser.new_context(user_agent=self.USER_AGENT)
+                page = context.new_page()
+                page.on(
+                    "response",
+                    lambda response: self._capture_manifest(
+                        response,
+                        context,
+                        manifests,
+                        keys,
+                        on_log,
+                    ),
+                )
+                self._open_gallery(page, url, on_log)
+                self._open_first_item(page, on_log)
+                no_new = 0
+                for _ in range(200):
+                    if self._cancelled:
+                        break
+                    before = len(keys)
+                    self._play_video(page)
+                    page.wait_for_timeout(1200)
+                    no_new = 0 if len(keys) > before else no_new + 1
+                    if no_new >= 30:
+                        break
+                    page.keyboard.press("ArrowRight")
+                    page.wait_for_timeout(300)
+        finally:
+            self._browser = None
+            if browser is not None:
+                try:
+                    browser.close()
+                except Exception:
+                    pass
+        return manifests
 
     def download(
         self,
@@ -590,67 +609,25 @@ class YandexVideoDownloader:
         on_log: LogCallback | None = None,
         skip_existing: bool = True,
     ) -> int:
+        """Старый режим оставлен для совместимости."""
         folder = Path(folder)
         folder.mkdir(parents=True, exist_ok=True)
-        if not urls:
-            self._log("Видео для скачивания не найдено", on_log)
-            return 0
-
         ffmpeg_path = self._find_ffmpeg()
         if not ffmpeg_path:
-            self._log(
-                "Не найден ffmpeg. Установи ffmpeg или положи ffmpeg.exe рядом с программой.",
-                on_log,
-            )
             return 0
 
-        self._log(f"Используется ffmpeg: {ffmpeg_path}", on_log)
         saved = 0
-        skipped = 0
-        failed = 0
-        total = len(urls)
-
-        for index, manifest_url in enumerate(reversed(urls), start=1):
-            if self._cancelled:
-                self._log("Скачивание видео отменено", on_log)
-                break
-
-            video_id = self._extract_video_id(manifest_url)
-            filename = folder / (
-                f"{video_id}.mp4" if video_id else f"video_{index:03}.mp4"
-            )
-            if (
-                skip_existing
-                and filename.exists()
-                and filename.stat().st_size > 1024
-            ):
-                skipped += 1
-                self._log(
-                    f"Видео {index}/{total}: уже существует",
-                    on_log,
-                )
-                continue
-
-            self._log(f"Скачивание видео {index}/{total}", on_log)
-            if self._download_manifest(
+        for index, manifest_url in enumerate(urls, start=1):
+            success, was_skipped = self._download_fresh_manifest(
                 ffmpeg_path,
                 manifest_url,
-                filename,
+                folder,
+                index,
+                skip_existing,
                 on_log,
-            ):
+            )
+            if success and not was_skipped:
                 saved += 1
-                self._log(f"Видео скачано: {index}/{total}", on_log)
-            else:
-                failed += 1
-                self._log(
-                    f"Видео {index}/{total}: не удалось скачать",
-                    on_log,
-                )
-
-        self._log(
-            f"Видео сохранено: {saved}; пропущено: {skipped}; ошибок: {failed}",
-            on_log,
-        )
         return saved
 
     def cancel(self) -> None:
