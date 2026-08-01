@@ -37,7 +37,9 @@ if (-not (Test-Path $Python)) {
 & $Python -m pip install --upgrade pip
 & $Python -m pip install -r (Join-Path $ProjectRoot "requirements.txt")
 & $Python -m pip install -r (Join-Path $ProjectRoot "requirements-build.txt")
+$env:PLAYWRIGHT_BROWSERS_PATH = "0"
 
+& $Python -m playwright install chromium
 # Устанавливаем браузеры внутрь пакета Playwright.
 $PreviousBrowsersPath = $env:PLAYWRIGHT_BROWSERS_PATH
 $env:PLAYWRIGHT_BROWSERS_PATH = "0"
@@ -75,7 +77,19 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $Executable = Join-Path $DistDir "Teggy\Teggy.exe"
+$PlaywrightSource = Join-Path `
+    $VenvDir `
+    "Lib\site-packages\playwright\driver\package\.local-browsers"
 
+$PlaywrightDestination = Join-Path `
+    $DistDir `
+    "Teggy\_internal\playwright\driver\package\.local-browsers"
+
+Copy-Item `
+    $PlaywrightSource `
+    $PlaywrightDestination `
+    -Recurse `
+    -Force
 if (-not (Test-Path $Executable)) {
     throw "Сборка завершилась без Teggy.exe: $Executable"
 }
@@ -131,36 +145,27 @@ if ($SkipInstaller) {
 }
 
 $IsccCandidates = @(
-    "X:\Работа\Inno Setup 6\ISCC.exe",
     "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe",
     "$env:ProgramFiles(x86)\Inno Setup 6\ISCC.exe",
     "$env:ProgramFiles\Inno Setup 6\ISCC.exe"
 )
 
+$CustomIscc = Get-ChildItem `
+    -Path "X:\" `
+    -Filter "ISCC.exe" `
+    -Recurse `
+    -ErrorAction SilentlyContinue |
+    Where-Object {
+        $_.FullName -like "*Inno Setup 6*"
+    } |
+    Select-Object -First 1 -ExpandProperty FullName
+
+if ($CustomIscc) {
+    $IsccCandidates = @($CustomIscc) + $IsccCandidates
+}
+
 $Iscc = $IsccCandidates |
     Where-Object { Test-Path $_ } |
-    Select-Object -First 1
-
-if (-not $Iscc) {
-    throw (
-        "Inno Setup 6 не найден. " +
-        "Укажи путь к ISCC.exe в build.ps1 " +
-        "или запусти .\build\build.ps1 -SkipInstaller"
-    )
-}
-
-New-Item -ItemType Directory -Path $ReleaseDir -Force | Out-Null
-
-& $Iscc $InstallerScript
-
-if ($LASTEXITCODE -ne 0) {
-    throw "Inno Setup завершился с ошибкой."
-}
-
-$Installer = Get-ChildItem `
-    $ReleaseDir `
-    -Filter "TeggySetup-*.exe" |
-    Sort-Object LastWriteTime -Descending |
     Select-Object -First 1
 
 if (-not $Installer) {
