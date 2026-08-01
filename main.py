@@ -1,11 +1,14 @@
 import logging
+import platform
 import sys
+from pathlib import Path
 
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QApplication, QMessageBox, QPushButton
 
 from core.logger import setup_logging
 from core.paths import resource_path
+from core.version import display_version
 from gui.dialogs.themed_message_box import ThemedMessageBox
 from gui.main_window_templates import MainWindow
 from gui.theme.manager import ThemeManager
@@ -27,9 +30,19 @@ def _install_themed_message_boxes() -> None:
     QMessageBox.question = staticmethod(themed_question)
 
 
+def _log_startup_context(log_path: Path) -> None:
+    logger.info("Запуск Teggy %s", display_version())
+    logger.info("Журнал: %s", log_path)
+    logger.info("Исполняемый файл: %s", sys.executable)
+    logger.info("Рабочая папка: %s", Path.cwd())
+    logger.info("ОС: %s", platform.platform())
+    logger.info("Python: %s", sys.version.replace("\n", " "))
+    logger.info("Архитектура: %s", platform.machine() or "не определена")
+
+
 def main() -> int:
     log_path = setup_logging()
-    logger.info("Запуск Teggy. Журнал: %s", log_path)
+    _log_startup_context(log_path)
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
@@ -42,13 +55,22 @@ def main() -> int:
     selected_theme = str(settings.value("appearance/theme", DEFAULT_THEME))
 
     theme_manager = ThemeManager(resource_path("assets", "themes"))
-    if selected_theme not in theme_manager.list_themes():
+    available_themes = theme_manager.list_themes()
+
+    if selected_theme not in available_themes:
+        logger.warning(
+            "Тема '%s' не найдена. Используется '%s'",
+            selected_theme,
+            DEFAULT_THEME,
+        )
         selected_theme = DEFAULT_THEME
         settings.setValue("appearance/theme", selected_theme)
 
+    logger.info("Загрузка темы интерфейса: %s", selected_theme)
     theme = theme_manager.load(selected_theme)
     app.setStyleSheet(theme.qss)
 
+    logger.info("Создание главного окна")
     window = MainWindow(theme_manager)
     window.reset_interface_geometry()
 
@@ -64,6 +86,8 @@ def main() -> int:
             button.style().polish(button)
 
     window.show()
+    logger.info("Главное окно показано")
+
     exit_code = app.exec()
     logger.info("Завершение Teggy с кодом %s", exit_code)
     return exit_code
@@ -73,5 +97,5 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except Exception:
-        logger.exception("Необработанная ошибка при запуске Teggy")
+        logger.exception("Необработанная ошибка при запуске или работе Teggy")
         raise
