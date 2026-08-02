@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
+from shutil import copy2
+from uuid import uuid4
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QCheckBox, QLabel, QPushButton
 
+from core.converter import ImageConverter
 from gui.dialogs.tag_template_dialog import TagTemplateDialog
 from gui.pages.tagging import TaggingPage as BaseTaggingPage
 
@@ -72,3 +78,52 @@ class TaggingPage(BaseTaggingPage):
                 widget.setPlainText(value)
             else:
                 widget.setText(value)
+
+    def _replace_processed_sources(self) -> list[str]:
+        """Заменяет исходники, даже если временные файлы лежат на другом диске.
+
+        Сначала обработанный файл копируется во временный файл рядом с
+        назначением. Затем локальный временный файл атомарно подменяет итоговый.
+        Так Windows не получает попытку ``os.replace`` между C: и X:.
+        """
+        errors: list[str] = []
+        updated_selected_files: dict[Path, Path] = {}
+
+        for source, prepared in self._replacement_jobs:
+            converted = ImageConverter.needs_conversion(source)
+            processed = prepared.with_suffix(".jpg") if converted else prepared
+            destination = source.with_suffix(".jpg") if converted else source
+            local_temp = destination.parent / (
+                f".{destination.name}.teggy-{uuid4().hex}.tmp"
+            )
+
+            try:
+                if not processed.is_file() or processed.stat().st_size == 0:
+                    raise OSError("обработанный файл не создан")
+
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                copy2(processed, local_temp)
+
+                if not local_temp.is_file() or local_temp.stat().st_size == 0:
+                    raise OSError("не удалось подготовить файл для замены")
+
+                os.replace(local_temp, destination)
+
+                if destination.resolve() != source.resolve():
+                    source.unlink(missing_ok=True)
+
+                processed.unlink(missing_ok=True)
+                updated_selected_files[source.resolve()] = destination.resolve()
+            except OSError as error:
+                errors.append(f"{source}: {error}")
+            finally:
+                local_temp.unlink(missing_ok=True)
+
+        if updated_selected_files:
+            self.selected_files = [
+                updated_selected_files.get(Path(path).resolve(), Path(path))
+                for path in self.selected_files
+                if updated_selected_files.get(Path(path).resolve(), Path(path)).exists()
+            ]
+
+        return errors
