@@ -18,21 +18,13 @@ LogCallback = Callable[[str], None]
 class YandexVideoDownloader:
     """Собирает DASH-манифесты и сохраняет видео из Яндекс Карт."""
 
-    def __init__(
-        self,
-        headless: bool = True,
-        timeout: int = 60,
-    ) -> None:
+    def __init__(self, headless: bool = True, timeout: int = 60) -> None:
         self.headless = headless
         self.timeout = timeout
         self._cancelled = False
         self._browser: Browser | None = None
 
-    def _log(
-        self,
-        text: str,
-        on_log: LogCallback | None = None,
-    ) -> None:
+    def _log(self, text: str, on_log: LogCallback | None = None) -> None:
         if on_log:
             on_log(text)
         else:
@@ -40,10 +32,7 @@ class YandexVideoDownloader:
 
     @staticmethod
     def _extract_video_id(url: str) -> str | None:
-        match = re.search(
-            r"\b(vpl[a-zA-Z0-9_-]+)\b",
-            unquote(url),
-        )
+        match = re.search(r"\b(vpl[a-zA-Z0-9_-]+)\b", unquote(url))
         return match.group(1) if match else None
 
     @classmethod
@@ -76,6 +65,36 @@ class YandexVideoDownloader:
                 "",
             )
         )
+
+    @staticmethod
+    def _find_bundled_chromium() -> str | None:
+        roots: list[Path] = []
+        if getattr(sys, "frozen", False):
+            roots.extend(
+                [
+                    Path(sys.executable).resolve().parent,
+                    Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)),
+                ]
+            )
+        roots.append(Path(__file__).resolve().parents[2])
+
+        relative = Path("playwright") / "driver" / "package" / ".local-browsers"
+        candidates: list[Path] = []
+        for root in roots:
+            candidates.extend(
+                [
+                    root / "_internal" / relative,
+                    root / relative,
+                ]
+            )
+
+        for browser_dir in candidates:
+            if not browser_dir.is_dir():
+                continue
+            matches = sorted(browser_dir.glob("chromium-*/chrome-win*/chrome.exe"))
+            if matches:
+                return str(matches[-1].resolve())
+        return None
 
     def _open_gallery(
         self,
@@ -121,8 +140,7 @@ class YandexVideoDownloader:
                         item.click(force=True, timeout=3000)
                         page.wait_for_timeout(1200)
                         self._log(
-                            f"Первый материал открыт через: {selector}",
-                            on_log,
+                            f"Первый материал открыт через: {selector}", on_log
                         )
                         return
                     except Exception:
@@ -194,12 +212,8 @@ class YandexVideoDownloader:
         on_log: LogCallback | None,
         max_items: int = 150,
     ) -> None:
-        self._log(
-            "Открываем просмотрщик и обходим материалы галереи",
-            on_log,
-        )
+        self._log("Открываем просмотрщик и обходим материалы галереи", on_log)
         self._open_first_gallery_item(page, on_log)
-
         seen_signatures: set[str] = set()
         repeated = 0
         no_new_video = 0
@@ -207,11 +221,9 @@ class YandexVideoDownloader:
         for index in range(max_items):
             if self._cancelled:
                 return
-
             before = len(manifests)
             self._play_current_video(page)
             page.wait_for_timeout(1400)
-
             signature = self._current_signature(page)
             if signature in seen_signatures:
                 repeated += 1
@@ -222,8 +234,7 @@ class YandexVideoDownloader:
             if len(manifests) > before:
                 no_new_video = 0
                 self._log(
-                    f"Новый manifest перехвачен; всего: {len(manifests)}",
-                    on_log,
+                    f"Новый manifest перехвачен; всего: {len(manifests)}", on_log
                 )
             else:
                 no_new_video += 1
@@ -234,27 +245,20 @@ class YandexVideoDownloader:
                     f"видео найдено: {len(manifests)}",
                     on_log,
                 )
-
             if repeated >= 3:
-                self._log(
-                    "Материалы начали повторяться, обход завершён",
-                    on_log,
-                )
+                self._log("Материалы начали повторяться, обход завершён", on_log)
                 break
             if manifests and no_new_video >= 30:
                 self._log(
-                    "Новых видео нет 30 материалов подряд, обход завершён",
-                    on_log,
+                    "Новых видео нет 30 материалов подряд, обход завершён", on_log
                 )
                 break
-
             try:
                 page.keyboard.press("ArrowRight")
                 page.wait_for_timeout(350)
             except Exception as error:
                 self._log(
-                    f"Не удалось перейти к следующему материалу: {error}",
-                    on_log,
+                    f"Не удалось перейти к следующему материалу: {error}", on_log
                 )
                 break
 
@@ -271,14 +275,22 @@ class YandexVideoDownloader:
         try:
             with sync_playwright() as playwright:
                 self._log("Запуск браузера для поиска видео", on_log)
-                browser = playwright.chromium.launch(
-                    headless=self.headless,
-                    args=[
+                launch_kwargs: dict[str, object] = {
+                    "headless": self.headless,
+                    "args": [
                         "--disable-blink-features=AutomationControlled",
                         "--autoplay-policy=no-user-gesture-required",
                         "--mute-audio",
                     ],
-                )
+                }
+                bundled_chromium = self._find_bundled_chromium()
+                if bundled_chromium:
+                    launch_kwargs["executable_path"] = bundled_chromium
+                    self._log(
+                        f"Используется встроенный Chromium: {bundled_chromium}",
+                        on_log,
+                    )
+                browser = playwright.chromium.launch(**launch_kwargs)
                 self._browser = browser
                 context = browser.new_context(
                     viewport={"width": 1920, "height": 1080},
@@ -297,10 +309,7 @@ class YandexVideoDownloader:
                     try:
                         content_type = response.headers.get("content-type", "")
                         manifest_url = response.url
-                        if not self._is_manifest_response(
-                            manifest_url,
-                            content_type,
-                        ):
+                        if not self._is_manifest_response(manifest_url, content_type):
                             return
                         key = self._manifest_key(manifest_url)
                         if key in keys:
@@ -310,8 +319,7 @@ class YandexVideoDownloader:
                         video_id = self._extract_video_id(manifest_url)
                         suffix = f" ({video_id})" if video_id else ""
                         self._log(
-                            f"Видео найдено: {len(manifests)}{suffix}",
-                            on_log,
+                            f"Видео найдено: {len(manifests)}{suffix}", on_log
                         )
                     except Exception:
                         pass
@@ -323,6 +331,7 @@ class YandexVideoDownloader:
                 page.wait_for_timeout(1500)
         except Exception as error:
             self._log(f"Ошибка при сборе видео: {error}", on_log)
+            raise RuntimeError(f"Не удалось собрать видео: {error}") from error
         finally:
             self._browser = None
             if browser is not None:
@@ -336,47 +345,27 @@ class YandexVideoDownloader:
 
     @staticmethod
     def _find_ffmpeg() -> str | None:
-        candidates: list[Path] = []
-
+        roots: list[Path] = []
         if getattr(sys, "frozen", False):
-            executable_dir = Path(sys.executable).resolve().parent
-            candidates.extend(
-                (
-                    executable_dir / "ffmpeg.exe",
-                    executable_dir / "_internal" / "ffmpeg.exe",
-                    executable_dir / "bin" / "ffmpeg.exe",
-                    executable_dir / "tools" / "ffmpeg.exe",
-                )
-            )
+            roots.append(Path(sys.executable).resolve().parent)
             meipass = getattr(sys, "_MEIPASS", None)
             if meipass:
-                bundle_dir = Path(meipass)
-                candidates.extend(
-                    (
-                        bundle_dir / "ffmpeg.exe",
-                        bundle_dir / "bin" / "ffmpeg.exe",
-                        bundle_dir / "tools" / "ffmpeg.exe",
-                    )
-                )
-        else:
-            project_root = Path(__file__).resolve().parents[2]
-            candidates.extend(
-                (
-                    project_root / "ffmpeg.exe",
-                    project_root / "bin" / "ffmpeg.exe",
-                    project_root / "tools" / "ffmpeg.exe",
-                    Path.cwd() / "ffmpeg.exe",
-                    Path.cwd() / "bin" / "ffmpeg.exe",
-                    Path.cwd() / "tools" / "ffmpeg.exe",
-                )
-            )
-
-        for candidate in candidates:
-            if candidate.is_file():
-                return str(candidate.resolve())
-
+                roots.append(Path(meipass))
+        roots.extend([Path.cwd(), Path(__file__).resolve().parents[2]])
+        relatives = (
+            Path("ffmpeg.exe"),
+            Path("_internal") / "ffmpeg.exe",
+            Path("bin") / "ffmpeg.exe",
+            Path("tools") / "ffmpeg.exe",
+            Path("ffmpeg") / "bin" / "ffmpeg.exe",
+        )
+        for root in roots:
+            for relative in relatives:
+                candidate = root / relative
+                if candidate.is_file():
+                    return str(candidate.resolve())
         system_ffmpeg = shutil.which("ffmpeg")
-        return system_ffmpeg
+        return system_ffmpeg or None
 
     def download(
         self,
@@ -387,7 +376,6 @@ class YandexVideoDownloader:
     ) -> int:
         folder = Path(folder)
         folder.mkdir(parents=True, exist_ok=True)
-
         if not urls:
             self._log("Видео для скачивания не найдено", on_log)
             return 0
@@ -395,39 +383,28 @@ class YandexVideoDownloader:
         ffmpeg_path = self._find_ffmpeg()
         if not ffmpeg_path:
             message = (
-                "FFmpeg не найден. В сборке отсутствует ffmpeg.exe, "
-                "поэтому этап загрузки видео не может быть выполнен."
+                "Не найден ffmpeg. Установи ffmpeg или положи ffmpeg.exe "
+                "рядом с программой."
             )
-            self._log(f"[ERROR] {message}", on_log)
+            self._log(message, on_log)
             raise RuntimeError(message)
 
         self._log(f"Используется ffmpeg: {ffmpeg_path}", on_log)
         dash = DashDownloader(ffmpeg_path=ffmpeg_path, timeout=self.timeout)
-        saved = 0
-        skipped = 0
-        failed = 0
+        saved = skipped = failed = 0
         total = len(urls)
 
         for index, manifest_url in enumerate(reversed(urls), start=1):
             if self._cancelled:
                 self._log("Скачивание видео отменено", on_log)
                 break
-
             video_id = self._extract_video_id(manifest_url)
             filename = folder / (
                 f"{video_id}.mp4" if video_id else f"video_{index:03}.mp4"
             )
-
-            if (
-                skip_existing
-                and filename.exists()
-                and filename.stat().st_size > 1024
-            ):
+            if skip_existing and filename.exists() and filename.stat().st_size > 1024:
                 skipped += 1
-                self._log(
-                    f"Видео {index}/{total}: уже существует",
-                    on_log,
-                )
+                self._log(f"Видео {index}/{total}: уже существует", on_log)
                 continue
 
             self._log(
@@ -445,11 +422,9 @@ class YandexVideoDownloader:
                 failed += 1
                 filename.unlink(missing_ok=True)
                 self._log(
-                    f"Видео {index}/{total}: не удалось скачать: {error}",
-                    on_log,
+                    f"Видео {index}/{total}: не удалось скачать: {error}", on_log
                 )
                 continue
-
             saved += 1
             self._log(
                 f"Видео скачано: {index}/{total}; "
