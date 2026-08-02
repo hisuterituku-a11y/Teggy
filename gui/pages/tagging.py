@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
-from shutil import copy2
+from shutil import copy2, rmtree
+from tempfile import mkdtemp
 
 from PySide6.QtCore import QSize, Qt, QUrl, Signal
 from PySide6.QtGui import (
@@ -28,6 +30,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from core.converter import ImageConverter
 from core.files.file_service import FileService
 from core.tag_generator import TagGenerator
 from core.worker_thread import ProcessingThread
@@ -96,7 +99,9 @@ class TaggingPage(QWidget):
         self.selected_card = None
         self.selected_photo_path = None
         self.last_output_dir: Path | None = None
-        self._source_files_for_cleanup: list[Path] = []
+        self._replace_originals = False
+        self._replacement_jobs: list[tuple[Path, Path]] = []
+        self._temporary_output_dir: Path | None = None
 
         root = QVBoxLayout(self)
         root.setContentsMargins(32, 24, 32, 24)
@@ -227,17 +232,18 @@ class TaggingPage(QWidget):
         layout.setSpacing(6)
 
         self.delete_originals_checkbox = QCheckBox(
-            "Удалять исходные фото после обработки"
+            "Заменять исходные фото обработанными"
         )
         self.delete_originals_checkbox.setToolTip(
-            "Если включено, исходные фотографии удалятся только после успешной обработки. "
-            "Готовые файлы всё равно сохранятся в папке Teggy."
+            "Если включено, Teggy сначала обрабатывает временную копию, а затем "
+            "заменяет исходный файл только после успешной обработки."
         )
         layout.addWidget(self.delete_originals_checkbox)
 
         explanation = QLabel(
             "По умолчанию исходники сохраняются, а готовые фото появляются в папке Teggy. "
-            "Включите галочку только если исходные файлы больше не нужны."
+            "При включённой замене отдельная папка Teggy не создаётся: обработанные файлы "
+            "заменяют исходники в выбранных папках."
         )
         explanation.setObjectName("CardSubtitle")
         explanation.setWordWrap(True)
@@ -438,20 +444,69 @@ class TaggingPage(QWidget):
             counter += 1
         return target
 
+    def _cleanup_temporary_output(self) -> None:
+        temporary_dir = self._temporary_output_dir
+        self._temporary_output_dir = None
+        if temporary_dir is not None:
+            rmtree(temporary_dir, ignore_errors=True)
+
     def _prepare_processing_files(self, source_files: list[Path]) -> tuple[list[Path], Path]:
+        self._cleanup_temporary_output()
+        self._replacement_jobs = []
+        self._replace_originals = self.delete_originals_checkbox.isChecked()
+
+        if self._replace_originals:
+            output_dir = Path(mkdtemp(prefix="teggy-tagging-"))
+            self._temporary_output_dir = output_dir
+            prepared: list[Path] = []
+            for index, source in enumerate(source_files, start=1):
+                target = output_dir / f"{index:06d}{source.suffix.lower()}"
+                copy2(source, target)
+                prepared.append(target)
+                self._replacement_jobs.append((source, target))
+            self.last_output_dir = source_files[0].parent
+            return prepared, output_dir
+
         base_folder = Path(self.selected_folders[0]) if self.selected_folders else source_files[0].parent
         output_dir = base_folder / "Teggy"
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        prepared: list[Path] = []
+        prepared = []
         for source in source_files:
             target = self._unique_target(output_dir, source)
             copy2(source, target)
             prepared.append(target)
 
         self.last_output_dir = output_dir
-        self._source_files_for_cleanup = source_files.copy()
         return prepared, output_dir
+
+    def _replace_processed_sources(self) -> list[str]:
+        errors: list[str] = []
+        updated_selected_files: dict[Path, Path] = {}
+
+        for source, prepared in self._replacement_jobs:
+            converted = ImageConverter.needs_conversion(source)
+            processed = prepared.with_suffix(".jpg") if converted else prepared
+            destination = source.with_suffix(".jpg") if converted else source
+
+            try:
+                if not processed.is_file() or processed.stat().st_size == 0:
+                    raise OSError("обработанный файл не создан")
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                os.replace(processed, destination)
+                if destination.resolve() != source.resolve():
+                    source.unlink(missing_ok=True)
+                updated_selected_files[source.resolve()] = destination.resolve()
+            except OSError as error:
+                errors.append(f"{source}: {error}")
+
+        if updated_selected_files:
+            self.selected_files = [
+                updated_selected_files.get(path.resolve(), path)
+                for path in self.selected_files
+                if updated_selected_files.get(path.resolve(), path).exists()
+            ]
+        return errors
 
     def start_processing(self):
         source_files = self._collect_source_files()
@@ -477,6 +532,7 @@ class TaggingPage(QWidget):
         try:
             files, output_dir = self._prepare_processing_files(source_files)
         except OSError as error:
+            self._cleanup_temporary_output()
             QMessageBox.critical(self, "Не удалось подготовить файлы", str(error))
             return
 
@@ -510,18 +566,20 @@ class TaggingPage(QWidget):
         processed = stats.get("processed", 0)
         total = stats.get("total", 0)
 
-        if (
-            self.delete_originals_checkbox.isChecked()
-            and not cancelled
-            and failed == 0
-            and processed == total
-        ):
-            for source in self._source_files_for_cleanup:
-                try:
-                    source.unlink(missing_ok=True)
-                except OSError:
-                    pass
-            self.selected_files = [path for path in self.selected_files if path.exists()]
+        replacement_errors: list[str] = []
+        if self._replace_originals and not cancelled and failed == 0 and processed == total:
+            replacement_errors = self._replace_processed_sources()
+            failed += len(replacement_errors)
+
+        self._cleanup_temporary_output()
+        self._replacement_jobs = []
+
+        if replacement_errors:
+            QMessageBox.critical(
+                self,
+                "Не удалось заменить часть исходников",
+                "\n".join(replacement_errors[:10]),
+            )
 
         ProcessingResultDialog(
             total=total,
@@ -538,6 +596,8 @@ class TaggingPage(QWidget):
     def processing_failed(self, message):
         self.start_button.setEnabled(True)
         self.start_button.setText("▶ Запустить тегирование")
+        self._cleanup_temporary_output()
+        self._replacement_jobs = []
         QMessageBox.critical(self, "Ошибка обработки", str(message))
 
     def _load_thumbnail(self, file_path: Path, target_size: QSize) -> QPixmap:
