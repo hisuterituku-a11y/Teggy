@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,9 @@ from core.yandex.yandex_downloader import YandexPhotoDownloader
 from core.yandex.yandex_reviews import YandexReviewDownloader
 from core.yandex.yandex_stories import YandexStoriesDownloader
 from core.yandex.yandex_video_downloader import YandexVideoDownloader
+
+
+logger = logging.getLogger(__name__)
 
 
 class YandexRouter:
@@ -24,10 +28,15 @@ class YandexRouter:
     def log(self, text: str) -> None:
         line = str(text)
         self._log_lines.append(line)
-        print(f"[YandexRouter] {line}")
+        if "[ERROR]" in line or line.startswith("Ошибка"):
+            logger.error(line)
+        elif "предупреж" in line.lower():
+            logger.warning(line)
+        else:
+            logger.info(line)
 
     def progress(self, text: str) -> None:
-        print(f"[YandexRouter:progress] {text}")
+        logger.info("Прогресс импорта: %s", text)
 
     @staticmethod
     def _normalize_base_url(url: str) -> str:
@@ -236,6 +245,16 @@ class YandexRouter:
         self.log("ЗАПУСК ИМПОРТА ИЗ ЯНДЕКС КАРТ")
         self.log(f"Организация: {base_url}")
         self.log(f"Папка сохранения: {save_dir}")
+        self.log(
+            "Выбрано: фото организации=%s, фото отзывов=%s, Stories=%s, видео=%s, пропуск существующих=%s"
+            % (
+                download_organization_photos,
+                download_review_photos,
+                download_stories,
+                download_videos,
+                skip_existing,
+            )
+        )
 
         org_count = reviews_count = stories_count = videos_count = 0
         errors: list[str] = []
