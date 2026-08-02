@@ -159,7 +159,7 @@ class ProcessingResultDialog(QDialog):
         content_layout.addWidget(stats)
 
         if output_dir is not None:
-            open_button = QPushButton("Открыть папку Teggy")
+            open_button = QPushButton("Открыть папку с результатами")
             open_button.setObjectName("PrimaryButton")
             open_button.setFixedHeight(56)
             open_button.clicked.connect(self._open_output_dir)
