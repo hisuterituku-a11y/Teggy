@@ -74,7 +74,7 @@ class YandexStoriesDownloader:
     def _cover_urls(page: Page) -> list[str]:
         try:
             values = page.evaluate(
-                """
+                r"""
                 () => {
                     const result = [];
                     const add = (value) => {
@@ -123,7 +123,7 @@ class YandexStoriesDownloader:
                     continue
                 before = self._carousel_state(page)
                 arrow.click(force=True, timeout=3000)
-                for _ in range(20):
+                for _ in range(30):
                     page.wait_for_timeout(100)
                     after = self._carousel_state(page)
                     if after and after != before:
@@ -138,35 +138,71 @@ class YandexStoriesDownloader:
         on_log: LogCallback | None,
         add_url: Callable[[str], None],
         max_steps: int = 60,
+        max_failed_attempts: int = 4,
     ) -> None:
         self._log("Пролистываем ленту обложек Stories до конца", on_log)
         self._collect_visible_covers(page, add_url)
+
         steps = 0
-        while (
-            not self._cancelled
-            and steps < max_steps
-            and self._click_carousel_arrow(page, "next")
-        ):
-            steps += 1
-            page.wait_for_timeout(250)
+        failed_attempts = 0
+
+        while not self._cancelled and steps < max_steps:
+            moved = self._click_carousel_arrow(page, "next")
+
+            if moved:
+                steps += 1
+                failed_attempts = 0
+                page.wait_for_timeout(500)
+                self._collect_visible_covers(page, add_url)
+                self._log(f"Лента Stories: шаг вправо {steps}", on_log)
+                continue
+
+            failed_attempts += 1
+            self._log(
+                (
+                    "Лента Stories временно не сдвинулась: "
+                    f"попытка {failed_attempts}/{max_failed_attempts}"
+                ),
+                on_log,
+            )
+            page.wait_for_timeout(800)
             self._collect_visible_covers(page, add_url)
 
+            if failed_attempts >= max_failed_attempts:
+                break
+
         self._collect_visible_covers(page, add_url)
-        self._log(f"Лента Stories пройдена: {steps} шагов вправо", on_log)
+        self._log(
+            f"Лента Stories пройдена до конца: {steps} шагов вправо",
+            on_log,
+        )
         self._log("Возвращаем ленту Stories в начало", on_log)
 
         back_steps = 0
-        while (
-            not self._cancelled
-            and back_steps < max_steps
-            and self._click_carousel_arrow(page, "prev")
-        ):
-            back_steps += 1
-            page.wait_for_timeout(200)
+        failed_attempts = 0
+
+        while not self._cancelled and back_steps < max_steps:
+            moved = self._click_carousel_arrow(page, "prev")
+
+            if moved:
+                back_steps += 1
+                failed_attempts = 0
+                page.wait_for_timeout(400)
+                self._collect_visible_covers(page, add_url)
+                continue
+
+            failed_attempts += 1
+            page.wait_for_timeout(600)
             self._collect_visible_covers(page, add_url)
 
+            if failed_attempts >= max_failed_attempts:
+                break
+
         self._collect_visible_covers(page, add_url)
-        self._log(f"Лента Stories возвращена: {back_steps} шагов влево", on_log)
+        self._log(
+            f"Лента Stories возвращена в начало: {back_steps} шагов влево",
+            on_log,
+        )
 
     @staticmethod
     def _viewer_open(page: Page) -> bool:
