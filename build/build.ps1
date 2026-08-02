@@ -62,7 +62,6 @@ if (-not (Test-Path $FfmpegSource -PathType Leaf)) {
 }
 Write-Host "FFmpeg found: $FfmpegSource" -ForegroundColor Cyan
 
-# Install Chromium inside the Playwright package so it can be copied into dist.
 $PreviousBrowsersPath = $env:PLAYWRIGHT_BROWSERS_PATH
 $env:PLAYWRIGHT_BROWSERS_PATH = "0"
 
@@ -119,6 +118,17 @@ if (Test-Path $PlaywrightDestination) {
 
 Copy-Item -Path $PlaywrightSource -Destination $PlaywrightDestination -Recurse -Force
 
+$HeadlessShellDirs = Get-ChildItem `
+    -Path $PlaywrightDestination `
+    -Directory `
+    -Filter "chromium_headless_shell-*" `
+    -ErrorAction SilentlyContinue
+
+foreach ($HeadlessShellDir in $HeadlessShellDirs) {
+    Write-Host "Removing unused headless shell: $($HeadlessShellDir.Name)" -ForegroundColor DarkGray
+    Remove-Item -Path $HeadlessShellDir.FullName -Recurse -Force
+}
+
 $ChromiumExecutable = Get-ChildItem `
     -Path $PlaywrightDestination `
     -Recurse `
@@ -126,19 +136,8 @@ $ChromiumExecutable = Get-ChildItem `
     -ErrorAction SilentlyContinue |
     Select-Object -First 1
 
-$HeadlessExecutable = Get-ChildItem `
-    -Path $PlaywrightDestination `
-    -Recurse `
-    -Filter "chrome-headless-shell.exe" `
-    -ErrorAction SilentlyContinue |
-    Select-Object -First 1
-
 if (-not $ChromiumExecutable) {
     throw "Playwright chrome.exe was not copied into the build."
-}
-
-if (-not $HeadlessExecutable) {
-    Write-Warning "chrome-headless-shell.exe was not found. Visible Chromium is bundled, but headless mode may fail."
 }
 
 Write-Host "Application built: $Executable" -ForegroundColor Green
