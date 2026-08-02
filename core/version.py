@@ -5,8 +5,8 @@ from __future__ import annotations
 import re
 
 APP_NAME = "Teggy"
-__version__ = "2.1.0-dev"
-VERSION = (2, 1, 0)
+__version__ = "2.1.1"
+VERSION = (2, 1, 1)
 
 _VERSION_PATTERN = re.compile(
     r"^v?(?P<major>0|[1-9]\d*)\."
