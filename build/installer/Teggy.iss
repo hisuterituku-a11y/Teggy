@@ -1,5 +1,5 @@
 ﻿#define MyAppName "Teggy"
-#define MyAppVersion "2.1.0-dev"
+#define MyAppVersion "2.1.1"
 #define MyAppPublisher "Teggy"
 #define MyAppExeName "Teggy.exe"
 
@@ -22,6 +22,8 @@ SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+Uninstallable=yes
+UninstallDisplayName={#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 SetupLogging=yes
 
@@ -36,6 +38,7 @@ Source: "..\..\dist\Teggy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubd
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{autoprograms}\{#MyAppName}\Удалить {#MyAppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
