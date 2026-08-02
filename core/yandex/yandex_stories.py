@@ -70,6 +70,45 @@ class YandexStoriesDownloader:
         except Exception:
             return ()
 
+    @staticmethod
+    def _cover_urls(page: Page) -> list[str]:
+        try:
+            values = page.evaluate(
+                """
+                () => {
+                    const result = [];
+                    const add = (value) => {
+                        if (!value || typeof value !== 'string') return;
+                        const matches = value.match(/https?:[^\"')\s]+/g) || [];
+                        for (const item of matches) result.push(item.replace(/\\u0026/g, '&'));
+                    };
+                    for (const card of document.querySelectorAll('.story-cover-preview')) {
+                        const nodes = [card, ...card.querySelectorAll('*')];
+                        for (const node of nodes) {
+                            if (node.currentSrc) add(node.currentSrc);
+                            if (node.src) add(node.src);
+                            add(node.getAttribute && node.getAttribute('src'));
+                            add(node.getAttribute && node.getAttribute('data-src'));
+                            add(node.getAttribute && node.getAttribute('style'));
+                            try { add(getComputedStyle(node).backgroundImage); } catch (_) {}
+                        }
+                    }
+                    return [...new Set(result)];
+                }
+                """
+            )
+            return [str(item) for item in values]
+        except Exception:
+            return []
+
+    def _collect_visible_covers(
+        self,
+        page: Page,
+        add_url: Callable[[str], None],
+    ) -> None:
+        for image_url in self._cover_urls(page):
+            add_url(image_url)
+
     def _click_carousel_arrow(self, page: Page, direction: str) -> bool:
         side = "_next" if direction == "next" else "_prev"
         selectors = (
@@ -97,9 +136,11 @@ class YandexStoriesDownloader:
         self,
         page: Page,
         on_log: LogCallback | None,
+        add_url: Callable[[str], None],
         max_steps: int = 60,
     ) -> None:
         self._log("Пролистываем ленту обложек Stories до конца", on_log)
+        self._collect_visible_covers(page, add_url)
         steps = 0
         while (
             not self._cancelled
@@ -108,7 +149,9 @@ class YandexStoriesDownloader:
         ):
             steps += 1
             page.wait_for_timeout(250)
+            self._collect_visible_covers(page, add_url)
 
+        self._collect_visible_covers(page, add_url)
         self._log(f"Лента Stories пройдена: {steps} шагов вправо", on_log)
         self._log("Возвращаем ленту Stories в начало", on_log)
 
@@ -120,7 +163,9 @@ class YandexStoriesDownloader:
         ):
             back_steps += 1
             page.wait_for_timeout(200)
+            self._collect_visible_covers(page, add_url)
 
+        self._collect_visible_covers(page, add_url)
         self._log(f"Лента Stories возвращена: {back_steps} шагов влево", on_log)
 
     @staticmethod
@@ -159,7 +204,6 @@ class YandexStoriesDownloader:
             "[aria-label='Next story']",
             "[class*='story'] [class*='next']",
         )
-
         for selector in selectors:
             try:
                 button = page.locator(selector).first
@@ -169,7 +213,6 @@ class YandexStoriesDownloader:
                     return True
             except Exception:
                 continue
-
         try:
             page.keyboard.press("ArrowRight")
             self._log("Stories подвисли: нажимаем стрелку вправо один раз", on_log)
@@ -227,7 +270,7 @@ class YandexStoriesDownloader:
                 if self._cancelled:
                     return []
 
-                self._preload_story_covers(page, on_log)
+                self._preload_story_covers(page, on_log, add_url)
                 cards_count = page.locator(".story-cover-preview").count()
                 self._log(f"Карточек Stories в DOM: {cards_count}", on_log)
 
@@ -252,7 +295,6 @@ class YandexStoriesDownloader:
 
                 while not self._cancelled:
                     now = time.monotonic()
-
                     if now - started_at >= max_wait_seconds:
                         self._log(
                             f"Достигнут общий тайм-аут Stories: {max_wait_seconds:.0f} секунд",
@@ -262,7 +304,6 @@ class YandexStoriesDownloader:
 
                     page.wait_for_timeout(1000)
                     current_count = len(order)
-
                     if current_count > last_count:
                         last_count = current_count
                         last_growth_at = time.monotonic()
@@ -291,7 +332,6 @@ class YandexStoriesDownloader:
                             on_log,
                         )
                         break
-
         finally:
             self._browser = None
             if browser is not None:
@@ -315,21 +355,17 @@ class YandexStoriesDownloader:
         folder.mkdir(parents=True, exist_ok=True)
         session = requests.Session()
         total = len(urls)
-        saved = 0
-        skipped = 0
-        failed = 0
+        saved = skipped = failed = 0
 
         for index, url in enumerate(urls, start=1):
             if self._cancelled:
                 self._log("Скачивание Stories отменено", on_log)
                 break
-
             path = folder / f"story_{index:03}.jpg"
             if skip_existing and path.exists() and path.stat().st_size > 0:
                 skipped += 1
                 self._log(f"Stories {index}/{total}: уже существует", on_log)
                 continue
-
             try:
                 response = session.get(
                     url,
