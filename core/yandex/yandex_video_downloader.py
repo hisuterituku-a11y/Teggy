@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import shutil
+import sys
 from pathlib import Path
 from typing import Callable
 from urllib.parse import unquote, urlsplit, urlunsplit
@@ -335,18 +336,47 @@ class YandexVideoDownloader:
 
     @staticmethod
     def _find_ffmpeg() -> str | None:
-        system_ffmpeg = shutil.which("ffmpeg")
-        if system_ffmpeg:
-            return system_ffmpeg
-        for candidate in (
-            Path("ffmpeg.exe"),
-            Path("bin") / "ffmpeg.exe",
-            Path("tools") / "ffmpeg.exe",
-            Path("ffmpeg") / "bin" / "ffmpeg.exe",
-        ):
-            if candidate.exists():
+        candidates: list[Path] = []
+
+        if getattr(sys, "frozen", False):
+            executable_dir = Path(sys.executable).resolve().parent
+            candidates.extend(
+                (
+                    executable_dir / "ffmpeg.exe",
+                    executable_dir / "_internal" / "ffmpeg.exe",
+                    executable_dir / "bin" / "ffmpeg.exe",
+                    executable_dir / "tools" / "ffmpeg.exe",
+                )
+            )
+            meipass = getattr(sys, "_MEIPASS", None)
+            if meipass:
+                bundle_dir = Path(meipass)
+                candidates.extend(
+                    (
+                        bundle_dir / "ffmpeg.exe",
+                        bundle_dir / "bin" / "ffmpeg.exe",
+                        bundle_dir / "tools" / "ffmpeg.exe",
+                    )
+                )
+        else:
+            project_root = Path(__file__).resolve().parents[2]
+            candidates.extend(
+                (
+                    project_root / "ffmpeg.exe",
+                    project_root / "bin" / "ffmpeg.exe",
+                    project_root / "tools" / "ffmpeg.exe",
+                    Path.cwd() / "ffmpeg.exe",
+                    Path.cwd() / "bin" / "ffmpeg.exe",
+                    Path.cwd() / "tools" / "ffmpeg.exe",
+                )
+            )
+
+        for candidate in candidates:
+            if candidate.is_file():
                 return str(candidate.resolve())
-        return None
+
+        system_ffmpeg = shutil.which("ffmpeg")
+        return system_ffmpeg
 
     def download(
         self,
@@ -364,11 +394,12 @@ class YandexVideoDownloader:
 
         ffmpeg_path = self._find_ffmpeg()
         if not ffmpeg_path:
-            self._log(
-                "Не найден ffmpeg. Установи ffmpeg или положи ffmpeg.exe рядом с программой.",
-                on_log,
+            message = (
+                "FFmpeg не найден. В сборке отсутствует ffmpeg.exe, "
+                "поэтому этап загрузки видео не может быть выполнен."
             )
-            return 0
+            self._log(f"[ERROR] {message}", on_log)
+            raise RuntimeError(message)
 
         self._log(f"Используется ffmpeg: {ffmpeg_path}", on_log)
         dash = DashDownloader(ffmpeg_path=ffmpeg_path, timeout=self.timeout)
