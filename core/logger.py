@@ -35,12 +35,37 @@ def _migrate_legacy_log() -> None:
     try:
         shutil.copy2(LEGACY_LOG_FILE, LOG_FILE)
     except OSError:
-        # Ошибка миграции не должна мешать запуску приложения.
         pass
 
 
+def _create_session_handler(
+    path: Path,
+    *,
+    max_bytes: int,
+    backup_count: int,
+    level: int,
+    formatter: logging.Formatter,
+) -> RotatingFileHandler:
+    handler = RotatingFileHandler(
+        path,
+        maxBytes=max_bytes,
+        backupCount=backup_count,
+        encoding="utf-8",
+        delay=True,
+    )
+    handler.setLevel(level)
+    handler.setFormatter(formatter)
+
+    # Каждый запуск получает чистый текущий журнал. Предыдущий запуск остаётся
+    # в teggy.log.1, teggy.log.2 и так далее, поэтому история не теряется.
+    if path.is_file() and path.stat().st_size > 0:
+        handler.doRollover()
+
+    return handler
+
+
 def setup_logging() -> Path:
-    """Настраивает общий журнал и отдельный журнал ошибок."""
+    """Настраивает текущий журнал сессии и отдельный журнал ошибок."""
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     _migrate_legacy_log()
 
@@ -53,15 +78,15 @@ def setup_logging() -> Path:
     )
 
     if not any(_same_file_handler(handler, LOG_FILE) for handler in root_logger.handlers):
-        file_handler = RotatingFileHandler(
-            LOG_FILE,
-            maxBytes=5 * 1024 * 1024,
-            backupCount=5,
-            encoding="utf-8",
+        root_logger.addHandler(
+            _create_session_handler(
+                LOG_FILE,
+                max_bytes=5 * 1024 * 1024,
+                backup_count=5,
+                level=logging.INFO,
+                formatter=formatter,
+            )
         )
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(formatter)
-        root_logger.addHandler(file_handler)
 
     if not any(
         _same_file_handler(handler, ERROR_LOG_FILE)
