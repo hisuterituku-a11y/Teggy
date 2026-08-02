@@ -17,6 +17,7 @@ $ReleaseDir = Join-Path $ProjectRoot "release"
 $PlaywrightPackageDir = Join-Path $VenvDir "Lib\site-packages\playwright\driver\package"
 $PlaywrightSource = Join-Path $PlaywrightPackageDir ".local-browsers"
 $PlaywrightDestination = Join-Path $DistDir "Teggy\_internal\playwright\driver\package\.local-browsers"
+$BundledFfmpeg = Join-Path $DistDir "Teggy\ffmpeg.exe"
 
 Set-Location $ProjectRoot
 
@@ -47,6 +48,19 @@ if ($LASTEXITCODE -ne 0) {
 if ($LASTEXITCODE -ne 0) {
     throw "Build dependency installation failed."
 }
+
+$FfmpegCommand = Get-Command ffmpeg.exe -ErrorAction SilentlyContinue
+if (-not $FfmpegCommand) {
+    $FfmpegCommand = Get-Command ffmpeg -ErrorAction SilentlyContinue
+}
+if (-not $FfmpegCommand) {
+    throw "System ffmpeg.exe was not found. Install FFmpeg before building Teggy."
+}
+$FfmpegSource = $FfmpegCommand.Source
+if (-not (Test-Path $FfmpegSource -PathType Leaf)) {
+    throw "Resolved FFmpeg path is invalid: $FfmpegSource"
+}
+Write-Host "FFmpeg found: $FfmpegSource" -ForegroundColor Cyan
 
 # Install Chromium inside the Playwright package so it can be copied into dist.
 $PreviousBrowsersPath = $env:PLAYWRIGHT_BROWSERS_PATH
@@ -89,6 +103,12 @@ if (-not (Test-Path $Executable)) {
     throw "Teggy.exe was not created: $Executable"
 }
 
+Write-Host "Copying FFmpeg into the application bundle..." -ForegroundColor Cyan
+Copy-Item -Path $FfmpegSource -Destination $BundledFfmpeg -Force
+if (-not (Test-Path $BundledFfmpeg -PathType Leaf)) {
+    throw "ffmpeg.exe was not copied into the build: $BundledFfmpeg"
+}
+
 Write-Host "Copying Chromium into the application bundle..." -ForegroundColor Cyan
 $PlaywrightDestinationParent = Split-Path -Parent $PlaywrightDestination
 New-Item -ItemType Directory -Path $PlaywrightDestinationParent -Force | Out-Null
@@ -122,6 +142,7 @@ if (-not $HeadlessExecutable) {
 }
 
 Write-Host "Application built: $Executable" -ForegroundColor Green
+Write-Host "Bundled FFmpeg: $BundledFfmpeg" -ForegroundColor Green
 Write-Host "Bundled Chromium: $($ChromiumExecutable.FullName)" -ForegroundColor Green
 
 if ($SkipInstaller) {
