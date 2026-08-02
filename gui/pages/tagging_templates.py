@@ -11,8 +11,8 @@ class TaggingPage(BaseTaggingPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        # Базовый слой повторно добавляет подпись прямо в QCheckBox. Здесь текст
-        # уже вынесен в отдельный QLabel, поэтому оставляем только индикатор.
+        # Подпись вынесена в отдельный QLabel, поэтому в самом QCheckBox
+        # оставляем только индикатор состояния.
         self.delete_originals_checkbox.setText("")
         self.delete_originals_checkbox.setFixedWidth(24)
 
@@ -29,7 +29,8 @@ class TaggingPage(BaseTaggingPage):
         self.delete_originals_checkbox.setObjectName("DownloadOptionCheck")
         self.delete_originals_checkbox.setFixedWidth(24)
         self.delete_originals_checkbox.setToolTip(
-            "Исходные фотографии удалятся только после полностью успешной обработки."
+            "Teggy сначала обрабатывает временные копии и только после полностью "
+            "успешной обработки заменяет исходные фотографии на месте."
         )
         layout.addWidget(self.delete_originals_checkbox, 0, Qt.AlignmentFlag.AlignTop)
 
@@ -37,13 +38,14 @@ class TaggingPage(BaseTaggingPage):
         text_layout.setContentsMargins(0, 0, 0, 0)
         text_layout.setSpacing(3)
 
-        title = QLabel("Удалять исходные фото после обработки")
+        title = QLabel("Заменять исходные фото обработанными")
         title.setObjectName("DownloadOptionTitle")
         text_layout.addWidget(title)
 
         description = QLabel(
-            "По умолчанию исходники сохраняются, а готовые фото появляются в папке Teggy. "
-            "Включайте удаление только когда исходные файлы больше не нужны."
+            "Без галочки исходники сохраняются, а готовые копии появляются в папке Teggy. "
+            "С галочкой отдельная папка Teggy не создаётся: после успешной обработки "
+            "исходные файлы заменяются обработанными в выбранных папках."
         )
         description.setObjectName("DownloadOptionDescription")
         description.setWordWrap(True)
