@@ -138,6 +138,14 @@ class YandexMapsPage(QWidget):
         options_layout.addWidget(reviews_card)
         options_layout.addWidget(stories_card)
         options_layout.addWidget(videos_card)
+
+        self.skip_existing_checkbox = QCheckBox("Пропускать уже скачанные файлы")
+        self.skip_existing_checkbox.setChecked(True)
+        self.skip_existing_checkbox.setToolTip(
+            "Если включено, существующие файлы не скачиваются повторно. "
+            "Если выключено, файлы с теми же именами будут перезаписаны."
+        )
+        options_layout.addWidget(self.skip_existing_checkbox)
         root.addWidget(options_card)
 
         download_buttons_layout = QHBoxLayout()
@@ -300,6 +308,7 @@ class YandexMapsPage(QWidget):
             self.review_photos_checkbox,
             self.stories_checkbox,
             self.videos_checkbox,
+            self.skip_existing_checkbox,
         ):
             checkbox.setEnabled(False)
 
@@ -315,7 +324,7 @@ class YandexMapsPage(QWidget):
             on_log=self.append_download_log,
             on_progress=self.update_download_progress,
             on_finished=self.on_download_finished,
-            skip_existing=True,
+            skip_existing=self.skip_existing_checkbox.isChecked(),
         )
 
     def cancel_download(self):
@@ -345,6 +354,7 @@ class YandexMapsPage(QWidget):
             self.review_photos_checkbox,
             self.stories_checkbox,
             self.videos_checkbox,
+            self.skip_existing_checkbox,
         ):
             checkbox.setEnabled(True)
 
