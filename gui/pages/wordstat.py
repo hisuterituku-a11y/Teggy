@@ -102,7 +102,7 @@ class WordstatPage(QWidget):
         region_label = QLabel("Регион Wordstat")
         self.region_combo = QComboBox()
         self.region_combo.setObjectName("WordstatCombo")
-        self.region_combo.setEditable(True)
+        self.region_combo.setEditable(False)
         self.region_combo.addItems(
             [
                 "all",
@@ -115,7 +115,7 @@ class WordstatPage(QWidget):
         )
         self.region_combo.setCurrentText("all")
         self.region_combo.setToolTip(
-            "Можно указать код региона, название города или оставить all."
+            "Выберите регион Wordstat или оставьте all."
         )
         layout.addWidget(region_label, 3, 0)
         layout.addWidget(self.region_combo, 3, 1)
@@ -319,7 +319,8 @@ class WordstatPage(QWidget):
             QComboBox#WordstatCombo,
             QSpinBox#WordstatSpin {
                 min-height: 36px;
-                padding: 0 12px;
+                padding-left: 12px;
+                padding-right: 34px;
                 color: #eef2ff;
                 background: #121a2f;
                 border: 1px solid #33415f;
@@ -337,14 +338,14 @@ class WordstatPage(QWidget):
             QComboBox#WordstatCombo::drop-down {
                 subcontrol-origin: padding;
                 subcontrol-position: top right;
-                width: 34px;
-                border: none;
-                background: transparent;
+                width: 32px;
+                border-left: 1px solid #33415f;
+                border-top-right-radius: 8px;
+                border-bottom-right-radius: 8px;
+                background: #17223a;
             }
-            QComboBox#WordstatCombo::down-arrow {
-                image: none;
-                width: 0;
-                height: 0;
+            QComboBox#WordstatCombo::drop-down:hover {
+                background: #21304f;
             }
             QComboBox#WordstatCombo QAbstractItemView {
                 color: #eef2ff;
@@ -353,12 +354,26 @@ class WordstatPage(QWidget):
                 selection-background-color: #6d3fc0;
                 selection-color: #ffffff;
                 outline: none;
+                padding: 4px;
             }
             QSpinBox#WordstatSpin::up-button,
             QSpinBox#WordstatSpin::down-button {
-                width: 0;
-                height: 0;
-                border: none;
+                subcontrol-origin: border;
+                width: 28px;
+                border-left: 1px solid #33415f;
+                background: #17223a;
+            }
+            QSpinBox#WordstatSpin::up-button {
+                subcontrol-position: top right;
+                border-top-right-radius: 8px;
+            }
+            QSpinBox#WordstatSpin::down-button {
+                subcontrol-position: bottom right;
+                border-bottom-right-radius: 8px;
+            }
+            QSpinBox#WordstatSpin::up-button:hover,
+            QSpinBox#WordstatSpin::down-button:hover {
+                background: #21304f;
             }
             QCheckBox#DownloadOptionCheck {
                 spacing: 9px;
