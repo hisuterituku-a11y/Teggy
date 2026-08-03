@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
             "Главная": 0,
             "Тегирование": 1,
             "Яндекс Карты": 2,
-            "Wordstat": 3,
+            "Wordstat AI": 3,
             "Настройки": 4,
         }
         for name, index in self._page_map.items():
