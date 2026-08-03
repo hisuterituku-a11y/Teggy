@@ -49,7 +49,7 @@ class WordstatPage(QWidget):
         root.setContentsMargins(32, 24, 32, 24)
         root.setSpacing(16)
 
-        title = QLabel("Wordstat · генератор тегов")
+        title = QLabel("Генератор тегов Wordstat")
         title.setObjectName("SectionTitle")
         root.addWidget(title)
 
@@ -67,6 +67,7 @@ class WordstatPage(QWidget):
         root.addWidget(self._build_actions_card())
         root.addWidget(self._build_result_card())
 
+        self._apply_wordstat_styles()
         self._update_character_counter()
 
     def _build_offer_card(self) -> QFrame:
@@ -100,6 +101,7 @@ class WordstatPage(QWidget):
 
         region_label = QLabel("Регион Wordstat")
         self.region_combo = QComboBox()
+        self.region_combo.setObjectName("WordstatCombo")
         self.region_combo.setEditable(True)
         self.region_combo.addItems(
             [
@@ -172,6 +174,7 @@ class WordstatPage(QWidget):
 
         limit_label = QLabel("Лимит символов")
         self.max_characters_spin = QSpinBox()
+        self.max_characters_spin.setObjectName("WordstatSpin")
         self.max_characters_spin.setRange(100, 10_000)
         self.max_characters_spin.setValue(3000)
         self.max_characters_spin.setSingleStep(100)
@@ -180,6 +183,7 @@ class WordstatPage(QWidget):
 
         frequency_label = QLabel("Мин. частотность")
         self.min_frequency_spin = QSpinBox()
+        self.min_frequency_spin.setObjectName("WordstatSpin")
         self.min_frequency_spin.setRange(0, 10_000_000)
         self.min_frequency_spin.setValue(1)
         layout.addWidget(frequency_label, 1, 2)
@@ -188,6 +192,7 @@ class WordstatPage(QWidget):
         self.remove_info_checkbox = QCheckBox(
             "Удалять информационные запросы"
         )
+        self.remove_info_checkbox.setObjectName("DownloadOptionCheck")
         self.remove_info_checkbox.setToolTip(
             "Удаляет запросы со словами вроде «что», «как», «почему», "
             "«фото», «видео» и похожими информационными намерениями."
@@ -197,6 +202,7 @@ class WordstatPage(QWidget):
         self.ai_filter_checkbox = QCheckBox(
             "Использовать AI-фильтрацию"
         )
+        self.ai_filter_checkbox.setObjectName("DownloadOptionCheck")
         self.ai_filter_checkbox.setChecked(True)
         self.ai_filter_checkbox.setToolTip(
             "Работает только если в приложении подключён AI-клиент. "
@@ -306,6 +312,78 @@ class WordstatPage(QWidget):
 
         layout.addLayout(footer)
         return card
+
+    def _apply_wordstat_styles(self) -> None:
+        self.setStyleSheet(
+            """
+            QComboBox#WordstatCombo,
+            QSpinBox#WordstatSpin {
+                min-height: 36px;
+                padding: 0 12px;
+                color: #eef2ff;
+                background: #121a2f;
+                border: 1px solid #33415f;
+                border-radius: 9px;
+                selection-background-color: #7c3aed;
+            }
+            QComboBox#WordstatCombo:hover,
+            QSpinBox#WordstatSpin:hover {
+                border-color: #6d4bc3;
+            }
+            QComboBox#WordstatCombo:focus,
+            QSpinBox#WordstatSpin:focus {
+                border: 1px solid #8b5cf6;
+            }
+            QComboBox#WordstatCombo::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: top right;
+                width: 34px;
+                border: none;
+                background: transparent;
+            }
+            QComboBox#WordstatCombo::down-arrow {
+                image: none;
+                width: 0;
+                height: 0;
+            }
+            QComboBox#WordstatCombo QAbstractItemView {
+                color: #eef2ff;
+                background: #121a2f;
+                border: 1px solid #33415f;
+                selection-background-color: #6d3fc0;
+                selection-color: #ffffff;
+                outline: none;
+            }
+            QSpinBox#WordstatSpin::up-button,
+            QSpinBox#WordstatSpin::down-button {
+                width: 0;
+                height: 0;
+                border: none;
+            }
+            QCheckBox#DownloadOptionCheck {
+                spacing: 9px;
+                color: #dbe4f3;
+                font-size: 13px;
+            }
+            QCheckBox#DownloadOptionCheck::indicator {
+                width: 18px;
+                height: 18px;
+                border: 1px solid #52617d;
+                border-radius: 5px;
+                background: #111a2e;
+            }
+            QCheckBox#DownloadOptionCheck::indicator:hover {
+                border-color: #8b5cf6;
+            }
+            QCheckBox#DownloadOptionCheck::indicator:checked {
+                background: #8b5cf6;
+                border-color: #8b5cf6;
+            }
+            QCheckBox#DownloadOptionCheck:disabled {
+                color: #69758b;
+            }
+            """
+        )
 
     @staticmethod
     def _normalize(value: str) -> str:
