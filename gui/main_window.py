@@ -18,7 +18,7 @@ from gui.dialogs.help_dialog import HelpDialog
 from gui.pages.dashboard import Dashboard
 from gui.pages.settings_page import SettingsPage
 from gui.pages.tagging_fixed import TaggingPage
-from gui.pages.wordstat import WordstatPage
+from gui.pages.wordstat_fixed import WordstatPage
 from gui.pages.yandex_maps import YandexMapsPage
 from gui.services.update_service import UpdateService
 
