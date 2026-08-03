@@ -5,38 +5,39 @@ import traceback
 from PySide6.QtCore import QObject, Signal, Slot
 
 from core.wordstat.tag_generator import TagGenerator
+from core.wordstat.wordstat_collector import WordstatCollector
 
 
 class WordstatWorker(QObject):
-    """
-    Запускает генерацию тегов в отдельном потоке.
-
-    Внутри никакой UI.
-    Только генератор и сигналы.
-    """
+    """Запускает генерацию тегов Wordstat в отдельном потоке."""
 
     finished = Signal(dict)
     error = Signal(str)
     progress = Signal(str)
     cancelled = Signal()
 
-    def __init__(self, form_data):
+    def __init__(self, form_data) -> None:
         super().__init__()
-
         self.form_data = form_data
         self._cancelled = False
+        self._collector: WordstatCollector | None = None
 
-    def cancel(self):
+    def cancel(self) -> None:
         self._cancelled = True
+        collector = self._collector
+        if collector is not None:
+            collector.cancel()
 
     @Slot()
-    def run(self):
+    def run(self) -> None:
         try:
+            if self._cancelled:
+                self.cancelled.emit()
+                return
 
-            generator = TagGenerator(
-                progress_callback=self._progress,
-                cancel_callback=self._is_cancelled,
-            )
+            collector = WordstatCollector(headless=False)
+            self._collector = collector
+            generator = TagGenerator(collector=collector)
 
             result = generator.generate(
                 service_name=self.form_data.service_name,
@@ -44,25 +45,46 @@ class WordstatWorker(QObject):
                 city=self.form_data.city,
                 address=self.form_data.address,
                 region=self.form_data.region,
-                manual_queries=list(self.form_data.manual_queries),
+                manual_queries=(
+                    list(self.form_data.manual_queries)
+                    if self.form_data.manual_queries
+                    else None
+                ),
                 max_characters=self.form_data.max_characters,
                 min_frequency=self.form_data.min_frequency,
                 remove_info=self.form_data.remove_info,
-                ai_filter=self.form_data.use_ai_filter,
+                use_ai_filter=self.form_data.use_ai_filter,
+                continue_on_error=True,
+                on_log=self._progress,
             )
 
             if self._cancelled:
                 self.cancelled.emit()
                 return
 
-            self.finished.emit(result)
+            self.finished.emit(
+                {
+                    "text": result.text,
+                    "collected_count": result.collected_count,
+                    "merged_count": result.merged_count,
+                    "filtered_count": result.filtered_count,
+                    "tag_count": len(result.tags),
+                    "character_count": result.character_count,
+                    "base_queries": list(result.base_queries),
+                }
+            )
 
-        except Exception:
-            self.error.emit(traceback.format_exc())
+        except Exception as error:
+            if self._cancelled:
+                self.cancelled.emit()
+                return
 
-    def _progress(self, text: str):
+            self.error.emit(
+                f"{error}\n\n{traceback.format_exc()}"
+            )
+        finally:
+            self._collector = None
+
+    def _progress(self, text: str) -> None:
         if not self._cancelled:
-            self.progress.emit(text)
-
-    def _is_cancelled(self) -> bool:
-        return self._cancelled
+            self.progress.emit(str(text))
