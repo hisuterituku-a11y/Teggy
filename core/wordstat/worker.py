@@ -26,7 +26,10 @@ class WordstatWorker(QObject):
         self._cancelled = True
         collector = self._collector
         if collector is not None:
-            collector.cancel()
+            # Playwright-контекст создан в рабочем потоке, поэтому закрывать его
+            # из GUI-потока нельзя. Достаточно выставить флаг: сборщик проверяет
+            # его во всех циклах ожидания и корректно завершает работу сам.
+            collector._cancelled = True
 
     @Slot()
     def run(self) -> None:
