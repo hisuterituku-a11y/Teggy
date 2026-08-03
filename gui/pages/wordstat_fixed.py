@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QCompleter
+
 from gui.pages.wordstat import WordstatPage as BaseWordstatPage
 
 
@@ -67,16 +70,35 @@ REGIONS = [
 
 
 class WordstatPage(BaseWordstatPage):
-    """Финальный слой страницы Wordstat с полноценными контролами."""
+    """Финальный слой страницы Wordstat с поиском региона по вводу."""
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
-        current = self.region_combo.currentText()
         self.region_combo.clear()
         self.region_combo.addItems(REGIONS)
-        self.region_combo.setCurrentText(current if current in REGIONS else "all")
-        self.region_combo.setMaxVisibleItems(18)
+        self.region_combo.setEditable(True)
+        self.region_combo.setInsertPolicy(self.region_combo.InsertPolicy.NoInsert)
+        self.region_combo.setCurrentText("all")
+        self.region_combo.setMaxVisibleItems(12)
+
+        completer = QCompleter(REGIONS, self.region_combo)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        completer.setMaxVisibleItems(12)
+        self.region_combo.setCompleter(completer)
+        self._region_completer = completer
+
+        line_edit = self.region_combo.lineEdit()
+        if line_edit is not None:
+            line_edit.setPlaceholderText("Начните вводить город")
+            line_edit.setClearButtonEnabled(True)
+
+        self.region_combo.setToolTip(
+            "Начните вводить город и выберите подходящий вариант. "
+            "Для поиска без ограничения по региону оставьте all."
+        )
 
         icon_dir = Path(__file__).resolve().parents[2] / "assets" / "icons" / "teggy"
         down = (icon_dir / "chevron-down.svg").as_posix()
@@ -99,6 +121,13 @@ class WordstatPage(BaseWordstatPage):
                 image: url(\"{down}\");
                 width: 12px;
                 height: 12px;
+            }}
+            QComboBox#WordstatCombo QLineEdit {{
+                color: #eef2ff;
+                background: transparent;
+                border: none;
+                padding: 0;
+                selection-background-color: #7c3aed;
             }}
             """
         )
