@@ -1,4 +1,4 @@
-from PySide6.QtCore import QTimer, Qt, QUrl
+from PySide6.QtCore import QThread, QTimer, Qt, QUrl
 from PySide6.QtGui import (
     QAction,
     QColor,
@@ -12,11 +12,13 @@ from PySide6.QtWidgets import QLabel, QMainWindow, QMessageBox, QScrollArea, QWi
 
 from core.update_checker import ReleaseInfo
 from core.version import __version__, display_version
+from core.wordstat.worker import WordstatWorker
 from gui.components.application_shell import ApplicationShell
 from gui.dialogs.help_dialog import HelpDialog
 from gui.pages.dashboard import Dashboard
 from gui.pages.settings_page import SettingsPage
 from gui.pages.tagging_fixed import TaggingPage
+from gui.pages.wordstat import WordstatPage
 from gui.pages.yandex_maps import YandexMapsPage
 from gui.services.update_service import UpdateService
 
@@ -52,6 +54,8 @@ class MainWindow(QMainWindow):
         self.theme_manager = theme_manager
         self._manual_update_check = False
         self._update_dialog_open = False
+        self._wordstat_thread: QThread | None = None
+        self._wordstat_worker: WordstatWorker | None = None
 
         self.setWindowTitle(f"Teggy {display_version()}")
         self.setMinimumSize(self.SAFE_MINIMUM_WIDTH, self.SAFE_MINIMUM_HEIGHT)
@@ -79,19 +83,22 @@ class MainWindow(QMainWindow):
         self.dashboard_page = Dashboard()
         self.photo_page = TaggingPage()
         self.yandex_maps_page = YandexMapsPage()
+        self.wordstat_page = WordstatPage()
         self.settings_page = SettingsPage()
         self.settings_page.reset_interface_requested.connect(self.reset_interface_geometry)
 
         self.pages.addWidget(self._scroll_page(self.dashboard_page))
         self.pages.addWidget(self._scroll_page(self.photo_page))
         self.pages.addWidget(self._scroll_page(self.yandex_maps_page))
+        self.pages.addWidget(self._scroll_page(self.wordstat_page))
         self.pages.addWidget(self._scroll_page(self.settings_page))
 
         self._page_map = {
             "Главная": 0,
             "Тегирование": 1,
             "Яндекс Карты": 2,
-            "Настройки": 3,
+            "Wordstat": 3,
+            "Настройки": 4,
         }
         for name, index in self._page_map.items():
             self.sidebar.menu_buttons[name].clicked.connect(
@@ -103,6 +110,8 @@ class MainWindow(QMainWindow):
 
         self.dashboard_page.navigate_requested.connect(self._open_page_by_name)
         self.dashboard_page.check_updates_requested.connect(self._start_manual_update_check)
+        self.wordstat_page.generate_requested.connect(self._start_wordstat_generation)
+        self.wordstat_page.cancel_requested.connect(self._cancel_wordstat_generation)
 
         self._resize_handles = self._create_resize_handles()
         self._switch_page(0, "Главная")
@@ -127,6 +136,60 @@ class MainWindow(QMainWindow):
         self.pages.setCurrentIndex(index)
         self.sidebar.set_active(page_name)
         self.topbar.title.setText(page_name)
+
+    def _start_wordstat_generation(self, form_data) -> None:
+        if self._wordstat_thread is not None:
+            self.wordstat_page.append_log("Сбор Wordstat уже выполняется")
+            return
+
+        thread = QThread(self)
+        worker = WordstatWorker(form_data)
+        worker.moveToThread(thread)
+
+        thread.started.connect(worker.run)
+        worker.progress.connect(self.wordstat_page.append_log)
+        worker.finished.connect(self._handle_wordstat_finished)
+        worker.error.connect(self._handle_wordstat_error)
+        worker.cancelled.connect(self._handle_wordstat_cancelled)
+
+        worker.finished.connect(thread.quit)
+        worker.error.connect(thread.quit)
+        worker.cancelled.connect(thread.quit)
+        thread.finished.connect(worker.deleteLater)
+        thread.finished.connect(thread.deleteLater)
+        thread.finished.connect(self._clear_wordstat_worker)
+
+        self._wordstat_thread = thread
+        self._wordstat_worker = worker
+        self.wordstat_page.append_log("Запускаем генерацию тегов Wordstat")
+        thread.start()
+
+    def _cancel_wordstat_generation(self) -> None:
+        worker = self._wordstat_worker
+        if worker is None:
+            return
+
+        self.wordstat_page.append_log("Запрошена отмена генерации")
+        worker.cancel()
+
+    def _handle_wordstat_finished(self, result: dict) -> None:
+        self.wordstat_page.set_result(
+            text=str(result.get("text", "")),
+            collected_count=int(result.get("collected_count", 0)),
+            merged_count=int(result.get("merged_count", 0)),
+            filtered_count=int(result.get("filtered_count", 0)),
+            tag_count=int(result.get("tag_count", 0)),
+        )
+
+    def _handle_wordstat_error(self, message: str) -> None:
+        self.wordstat_page.show_error(message)
+
+    def _handle_wordstat_cancelled(self) -> None:
+        self.wordstat_page.show_cancelled()
+
+    def _clear_wordstat_worker(self) -> None:
+        self._wordstat_worker = None
+        self._wordstat_thread = None
 
     def _start_manual_update_check(self) -> None:
         self._manual_update_check = True
@@ -182,6 +245,16 @@ class MainWindow(QMainWindow):
         height = min(max(self.SAFE_MINIMUM_HEIGHT, self.DEFAULT_HEIGHT), available.height())
         self.resize(width, height)
         self.move(available.center() - self.rect().center())
+
+    def closeEvent(self, event) -> None:
+        worker = self._wordstat_worker
+        thread = self._wordstat_thread
+        if worker is not None:
+            worker.cancel()
+        if thread is not None and thread.isRunning():
+            thread.quit()
+            thread.wait(3000)
+        super().closeEvent(event)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
