@@ -66,7 +66,7 @@ class Sidebar(QFrame):
             ("Главная", "home", True, True),
             ("Тегирование", "photo", False, True),
             ("Яндекс Карты", "map", False, True),
-            ("Wordstat", "search", False, True),
+            ("Wordstat AI", "wordstat", False, True),
             ("Настройки", "settings", False, False),
         ]
 
